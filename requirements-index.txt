@@ -1,0 +1,22 @@
+# Isolated inference subset of the official IndexTTS 2.5 dependencies.
+# Model weights and upstream revision are recorded with each experiment.
+torch==2.8.0
+torchaudio==2.8.0
+transformers==4.52.1
+modelscope==1.27.0
+librosa==0.10.2.post1
+numpy==2.2.6
+safetensors==0.5.2
+omegaconf>=2.3.0
+einops>=0.8.1
+soundfile>=0.13
+tiktoken>=0.9
+sentencepiece>=0.2.1
+munch==4.0.0
+wetext>=0.0.9
+fugashi>=1.2.0
+unidic-lite>=1.0.0
+openai-whisper>=20231117
+matplotlib==3.10.0
+descript-audiotools==0.7.2
+accelerate==1.8.1

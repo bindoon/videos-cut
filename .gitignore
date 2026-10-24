@@ -1,0 +1,57 @@
+# Local Python environments and generated build/test files
+.venv*/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+build/
+dist/
+
+# Downloaded models, materials, third-party checkouts and generated videos
+/assets/models/
+/assets/cache/
+/models/
+/checkpoints/
+/outputs/
+/upstream/
+
+# Model weights accidentally downloaded outside the standard model folders
+*.safetensors
+*.pt
+*.pth
+*.ckpt
+*.bin
+*.gguf
+*.ggml
+*.onnx
+*.torchscript
+*.tflite
+*.h5
+*.hdf5
+flax_model*.msgpack
+
+# Local run pointers, secrets and temporary files
+.index-test-run-path
+.voice-run-path
+.env
+.env.*
+!.env.example
+!.env.sample
+*.log
+*.tmp
+*.part
+
+# macOS and editor metadata
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo

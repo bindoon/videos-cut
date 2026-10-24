@@ -1,0 +1,23 @@
+{
+  "title": "把早晨，留给一杯咖啡",
+  "subtitle": "A SLOW MORNING / VOL. 01",
+  "brand": "S L O W  /  C O F F E E",
+  "footer": "COFFEE NOTES  ·  生活里的小仪式",
+  "width": 720,
+  "height": 1280,
+  "fps": 24,
+  "caption_layout": "utterance",
+  "caption_switch": "previous_speech_end",
+  "voice": "zh-CN-XiaoxiaoNeural",
+  "rate": "-5%",
+  "transition_seconds": 0.35,
+  "music_volume": 0.10,
+  "scenes": [
+    {"label": "给早晨一点留白", "lines": ["早晨，不必一开始就匆忙。", "先给自己，留一杯咖啡的时间。"], "query": ["咖啡", "早晨", "杯子"], "kind": "image", "transition": "fade", "sticker": "coffee"},
+    {"label": "01 / 从香气开始", "lines": ["从一把新鲜的咖啡豆开始。", "让香气，慢慢叫醒还没睡醒的你。"], "query": ["咖啡豆", "颗粒", "香气"], "kind": "video", "transition": "slideleft", "sticker": "sparkles"},
+    {"label": "02 / 等待也很美好", "lines": ["看热水穿过咖啡粉。", "等第一滴咖啡，落进杯子里。"], "query": ["萃取", "咖啡机", "滴落"], "kind": "video", "transition": "fade", "sticker": "coffee"},
+    {"label": "03 / 慢下来", "lines": ["喜欢清爽，就喝一口黑咖啡。", "喜欢温柔，就加一点牛奶。"], "query": ["倒咖啡", "杯子", "黑咖啡"], "kind": "video", "transition": "wipeleft", "sticker": "sparkles"},
+    {"label": "生活的小小仪式", "lines": ["一张照片，一段喜欢的音乐。", "普通的日常，也能有自己的仪式感。"], "query": ["咖啡", "桌面", "生活"], "kind": "image", "transition": "fade", "sticker": "heart"},
+    {"label": "今天，也好好生活", "lines": ["喝完这一杯，再出发。", "愿你今天，忙得有序，也过得从容。"], "query": ["咖啡豆", "杯子", "旋转"], "kind": "video", "transition": "fade", "sticker": "heart"}
+  ]
+}
