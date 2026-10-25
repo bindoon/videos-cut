@@ -26,6 +26,9 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["videocut"]
 
+[tool.hatch.build.targets.wheel.force-include]
+".agents/skills/ffmpeg-skill" = "videocut/_vendor/ffmpeg_skill"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 

@@ -475,10 +475,15 @@ def raw_sample(args) -> None:
 
 
 def main() -> None:
+    if len(sys.argv) > 1 and sys.argv[1] == "ffmpeg":
+        from .ffmpeg_tools import main as ffmpeg_main
+
+        raise SystemExit(ffmpeg_main(sys.argv[2:]))
     parser = argparse.ArgumentParser(
         description="素材混剪：配音、字幕、转场、贴纸和口播精剪"
     )
     sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser("ffmpeg", help="42 local FFmpeg tools; videocut ffmpeg --help")
     for name in ("demo", "render", "mix"):
         command = sub.add_parser(name)
         command.add_argument(

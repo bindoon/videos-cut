@@ -37,6 +37,7 @@
 | `videocut/transcription.py` | 独立 ASR 实现、分段读取、逐词时间归属、校验缓存和 TXT/SRT/JSON 导出；不调用下载、剪辑或大模型 |
 | `videocut/render.py` | FFmpeg 运镜/转场，MoviePy 图层合成，音量标准化与完整解码验收 |
 | `videocut/media.py` | 有超时、检查退出码的进程调用与 ffprobe |
+| `videocut/ffmpeg_tools.py` | `ffmpeg` 子命令，将工具参数、标准输出和退出码原样交给项目内固定的 ffmpeg-skill；不接管配音、ASR 或字幕同步门禁 |
 
 `mix` 使用同一份剪后音频时间轴：原视频镜头从对应时间截取，插入素材时只替换画面。不会把原片声音和旁白重复播放。字幕图层在背景转场之后叠加，避免两条字幕跟着转场重影。
 
@@ -45,6 +46,10 @@
 成片先写 `candidate.mp4`。`videocut/sync.py` 从所有真实编码帧识别当前固定样式的字幕字形，比较声学参考、计划时间和真实显示时间，并用高能量语音窗口测量最终音轨偏移。通过后才改名 `final.mp4`；失败保留候选和失败报告。该验收没有将模型时间当作人工标注的真值，也不评判音色、情绪和发音自然度。阈值、安装、缓存及复用边界见 [字幕同步工作流](subtitle-sync.md)。
 
 ASR 和 Auto-Editor 是 `asr` 可选依赖，普通脚本混剪不需要安装它们或下载识别模型。主剪辑环境的包版本固定在 `uv.lock`；语音模型使用各自独立的环境和版本清单。
+
+`videocut ffmpeg TOOL ...` 是独立的文件处理入口：当前 Python 启动 `.agents/skills/ffmpeg-skill/scripts/` 中的固定工具，保留调用者工作目录，不经过 shell，也不自动下载或更新代码。`doctor` / `contract` 交给上游 `_contract.py`；42 个公开工具的参数由各自解析器定义。上游在 macOS 检测到 Homebrew 精简版 FFmpeg 时，优先使用相同 Homebrew 前缀的 `opt/ffmpeg-full/bin`；项目原有命令仍使用其原来的 FFmpeg 入口。wheel 内也包含同一份工具，安装后从 `videocut/_vendor/ffmpeg_skill` 读取。版本与文件摘要见技能目录的 `UPSTREAM.json`。
+
+扩展工具可以显式接收当前流程输出的 MP4、WAV、SRT，再写出新文件。上游的 `verified` 与平台 `check` 只代表其自己的文件检查，不代表通过本项目 `sync.py` 的字幕逐帧和音轨同步验收；上游自带 `--transcribe` 也不共享项目 ASR 缓存与审计格式。用法与边界见 [ffmpeg-tools.md](ffmpeg-tools.md)。
 
 ## 素材导入边界
 

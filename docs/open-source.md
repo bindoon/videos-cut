@@ -15,6 +15,7 @@
 | [F5-TTS MLX](https://github.com/lucasnewman/f5-tts-mlx) | 以仓库为准 | 实际生成参考音色的 12 句旁白，并接入完整视频；v1 4-bit 权重、Vocos、独立 MLX 环境 |
 | [IndexTTS](https://github.com/index-tts/index-tts) | 24.7k | 2.5 官方实现已跑通 7 组音频控制实验，并接入 `--tts indextts` 完整视频配音；支持原生语速、情绪向量与逐句拼音输入 |
 | [FFmpeg](https://ffmpeg.org/) | 不以 GitHub 镜像 Star 比较 | 实际用于图片运镜、音画裁切、xfade 转场、编码、探测和完整解码验收 |
+| [ffmpeg-skill](https://github.com/kajisho5/ffmpeg-skill) | 以仓库为准 | MIT；2.16.1 / `f2d90ea603a663711c3d6aa9775d2a2380d83182` 的运行脚本、技能与模板纳入 `.agents/skills/ffmpeg-skill/`，省略演示 GIF；通过 `videocut ffmpeg` 调用，来源与摘要见 `UPSTREAM.json` |
 | [Twemoji](https://github.com/jdecked/twemoji) | 以仓库为准 | 下载透明贴纸图，图形为 CC-BY-4.0；来源与归属保存在成片目录 |
 
 MoneyPrinterTurbo 的参考基线是 v1.3.9 / `6992380c5e82f07f3e1fc46b90927b6f1c655407`。本地稀疏检出在忽略的 `upstream/MoneyPrinterTurbo-reference/`，重点阅读 `app/services/video.py`、`app/services/voice.py` 和素材/任务处理代码。本项目采用较小的独立编排层，没有复制上游业务代码后声称是自主实现。

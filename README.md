@@ -36,6 +36,25 @@ uv run videocut demo --tts macos --materials examples/materials-preview.json --w
 - `contact-sheet.jpg`：六个时间点的画面，供检查字幕、裁切与贴纸。
 - `project.json`：本次配置快照。
 
+## FFmpeg 扩展工具
+
+项目内已固定 [ffmpeg-skill](https://github.com/kajisho5/ffmpeg-skill) 2.16.1，提供 42 个本地工具：中文字幕、画幅调整、HDR 转 SDR、音乐自动压低、多机位同步、平台导出与交付检查。无需另装全局技能或 Node 包。
+
+```bash
+# macOS：扩展工具需要包含字幕、文字和调色滤镜的构建。
+brew install ffmpeg-full
+uv run videocut ffmpeg doctor --json
+uv run videocut ffmpeg --list
+uv run videocut ffmpeg caption --help
+
+# 将现有文件调整画幅；原文件保留。
+uv run videocut ffmpeg fit input.mp4 --aspect 9:16 --fit blur -o vertical.mp4 --json-brief
+```
+
+扩展工具自动识别 Homebrew 的 `ffmpeg-full`，不需要替换全局 FFmpeg。字幕烧录、配乐、平台导出、时间线导出及使用边界见 [FFmpeg 工具说明](docs/ffmpeg-tools.md)。
+
+若原有精简版 FFmpeg 因共享编码库升级而无法启动，执行 `brew upgrade ffmpeg` 修复兼容性，再检查 `ffmpeg -version`。
+
 ## 换成自己的内容
 
 复制修改 `examples/coffee.json` 的标题、各镜 `lines`、素材查询标签 `query`、转场和贴纸。基础时间轴取逐句音频的真实采样数；IndexTTS 默认再按实际语音和短语边界安排字幕，不根据字数估算整句时长。

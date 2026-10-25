@@ -239,7 +239,9 @@ def clean_video(
             "2",
             "-i",
             str(source),
-            "-filter_complex_script",
+            # File-valued options work on FFmpeg 8 and 9; the old
+            # -filter_complex_script option was removed in FFmpeg 9.
+            "-/filter_complex",
             str(script),
             "-map",
             "[vout]",

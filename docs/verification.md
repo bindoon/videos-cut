@@ -188,3 +188,16 @@ macOS arm64、16GB 内存、独立 Python 3.11.14 / PyTorch 2.8.0 MPS 环境，�
 - [成片检查](../outputs/coffee-immediate-captions-20261024-233511/subtitle-sync-verification.json)：1185 帧、12 个连续字幕区间、0 个空白字幕帧；音轨测得偏移为 0，相关性最低约 0.987。
 - 正式运行 32.73 秒，复用已有音频、背景与 Qwen 原始对齐；不重新生成声音。26 项测试通过，新增末字结束到下一条的无缝切换、真实编码视频无空白帧及延后 1 秒拒绝交付。
 - 640 个此前结果文件均未修改或缺失。旧 `caption_switch="audio_clip"` 继续可显式选择，拆条模式也保留，均不能静默改变已确定的分条。
+
+## 追加：项目内 ffmpeg-skill 扩展（2026-10-25）
+
+- 固定 ffmpeg-skill 2.16.1 / `f2d90ea603a663711c3d6aa9775d2a2380d83182`，MIT；运行脚本、技能、模板随项目和 wheel 保存，源文件摘要见 `.agents/skills/ffmpeg-skill/UPSTREAM.json`。新增 `videocut ffmpeg`，42 个公开工具加 `doctor / contract` 可用；运行时不下载或更新代码。
+- 安装 Homebrew `ffmpeg-full 9.0.2`。它升级 x265 后，旧精简版 8.0.1 因动态库 ABI 失配无法启动，故将系统精简版升级到 9.0.2_1；保留独立入口，未将完整构建强制链接为全局 FFmpeg。最终[能力检测](../outputs/ffmpeg-integration-20261025/doctor-final.json)为 `ok=true`、42 工具 `usable=yes`，唯一缺少的是可选 Parakeet 引擎。
+- 使用 [scripts/verify_ffmpeg_tools.py](../scripts/verify_ffmpeg_tools.py) 生成合成素材：480×854、24fps、6 秒纯色视频、两条中文 SRT、440Hz 脉冲和 1000Hz 背景音；不把脉冲称为真实口播，也没有调用 ASR 或声音模型。
+- 实际烧录 Heiti SC 中文字幕。在 0.25、3.0、5.75 秒抽取的编码帧无字幕白色像素；1.5、4.5 秒分别检测到 14,140、11,947 个白色像素。已查看[带时间码拼图](../outputs/ffmpeg-integration-20261025/complete/contact-sheet.png)，中文可读。这是五个时间点的抽样验证，不是原混剪管线的全部帧验收。
+- 实际对脉冲侧链执行音乐自动压低，1000Hz 分量在有脉冲窗口比空白窗口低约 10.01dB。合成 10-bit PQ 测试文件经 `color --to-sdr` 输出 H.264 / yuv420p，BT.709 原色、传递和矩阵标记，`hdr=false`；输入已独立核对为 PQ，不使用 `--force` 绕过检查。不代表真实相机 HDR 素材的主观调色验收。
+- [YouTube 导出](../outputs/ffmpeg-integration-20261025/complete/youtube.mp4)：6 秒、1920×1080、24fps、H.264 / AAC 48kHz，完整解码通过。平台检查 0 项失败、1 项提示：没有独立可切换的字幕轨，画面内已经烧录中文；保留提示，不将其改为全项 PASS。
+- [机器报告](../outputs/ffmpeg-integration-20261025/complete/verification.json)、[实际命令](../outputs/ffmpeg-integration-20261025/complete/commands.json)及每个工具的 JSON/标准错误均保留。合成输入摘要未变。初次能力检查的启动超时保存在 `smoke/`，测试素材缺少 PQ VUI 标记被拒绝的记录保存在 `verified/`；修正编码器标记后在新的 `complete/` 目录重新通过，未放宽断言或覆盖失败证据。
+- 系统 FFmpeg 9 的回归发现旧 `-filter_complex_script` 参数已被移除，两个原有精剪测试失败。实现改为 `-/filter_complex` 读取同一份脚本后，两项原断言通过；ASR、剪辑规则及字幕重排语义未改动。
+- 最终 `uv sync --extra download --extra asr` 后，升级后的系统环境执行[完整 pytest](../outputs/ffmpeg-integration-20261025/pytest-final.txt)：**51 项通过**，保留原有 MoviePy / NumPy 弃用警告。新增两项覆盖跨工作目录、带空格路径的真实裁切、音画时长、完整解码、预演不写文件、拒绝覆盖、源文件不变和工具帮助无需媒体程序。
+- Ruff、`git diff --check`、sdist → wheel 构建通过；wheel 安装到仓库外目录后，通过其内置工具实际探测 3 秒媒体，确认不依赖源码目录。新工具的 `verified` 与平台检查不替代本项目 Qwen 与 `sync.py` 门禁；未声称全部 42 个工具均做过媒体实测。
