@@ -1,6 +1,6 @@
 # 开源选型与边界
 
-2026-10-24 调研。Star 是当时 GitHub 显示的约数，主要作为社区规模参考。
+首次调研于 2026-10-24，后续接入按实际代码更新。Star 是调研时 GitHub 显示的约数，主要作为社区规模参考；依赖版本以锁文件为准。
 
 | 项目 | 约 Star | 本项目如何使用 |
 | --- | --- | --- |
@@ -8,7 +8,8 @@
 | [WhisperX](https://github.com/m-bain/whisperX) | 24k | 早期参考其中文 CTC 选型；没有安装完整 WhisperX 或复制其对齐实现，旧实验保留 |
 | [Qwen3-ASR / ForcedAligner](https://github.com/QwenLM/Qwen3-ASR) | 以仓库为准 | 默认整句字幕使用官方 Qwen3ForcedAligner 定位上一句末字结束以立即切换；显式 audio_clip 按 PCM 区间显示无需模型 |
 | [MoviePy](https://github.com/Zulko/moviepy) | 15k | 实际用于字幕、渐变遮罩、浮动贴纸、进度条、配音/配乐的合成 |
-| [faster-whisper](https://github.com/SYSTRAN/faster-whisper) | 以仓库为准 | 实际用于已有录音的转写与逐词时间戳；CPU int8，不需要 CUDA |
+| [faster-whisper](https://github.com/SYSTRAN/faster-whisper) | 以仓库为准 | 独立 `transcribe` 与原有精剪共用的识别实现，分段解码、逐词时间和可校验缓存；CPU int8，不需要 CUDA |
+| [yt-dlp](https://github.com/yt-dlp/yt-dlp) | 以仓库为准 | 可选 `download` extra 固定 2026.10.21；官方 Python API 解析网页视频、音轨、字幕与播放列表，结果校验后进入本地素材清单 |
 | [Auto-Editor](https://github.com/WyattBlue/auto-editor) | 5.5k | `rough-cut` 命令真实调用上游 CLI，做静音粗剪 |
 | [Edge TTS](https://github.com/rany2/edge-tts) | 以仓库为准 | 提供可选在线中文配音；演示还支持明确选择 macOS 本地声音 |
 | [F5-TTS MLX](https://github.com/lucasnewman/f5-tts-mlx) | 以仓库为准 | 实际生成参考音色的 12 句旁白，并接入完整视频；v1 4-bit 权重、Vocos、独立 MLX 环境 |

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import datetime
 import json
 import sys
 import time
@@ -12,13 +13,33 @@ from .media import duration, require_tools, run, write_json
 from .speech import build_narration, synthesize_line, write_srt
 
 
+def load_transcript(path: Path) -> dict:
+    data = json.loads(path.read_text())
+    if (
+        not isinstance(data, dict)
+        or not isinstance(data.get("words"), list)
+        or not data["words"]
+    ):
+        raise ValueError("Transcript must contain words with valid source timestamps")
+    return data
+
+
 def existing_audio(
-    config: dict, audio: Path, output: Path, model: str, transcript: dict | None = None
+    config: dict,
+    audio: Path,
+    output: Path,
+    model: str,
+    transcript: dict | None = None,
+    language: str = "zh",
 ) -> tuple:
     from .cleaning import transcribe, words_to_cues
 
     if transcript is None:
-        transcript = transcribe(audio, output / "transcript.json", model)
+        transcript = transcribe(audio, output / "transcript.json", model, language)
+    else:
+        from .transcription import validate_timed_words
+
+        validate_timed_words(transcript, audio)
     cues = words_to_cues(transcript["words"])
     # Boundaries follow actual subtitle utterances, not estimated speech speed.
     count = min(len(config["scenes"]), len(cues))
@@ -120,7 +141,7 @@ def render(args) -> None:
 
         write_json(args.output / "caption-plan.json", create_caption_plan(config))
     materials = download_materials(args.materials, Path("assets/cache"))
-    transcript = json.loads(args.transcript.read_text()) if args.transcript else None
+    transcript = load_transcript(args.transcript) if args.transcript else None
     cleaning_report = None
     clone_metadata = None
     if args.command == "mix":
@@ -130,6 +151,7 @@ def render(args) -> None:
             args.input,
             args.output / "cleaning",
             model=args.model,
+            language=args.language,
             transcript=transcript,
             fillers=args.fillers,
             breath_gate=args.breath_gate,
@@ -155,7 +177,7 @@ def render(args) -> None:
     write_json(args.output / "sources.json", materials)
     if args.audio:
         scenes, cues, narration = existing_audio(
-            config, args.audio, args.output, args.model, transcript
+            config, args.audio, args.output, args.model, transcript, args.language
         )
         if args.command == "mix":
             for i, scene in enumerate(scenes):
@@ -239,6 +261,7 @@ def render(args) -> None:
                     args.reference_audio,
                     args.output / "reference-transcript.json",
                     args.model,
+                    args.language,
                 )
                 reference_text = "".join(
                     s["text"] for s in reference_transcript["segments"]
@@ -526,6 +549,11 @@ def main() -> None:
         )
         command.add_argument("--model", default="base")
         command.add_argument(
+            "--language",
+            default="zh",
+            help="ASR language code or auto; existing editing defaults to zh",
+        )
+        command.add_argument(
             "--transcript",
             type=Path,
             help="Reuse/correct timed words JSON for the same recording",
@@ -539,7 +567,91 @@ def main() -> None:
             command.add_argument("--breath-gate", action="store_true")
     command = sub.add_parser("download")
     command.add_argument(
-        "--materials", type=Path, default=Path("examples/materials.json")
+        "urls",
+        nargs="*",
+        help="Public video/audio links; file URLs and web pages are supported",
+    )
+    command.add_argument(
+        "--materials",
+        type=Path,
+        help="Existing material catalog (default when no URLs: examples/materials.json)",
+    )
+    command.add_argument(
+        "--output",
+        type=Path,
+        help="Job directory for materials.json and download-report.json",
+    )
+    command.add_argument(
+        "--cache", type=Path, help="Shared material cache (default assets/cache)"
+    )
+    command.add_argument("--mode", choices=["video", "audio"])
+    command.add_argument(
+        "--quality",
+        choices=["preview", "edit", "source"],
+        help="Web video: short edge at most 360 / 720 pixels, or original resolution",
+    )
+    command.add_argument(
+        "--playlist",
+        action="store_true",
+        default=None,
+        help="Allow a playlist; default limit 20 entries",
+    )
+    command.add_argument("--limit", type=int)
+    command.add_argument(
+        "--max-size-mb", type=float, help="Per-file limit in MiB (default 1024)"
+    )
+    command.add_argument(
+        "--max-total-mb", type=float, help="Batch material limit in MiB (default 4096)"
+    )
+    command.add_argument("--retries", type=int)
+    command.add_argument(
+        "--subtitles",
+        choices=["off", "auto"],
+        help="Save available platform captions; does not run speech recognition",
+    )
+    command.add_argument(
+        "--sub-langs", help="Comma separated language patterns (default zh.*,en.*)"
+    )
+    command.add_argument(
+        "--proxy", help="Explicit HTTP/SOCKS proxy; empty string disables proxy"
+    )
+    command.add_argument(
+        "--cookies",
+        help="Explicit Netscape cookies file; browser cookies are never read automatically",
+    )
+    command.add_argument(
+        "--retry-failed",
+        type=Path,
+        help="Retry only failed entries from a previous download-report.json",
+    )
+    command = sub.add_parser(
+        "transcribe",
+        help="Transcribe a local audio/video file without downloading or editing",
+    )
+    command.add_argument("input", type=Path)
+    command.add_argument("--output", type=Path)
+    command.add_argument(
+        "--model",
+        default="base",
+        help="Whisper model name or local CTranslate2 model directory",
+    )
+    command.add_argument(
+        "--language",
+        default="auto",
+        help="auto, zh, en, or another Whisper language code",
+    )
+    command.add_argument("--chunk-seconds", type=float, default=600)
+    command.add_argument("--overlap-seconds", type=float, default=1)
+    command.add_argument("--cache", type=Path, default=Path("assets/cache/transcripts"))
+    command.add_argument(
+        "--force",
+        action="store_true",
+        help="Run inference again even for valid cached chunks",
+    )
+    command.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Allow replacing edited or different results in the output directory",
     )
     command = sub.add_parser("raw-sample")
     command.add_argument(
@@ -552,6 +664,11 @@ def main() -> None:
     command.add_argument("--output", type=Path, default=Path("outputs/cleaned"))
     command.add_argument("--model", default="base")
     command.add_argument("--language", default="zh")
+    command.add_argument(
+        "--transcript",
+        type=Path,
+        help="Use saved timed-word JSON for this input; skips recognition",
+    )
     command.add_argument("--fillers", nargs="+", default=["嗯", "呃", "um", "uh"])
     command.add_argument("--minimum-silence", type=float, default=0.55)
     command.add_argument("--margin", type=float, default=0.12)
@@ -565,8 +682,122 @@ def main() -> None:
     require_tools()
     if args.command in {"demo", "render", "mix"}:
         render(args)
+    elif args.command == "transcribe":
+        from .transcription import transcribe_to_directory
+
+        output = args.output or Path(
+            "outputs/transcripts"
+        ) / datetime.datetime.now().strftime("%Y%m%d-%H%M%S-%f")
+        try:
+            result = transcribe_to_directory(
+                args.input,
+                output,
+                model=args.model,
+                language=args.language,
+                chunk_seconds=args.chunk_seconds,
+                overlap_seconds=args.overlap_seconds,
+                cache=args.cache,
+                force=args.force,
+                overwrite=args.overwrite,
+            )
+        except (OSError, ValueError, RuntimeError) as exc:
+            print(f"转录失败: {exc}", file=sys.stderr)
+            raise SystemExit(1) from exc
+        label = "未识别出语音" if result["status"] == "no_speech" else "转录完成"
+        print(
+            f"{label}: {len(result['segments'])} 段 · {len(result['words'])} 个词时间 · 缓存 {result['runtime']['chunks_reused']}/{result['runtime']['chunk_count']} · {output.resolve()}"
+        )
     elif args.command == "download":
-        download_materials(args.materials, Path("assets/cache"))
+        from .assets import download_catalog, import_catalog_items
+        from .downloads import (
+            DownloadOptions,
+            Importer,
+            atomic_json,
+            download_urls,
+            make_report,
+        )
+
+        if (
+            sum(
+                [
+                    bool(args.urls),
+                    args.materials is not None,
+                    args.retry_failed is not None,
+                ]
+            )
+            > 1
+        ):
+            parser.error(
+                "Use URLs, --materials, or --retry-failed as separate input modes"
+            )
+        previous = (
+            json.loads(args.retry_failed.read_text()) if args.retry_failed else {}
+        )
+        values = dict(previous.get("options", {}))
+        for field in (
+            "mode",
+            "quality",
+            "playlist",
+            "limit",
+            "retries",
+            "sub_langs",
+            "proxy",
+            "cookies",
+        ):
+            if getattr(args, field) is not None:
+                values[field] = getattr(args, field)
+        if args.subtitles is not None:
+            values["subtitles"] = args.subtitles == "auto"
+        for arg, field in (
+            ("max_size_mb", "max_bytes"),
+            ("max_total_mb", "max_total_bytes"),
+        ):
+            if getattr(args, arg) is not None:
+                values[field] = int(getattr(args, arg) * 1024**2)
+        try:
+            options = DownloadOptions(**values)
+        except (ValueError, TypeError) as exc:
+            parser.error(str(exc))
+        cache = args.cache or Path(previous.get("cache", "assets/cache"))
+        output = args.output or Path("outputs/downloads") / time.strftime(
+            "%Y%m%d-%H%M%S"
+        )
+        if args.retry_failed:
+            failed = [r for r in previous["results"] if r["status"] == "failed"]
+            if failed and all("item" in r for r in failed):
+                report = import_catalog_items(
+                    [r["item"] for r in failed], cache, options, output=output
+                )
+            else:
+                importer = Importer(cache, options)
+                results = []
+                for row in failed:
+                    results.extend(
+                        importer.acquire(row["url"], source=row.get("source", "auto"))
+                    )
+                report = make_report(results, cache, options)
+        elif args.urls:
+            report = download_urls(args.urls, cache, options, output=output)
+        else:
+            report = download_catalog(
+                args.materials or Path("examples/materials.json"),
+                cache,
+                options,
+                output=output,
+            )
+        atomic_json(output / "materials.json", report["materials"])
+        atomic_json(output / "download-report.json", report)
+        print(
+            f"素材就绪: {len(report['materials'])} · 失败: {report['failed']} · {output.resolve()}"
+        )
+        for row in report["results"]:
+            if row["status"] == "failed":
+                print(
+                    f"[{row['error']['code']}] {row['url']}: {row['error']['message']}",
+                    file=sys.stderr,
+                )
+        if report["failed"]:
+            raise SystemExit(1)
     elif args.command == "raw-sample":
         raw_sample(args)
     elif args.command == "cut":
@@ -576,6 +807,9 @@ def main() -> None:
             clean_video(
                 args.input,
                 args.output,
+                transcript=load_transcript(args.transcript)
+                if args.transcript
+                else None,
                 model=args.model,
                 language=args.language,
                 fillers=args.fillers,

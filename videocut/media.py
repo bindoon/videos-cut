@@ -44,7 +44,13 @@ def require_tools() -> None:
             raise RuntimeError(f"Missing {binary}. macOS: brew install ffmpeg")
 
 
-def decode_audio(path: Path, sample_rate: int = 16000):
+def decode_audio(
+    path: Path,
+    sample_rate: int = 16000,
+    *,
+    start: float | None = None,
+    seconds: float | None = None,
+):
     """Decode a mono float32 ASR input through our system FFmpeg.
 
     Passing a NumPy waveform is a supported faster-whisper input and avoids
@@ -52,22 +58,26 @@ def decode_audio(path: Path, sample_rate: int = 16000):
     """
     import numpy as np
 
+    if start is not None and start < 0 or seconds is not None and seconds <= 0:
+        raise ValueError("Audio window start must be nonnegative and duration positive")
+    command = ["ffmpeg", "-v", "error"]
+    if start is not None:
+        command += ["-ss", f"{start:.6f}"]
+    command += ["-i", str(path)]
+    if seconds is not None:
+        command += ["-t", f"{seconds:.6f}"]
+    command += [
+        "-vn",
+        "-ac",
+        "1",
+        "-ar",
+        str(sample_rate),
+        "-f",
+        "f32le",
+        "pipe:1",
+    ]
     result = subprocess.run(
-        [
-            "ffmpeg",
-            "-v",
-            "error",
-            "-i",
-            str(path),
-            "-vn",
-            "-ac",
-            "1",
-            "-ar",
-            str(sample_rate),
-            "-f",
-            "f32le",
-            "pipe:1",
-        ],
+        command,
         check=False,
         capture_output=True,
         timeout=600,

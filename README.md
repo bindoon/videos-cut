@@ -42,6 +42,41 @@ uv run videocut demo --tts macos --materials examples/materials-preview.json --w
 
 `examples/materials.json` 是素材目录。每条包括 `id`、`kind`、`filename`、`tags`，以及下载 `url` 或本地 `path`。`kind` 支持 `video`、`image`、`sticker`、`music`。本地文件同样填写 `filename`。可以用 `material_id` 在镜头中固定某条素材。
 
+## 从视频链接导入素材
+
+下载网页视频需要可选依赖；同时使用语音识别时保留 `asr`：
+
+```bash
+uv sync --extra download --extra asr
+uv run videocut download "https://www.bilibili.com/video/BV1nx411u79K" \
+  --quality edit --subtitles auto --output outputs/imported
+uv run videocut render --config examples/download-demo.json \
+  --materials outputs/imported/materials.json --tts macos --output outputs/from-import
+```
+
+下载目录的 `materials.json` 可直接用于现有 `render` / `mix` 素材入口；镜头可通过其中的素材 `id` 指定 `material_id`。`download-demo.json` 仅使用视频镜头，可以替换台词、增加图片或贴纸；其他配置仍需与导入素材的类型、标签匹配。下载原视频成为素材后，现有渲染器使用其画面，配音由 `--tts` 或 `--audio` 决定。
+
+`--quality preview / edit / source` 分别选择短边不超过 360 / 720 像素或来源原始分辨率；竖屏 720×1280 也属于 720p。预览和剪辑预设优先选择 H.264，`source` 选择来源的最佳分辨率；实际编码、分辨率、时长和 SHA-256 写入结果。来源没有符合规格的格式时明确失败，可提高规格重试。文件直链按原文件导入，不执行清晰度转换。
+
+```bash
+# 多个链接可以一起下载；一个失败会保留其他成功素材，并以非零状态退出。
+uv run videocut download "视频链接1" "视频链接2" --output outputs/batch
+# 网页音频优先下载独立音轨，必要时由 FFmpeg 提取为 M4A。
+uv run videocut download "视频链接" --mode audio --output outputs/audio-import
+# 播放列表必须显式开启；默认最多 20 项，可设置本次范围。
+uv run videocut download "播放列表链接" --playlist --limit 30 --output outputs/playlist
+# 默认远程素材上限 1024 MiB / 整批 4096 MiB；可按需要调整。
+uv run videocut download "长视频链接" --max-size-mb 2048 --max-total-mb 4096
+# 只重试失败项；代理和 Cookie 如有需要需重新显式提供。
+uv run videocut download --retry-failed outputs/batch/download-report.json --output outputs/retry
+```
+
+每个任务输出 `download-report.json` 与可用素材清单。网页素材按平台、视频 ID 和音频／视频／清晰度／字幕规格分别缓存；通用 HTML5 页面再按来源 URL 隔离。重跑先检查文件大小与 SHA-256；缓存损坏时重新下载。直链支持带 ETag 或 Last-Modified 的 HTTP Range 续传，网页流使用 yt-dlp 的续传和重试；Ctrl-C 后重新执行相同命令即可继续，已完成素材有独立记录。缓存锁依赖 macOS/Linux 的 `flock`。
+
+字幕是平台提供的轨道，保留语言、来源和摘要；平台没有明确提供人工／自动属性时记录为 `unspecified`。这不会运行 Whisper，也不能替代精剪所需的逐词时间。B 站、TikTok 已实测；YouTube 可能要求登录，微信视频号目前仍不支持。可显式传 `--proxy` 或 `--cookies cookies.txt`；程序不会自动读取浏览器 Cookie。
+
+原有 `videocut download --materials examples/materials.json` 继续可用。清单可混合本地文件、文件直链和网页视频；B 站、YouTube、TikTok 等已知域名自动识别，其他网页填写 `"source": "web"`。自定义 `id`、标签和归属信息会保留；未知许可记录为 `unknown`。远程文件完成流类型检查和完整解码后才登记，图片使用 Pillow 校验；剪辑遇到失败素材会停止，并给出失败报告。
+
 ```bash
 uv run videocut render --config examples/coffee.json --materials examples/materials.json --tts edge --output outputs/my-video
 ```
@@ -49,6 +84,33 @@ uv run videocut render --config examples/coffee.json --materials examples/materi
 选片目前使用素材标签与查询词匹配，并对重复使用扣分。示例标签来自素材页描述；**还没有把任意上传视频自动做视觉理解**。配置中的剧本由人提供，也不会假装调用过大模型写稿。
 
 转场可选 `fade`、`slideleft`、`slideright`、`wipeleft`、`wiperight`、`circleopen`、`dissolve`。贴纸支持透明 PNG，带淡入、缩放和浮动；不是通用 AE/Lottie 特效引擎。
+
+## 独立转录
+
+`transcribe` 是独立工具：输入已有的本地音频或视频，输出文字、字幕和时间戳。完成后就结束，不自动下载、剪辑或调用大模型。
+
+```bash
+uv sync --extra asr --extra download
+uv run --extra asr videocut transcribe /absolute/path/input.mp4 \
+  --language auto --model base --output outputs/transcribed
+```
+
+输出 `transcript.txt`（阅读文字）、`transcript.srt`（模型估计的句段时间）、`transcript.json`（逐词时间、来源 SHA-256、模型摘要和参数）及 `transcription-report.json`（识别状态、缓存命中和文件摘要）。`--output` 不传时创建新的时间戳目录。默认自动检测语言；可显式指定 `--language zh`、`en` 等 Whisper 语言代码。模型可选 `base`、`tiny`、`small` 等名称，或本地 CTranslate2 模型目录；本地没有权重时 SDK 会准备模型，已有权重时可离线运行。
+
+长音频默认按 600 秒分段，每侧增加 1 秒上下文。FFmpeg 只解码当前窗口，不一次把整段音频读入内存；逐词时间加上窗口偏移，再按词中点归属合并，保留原文件时间，不按相同文字删除重复说话。时间仍是 ASR 估计，分段边界和术语需要校对。可配置 `--chunk-seconds 300 --overlap-seconds 1`，重叠必须小于半段时长。
+
+每段完成后保存校验缓存。相同输入重跑会复用已完成段，Ctrl-C 后重新执行相同命令即可继续；损坏段单独重算。来源文件内容、模型权重/配置、语言、分段参数、后端/FFmpeg 版本变化会使旧缓存失效。缓存默认 `assets/cache/transcripts`，可用 `--cache` 更改；`--force` 强制重识别。输出目录存在另一份结果或经过人工修改时会拒绝覆盖，明确需要替换才传 `--overwrite`，也可选择新目录。
+
+静音或没有识别出文字时，独立工具返回 `status=no_speech` 并输出空文本/字幕，不会冒充成功识别到了内容。原有精剪与旁白字幕消费仍要求有效逐词时间和语音覆盖检查；两种策略复用同一份 Whisper 实现。
+
+需要剪辑时再明确调用其他工具，例如：
+
+```bash
+uv run --extra asr videocut cut /absolute/path/input.mp4 \
+  --transcript outputs/transcribed/transcript.json --output outputs/cut-from-transcript
+```
+
+剪辑复用 `transcript.json`，不重新识别。校对时复制 JSON，只改 `words[].text`，保留时间和来源校验和；TXT/SRT 不替代逐词数据。来源摘要针对输入文件本身，换容器或重编码后的文件不能直接冒用旧摘要。`--transcript` 与 Qwen 的 `--caption-alignment` 是不同协议，不能互换。
 
 ## 已有录音和口播精剪
 

@@ -5,8 +5,9 @@ import re
 from fractions import Fraction
 from pathlib import Path
 
-from .media import decode_audio, duration, probe, run, write_json
+from .media import duration, probe, run, write_json
 from .speech import write_srt
+from .transcription import transcribe as recognize
 
 
 def merge_intervals(
@@ -73,55 +74,8 @@ def silence_intervals(
 def transcribe(
     path: Path, output: Path, model: str = "base", language: str = "zh"
 ) -> dict:
-    from faster_whisper import WhisperModel
-
-    print(f"真实语音识别: faster-whisper/{model} · CPU int8", flush=True)
-    local = Path("assets/models") / model
-    model_source = (
-        str(local.resolve())
-        if (local / "model.bin").is_file() and (local / "tokenizer.json").is_file()
-        else model
-    )
-    whisper = WhisperModel(
-        model_source,
-        device="cpu",
-        compute_type="int8",
-        cpu_threads=4,
-        download_root="assets/models",
-    )
-    segments, info = whisper.transcribe(
-        decode_audio(path),
-        language=language,
-        word_timestamps=True,
-        vad_filter=True,
-        vad_parameters={"min_silence_duration_ms": 400, "speech_pad_ms": 120},
-        condition_on_previous_text=False,
-        initial_prompt="以下是普通话的简体中文逐字转写，保留口语词。",
-        beam_size=5,
-    )
-    result = {
-        "engine": "faster-whisper",
-        "model": model,
-        "language": info.language,
-        "segments": [],
-        "words": [],
-        "vad_filter": True,
-    }
-    with path.open("rb") as stream:
-        result["source_sha256"] = hashlib.file_digest(stream, "sha256").hexdigest()
-    for segment in segments:
-        result["segments"].append(
-            {"start": segment.start, "end": segment.end, "text": segment.text}
-        )
-        for word in segment.words or []:
-            result["words"].append(
-                {
-                    "start": word.start,
-                    "end": word.end,
-                    "text": word.word,
-                    "probability": word.probability,
-                }
-            )
+    # Editing policy stays here; the standalone recognizer also accepts no-speech results.
+    result = recognize(path, output, model, language)
     if not result["words"]:
         raise RuntimeError(
             "ASR returned no timed words; cannot safely cut or subtitle this recording"
@@ -219,7 +173,7 @@ def clean_video(
 ) -> Path:
     output.mkdir(parents=True, exist_ok=True)
     total = duration(source)
-    if not transcript:
+    if transcript is None:
         transcript = transcribe(source, output / "transcript.json", model, language)
     else:
         if transcript.get("source_sha256"):

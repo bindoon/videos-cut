@@ -1,0 +1,9 @@
+# Project rules
+
+Usage and current architecture live in `README.md` and `docs/architecture.md`; actual validation history lives in `docs/verification.md`.
+
+- A failing test means suspect the implementation first. Do not weaken, skip, or delete an acceptance assertion merely to make a change pass; changing the intended requirement needs the user's agreement.
+- Download tests require the optional backend: use `uv sync --extra download --extra asr` before the complete suite. The checks in `tests/test_downloads.py` use actual local HTTP and FFmpeg; keep network platform smoke checks separate from the deterministic suite.
+- A track returned in yt-dlp's `subtitles` field is not proof of human authorship: TikTok also exposes automatic captions there. Preserve platform provenance and use `generation=unspecified` when the provider does not establish how a track was made.
+- `transcribe` is independent: `no_speech` is a valid standalone result. Keep required-word and speech-coverage rejection in editing consumers; do not move those gates into the shared ASR implementation. ASR timestamps are not Qwen forced-alignment records.
+- When changing ASR timestamp ownership or cache-payload semantics, update `SCHEMA` in `videocut/transcription.py`; otherwise existing valid caches can silently preserve the previous algorithm's results even when fresh-fixture tests pass.

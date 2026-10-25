@@ -1,62 +1,160 @@
 from __future__ import annotations
 
-import hashlib
 import json
-import urllib.request
-from concurrent.futures import ThreadPoolExecutor
+from dataclasses import replace
 from pathlib import Path
+from urllib.parse import urlsplit
+
+from .downloads import (
+    DownloadFailure,
+    DownloadOptions,
+    Importer,
+    _error,
+    atomic_json,
+    inspect_material,
+    make_report,
+    save_report,
+)
+
+
+def import_catalog_items(
+    items: list[dict],
+    cache: Path,
+    options: DownloadOptions | None = None,
+    *,
+    output: Path | None = None,
+) -> dict:
+    options = options or DownloadOptions()
+    importer = Importer(cache, options)
+    results = []
+    for index, item in enumerate(items):
+        try:
+            filename = item.get("filename")
+            if filename and (
+                Path(filename).name != filename or filename in {".", ".."}
+            ):
+                raise ValueError(f"Invalid material filename: {filename}")
+            if "path" in item:
+                material = {
+                    **item,
+                    **inspect_material(
+                        Path(item["path"]).expanduser().resolve(), item["kind"]
+                    ),
+                }
+                if item.get("sha256") and material["sha256"] != item["sha256"]:
+                    raise DownloadFailure(
+                        "CHECKSUM_MISMATCH",
+                        "Local material no longer matches its recorded SHA-256",
+                    )
+                # Existing local inputs are not constrained by remote transfer limits.
+                rows = [
+                    {
+                        "url": item.get("url", item["path"]),
+                        "status": "local",
+                        "material": material,
+                    }
+                ]
+            else:
+                host = urlsplit(item["url"]).hostname or ""
+                web_hosts = (
+                    "youtube.com",
+                    "youtu.be",
+                    "bilibili.com",
+                    "b23.tv",
+                    "tiktok.com",
+                    "tiktokv.com",
+                    "weixin.qq.com",
+                )
+                source = item.get("source") or (
+                    "web"
+                    if any(host == h or host.endswith("." + h) for h in web_hosts)
+                    else "direct"
+                )
+                importer.options = (
+                    replace(options, mode="audio")
+                    if item.get("kind") == "music" and source == "web"
+                    else options
+                )
+                rows = importer.acquire(
+                    item["url"],
+                    source=source,
+                    kind=item["kind"],
+                    preferred=cache.resolve() / filename if filename else None,
+                    referer=item.get("page", ""),
+                )
+                for row in rows:
+                    if material := row.get("material"):
+                        # User labels describe intended use; measured file facts stay authoritative.
+                        labels = {
+                            k: v
+                            for k, v in item.items()
+                            if k in {"id", "tags", "credit", "license", "page", "title"}
+                        }
+                        if len(rows) > 1 and "id" in labels:
+                            labels["id"] += "-" + str(
+                                material.get("source_id", material["id"])
+                            )
+                        material.update(labels)
+            for row in rows:
+                row["item"] = item
+            results.extend(rows)
+        except KeyboardInterrupt:
+            for pending_index, pending in enumerate(items[index:]):
+                results.append(
+                    {
+                        "url": pending.get("url", pending.get("path", "")),
+                        "item": pending,
+                        "status": "failed",
+                        "error": {
+                            "code": "NOT_ATTEMPTED" if pending_index else "INTERRUPTED",
+                            "message": "Interrupted; retry this report to finish pending sources",
+                        },
+                    }
+                )
+            if output:
+                save_report(make_report(results, cache, options), output)
+            raise
+        except Exception as exc:  # noqa: BLE001 -- collect independent material failures
+            results.append(
+                {
+                    "url": item.get("url", item.get("path", "")),
+                    "item": item,
+                    "status": "failed",
+                    "error": _error(exc),
+                }
+            )
+        if output:
+            save_report(make_report(results, cache, options), output)
+    report = make_report(results, cache, options)
+    atomic_json(cache / "download-report.json", report)
+    atomic_json(cache / "sources.lock.json", report["materials"])
+    return report
+
+
+def download_catalog(
+    catalog: Path,
+    cache: Path,
+    options: DownloadOptions | None = None,
+    *,
+    output: Path | None = None,
+) -> dict:
+    items = json.loads(catalog.read_text())
+    if not isinstance(items, list):
+        raise TypeError("Material catalog must be a JSON array")
+    return import_catalog_items(items, cache, options, output=output)
 
 
 def download_materials(catalog: Path, cache: Path) -> list[dict]:
-    cache.mkdir(parents=True, exist_ok=True)
-    materials = json.loads(catalog.read_text())
-
-    def fetch(item: dict) -> dict:
-        item = dict(item)
-        filename = item.get("filename", "")
-        if not filename or Path(filename).name != filename:
-            raise ValueError(f"Invalid material filename: {filename}")
-        target = cache / filename
-        if "path" in item:
-            target = Path(item["path"]).expanduser().resolve()
-            if not target.is_file():
-                raise FileNotFoundError(target)
-        elif not target.exists():
-            print(f"下载素材: {item['id']}", flush=True)
-            temporary = target.with_suffix(target.suffix + ".part")
-            try:
-                request = urllib.request.Request(
-                    item["url"],
-                    headers={
-                        "User-Agent": "Mozilla/5.0",
-                        "Referer": item.get("page", ""),
-                    },
-                )
-                with urllib.request.urlopen(request, timeout=90) as response:
-                    size = 0
-                    with temporary.open("wb") as stream:
-                        while chunk := response.read(1024 * 256):
-                            size += len(chunk)
-                            if size > 250 * 1024 * 1024:
-                                raise ValueError("Material exceeds 250 MB")
-                            stream.write(chunk)
-                if size == 0:
-                    raise ValueError("Empty material response")
-                temporary.replace(target)
-            finally:
-                temporary.unlink(missing_ok=True)
-        item["path"] = str(target.resolve())
-        with target.open("rb") as stream:
-            item["sha256"] = hashlib.file_digest(stream, "sha256").hexdigest()
-        item["bytes"] = target.stat().st_size
-        return item
-
-    with ThreadPoolExecutor(max_workers=4) as executor:
-        result = list(executor.map(fetch, materials))
-    (cache / "sources.lock.json").write_text(
-        json.dumps(result, ensure_ascii=False, indent=2)
-    )
-    return result
+    report = download_catalog(catalog, cache)
+    if report["failed"]:
+        failures = [
+            r["error"]["message"] for r in report["results"] if r["status"] == "failed"
+        ]
+        raise RuntimeError(
+            f"{report['failed']} material(s) failed; see {cache / 'download-report.json'}:\n"
+            + "\n".join(failures)
+        )
+    return report["materials"]
 
 
 def select_material(scene: dict, materials: list[dict], used: dict[str, int]) -> dict:

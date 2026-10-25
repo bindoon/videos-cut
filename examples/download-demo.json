@@ -1,0 +1,19 @@
+{
+  "title": "从链接到成片",
+  "subtitle": "DOWNLOAD / MATERIALS / EDIT",
+  "brand": "LOCAL VIDEO WORKFLOW",
+  "footer": "LINK IMPORT · LOCAL RENDER",
+  "width": 480,
+  "height": 854,
+  "fps": 24,
+  "voice": "zh-CN-XiaoxiaoNeural",
+  "rate": "-5%",
+  "transition_seconds": 0.35,
+  "caption_layout": "utterance",
+  "caption_switch": "audio_clip",
+  "scenes": [
+    {"label": "导入网页素材", "lines": ["这段画面，来自刚刚下载的视频素材。"], "kind": "video", "query": [], "transition": "fade"},
+    {"label": "继续本地剪辑", "lines": ["素材保存到本地，继续添加配音、字幕和转场。"], "kind": "video", "query": [], "transition": "slideleft"},
+    {"label": "保留来源记录", "lines": ["下载与剪辑串在一起，原始来源也有记录。"], "kind": "video", "query": [], "transition": "fade"}
+  ]
+}
