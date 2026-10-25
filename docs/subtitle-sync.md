@@ -1,5 +1,9 @@
 # 固定字幕分条与音频同步
 
+[文档导航](README.md) · [使用指南](usage.md) · [AI 操作指南](ai-guide.md)
+
+本文描述 `--caption-mode speech` 的生成旁白流程。IndexTTS 默认启用；Edge、macOS 和 F5 需要显式选择。普通 `file` 模式与已有录音的 ASR 字幕不自动进入该强制对齐验收。
+
 ## 当前规则
 
 先确定每屏字幕文本，再选择显示时机。默认整句显示，切换规则为“一句话口播结束，立刻显示下一句话”，供观众预读，不再等待下一句音频文件起点。
@@ -28,6 +32,7 @@
 ```json
 {
   "caption_layout": "phrases",
+  "caption_switch": "audio_clip",
   "subtitle_phrases": {
     "喜欢清爽，就喝一口黑咖啡。": ["喜欢清爽", "就喝一口黑咖啡"]
   },
@@ -79,7 +84,7 @@ uv run videocut demo --tts indextts \
 
 ## 验收与排查
 
-`caption-plan.json` 定义条数和内容；整句模式的 `caption-alignment.json` 为 `pcm-caption-v1`，只保存真实音频片段边界，不把它伪装为模型发声边界；拆条模式的 `qwen-alignment.json` 保存原始字词时间；`caption-alignment.json` 保存 PCM 片段偏移、分条时间和显示策略；`subtitle-sync-verification.json` 保存实际视频帧与音轨检查。
+`caption-plan.json` 定义条数和内容。显式整句 `audio_clip` 的 `caption-alignment.json` 为 `pcm-caption-v1`，只保存真实音频片段边界，不把它伪装为模型发声边界。默认整句 `previous_speech_end` 与显式拆条都使用 Qwen：`qwen-alignment.json` 保存原始字词时间，`caption-alignment.json` 以 `qwen-forced-v1` 保存片段偏移、显示时间及策略。`subtitle-sync-verification.json` 保存实际视频帧与音轨检查。
 
 1. SRT 条数与文字必须完全符合固定计划；渲染输入必须与落盘 SRT 一致。
 2. `previous_speech_end` 模式：真实显示应在上一句末字结束的一帧范围内切换，全部成片帧均须有字幕；相邻字幕无空白、无重叠，最后一条到视频结束。
@@ -95,4 +100,4 @@ uv run videocut demo --tts indextts \
 
 首版 Edge 使用 12 条整句字幕，并按每个 WAV 的真实采样数计时；后来同时更换声音和拆成 23 条，混入了两个变量。对同一份 IndexTTS 配音对比整句和拆条，前者从 0 秒已经显示“不必一开始就匆忙”，后者到 0.960 秒才显示；“留一杯咖啡的时间”相差 2.040 秒。这个差异属于文字提前可读的时间，不应直接认定为音轨错位。
 
-上一轮恢复了整句显示，但仍绑定本句音频起点；用户进一步明确需要“上一句口播结束即换下一条”，当前默认已改为 `previous_speech_end`。保留 IndexTTS 音色，显式拆条继续使用 Qwen。两种模式都按 SRT 渲染并检查编码帧。整句模式没有逐字跟随的声明，也不需要用模型猜测句内时间。
+上一轮恢复了整句显示，但仍绑定本句音频起点；用户进一步明确需要“上一句口播结束即换下一条”，当前默认已改为 `previous_speech_end`。保留 IndexTTS 音色，显式拆条继续使用 Qwen。两种模式都按 SRT 渲染并检查编码帧。整句模式没有逐字跟随的声明；默认仍需 Qwen 定位上一句结束，不计算整句内部逐字显示。

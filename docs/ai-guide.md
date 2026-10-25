@@ -1,0 +1,155 @@
+# AI 操作指南
+
+让 AI 使用本项目处理视频时，从这篇开始。这里的命令都从仓库根目录执行；输入文件与占位 URL 要替换为实际值。
+
+[文档导航](README.md) · [完整使用方法](usage.md) · [项目约定](../AGENTS.md)
+
+## 给 AI 的任务描述
+
+至少给出输入文件或来源、期望的处理、声音选择和输出目标。可以直接复制下面的模板：
+
+```text
+请在这个仓库中完成视频任务，先阅读 AGENTS.md、docs/ai-guide.md，
+再按任务阅读 docs/usage.md 和相应专项指南。
+
+输入：/absolute/path/input.mp4
+目标：竖屏口播混剪，保留原声，删除长停顿与“嗯、呃”，搭配咖啡素材。
+素材：examples/materials.json；可从 examples/coffee.json 复制并修改配置。
+输出：outputs/my-talking-<本次时间戳>，保留原文件和此前结果。
+
+先检查输入媒体、素材和依赖，选择已有 CLI 入口执行。
+完成后检查实际画面、字幕、音轨及机器报告。
+交付成片路径、截图、关键参数、删除记录和仍需人工确认的内容。
+```
+
+其他常见任务：
+
+| 任务 | 可以这样描述 |
+| --- | --- |
+| 只要转录 | “把这个本地视频转成中文 TXT、SRT 和逐词 JSON，到此结束。” |
+| 从剧本出片 | “基于咖啡示例改成我的稿子，保留系统中文音色，先出 480 宽预览，确认画面后出完整版。” |
+| 下载素材 | “导入这些链接，剪辑清晰度，保留平台可用字幕，输出素材目录和失败报告。” |
+| 克隆声音 | “用这段参考录音的音色朗读新稿，选择 IndexTTS，先核对模型与 Qwen 环境，再生成视频。” |
+| 只改字幕 | “复用上次的逐句旁白和背景，保持声音不变，把字幕改为整句、上句结束即显示下句。” |
+| 独立后期 | “把现有视频改为 9:16 模糊背景，保留完整画面，导出新文件并查看截图。” |
+
+预览与正式版是两个明确阶段；用户只要求预览时，完成预览后停在该阶段。
+
+## 1. 阅读与路由
+
+先读根目录 `AGENTS.md`，然后选择最短的已有处理路径：
+
+| 请求 | 入口 | 需要补读 |
+| --- | --- | --- |
+| 网页或直链素材 | `videocut download` | [使用指南：导入素材](usage.md#从视频链接导入素材) |
+| 只有本地转录 | `videocut transcribe` | [独立转录](usage.md#独立转录) |
+| 删除长停顿、口头词 | `videocut cut` | [已有录音和精剪](usage.md#已有录音和口播精剪) |
+| 精剪后加素材与包装 | `videocut mix` | 同上 |
+| 自己的剧本和素材 | `videocut render --config ...` | [配置和素材](usage.md#换成自己的内容) |
+| 保留已有旁白 | `videocut render --audio ...` | [已有录音和精剪](usage.md#已有录音和口播精剪) |
+| F5 参考音色 | `render --tts clone` | [声音克隆](voice-cloning.md) |
+| IndexTTS 参考音色与控制 | `render --tts indextts` | [IndexTTS 控制](voice-controls.md)、[字幕同步](subtitle-sync.md) |
+| 调整画幅、调音、字幕烧录、导出 | `videocut ffmpeg TOOL` | 项目内 [ffmpeg-skill](../.agents/skills/ffmpeg-skill/SKILL.md)、[工具接入说明](ffmpeg-tools.md) |
+| 修改项目实现 | 先追踪对应模块和测试 | [架构](architecture.md)、[验证记录](verification.md) |
+
+本项目提供执行工具，AI 负责理解意图、编写剧本、挑选画面和组织命令。项目没有内置自由调用大模型写稿的服务，也没有任意视频的视觉自动打标。
+
+## 2. 检查输入和环境
+
+```bash
+uv run videocut --help
+uv run videocut render --help
+uv run videocut ffmpeg probe /absolute/path/input.mp4 --json
+```
+
+只探测本次规划需要的输入，记录真实时长、宽高、帧率、HDR 信号和音轨。输出目录使用本次新路径；不要把输入、旧成片或人工校对文件作为新输出。
+
+- 基础混剪：`uv sync`。下载网页加 `--extra download`，转录和精剪加 `--extra asr`；两个都需要时用 `uv sync --extra download --extra asr`。
+- macOS 系统声音为 `--tts macos`；在线声音为 `--tts edge`，不会在服务失败时静默切换声音。
+- F5、IndexTTS 和 Qwen 分别有 `.venv-voice`、`.venv-index`、`.venv-align`；先按专项文档确认已安装，不把模型包装进主环境。
+- 检查配置的图片/视频镜头能在素材目录中匹配。素材 `path` 优先使用绝对路径，标签由调用者提供；要固定画面可使用 `material_id`。
+- 独立 FFmpeg 操作按技能使用 `videocut ffmpeg`。先读实际工具的 `--help`；失败提示缺少媒体能力时，再用 `doctor --json` 定位。预演使用 `--dry-run --json`，其具体行为见工具说明。
+
+## 3. 用文件连接工具
+
+### 下载 → 混剪
+
+```bash
+uv sync --extra download --extra asr
+uv run videocut download 'https://www.bilibili.com/video/BV1nx411u79K' \
+  --quality edit --subtitles auto --output outputs/my-import
+uv run videocut render --config examples/download-demo.json \
+  --materials outputs/my-import/materials.json --tts macos --output outputs/my-import-film
+```
+
+下载后先读 `download-report.json` 和 `materials.json`。批次非零退出可能已有成功素材；核对失败项与成功项，再决定是否能继续目标任务。平台字幕保留来源，未明确说明生成方式时为 `unspecified`。
+
+### 转录 → 校对 → 精剪
+
+```bash
+uv run --extra asr videocut transcribe /absolute/path/talking.mp4 \
+  --language zh --model base --output outputs/my-transcript
+cp outputs/my-transcript/transcript.json outputs/my-corrected-transcript.json
+# 校对副本中的 words[].text；不改时间、顺序和来源摘要。
+uv run --extra asr videocut cut /absolute/path/talking.mp4 \
+  --transcript outputs/my-corrected-transcript.json \
+  --fillers 嗯 呃 --output outputs/my-cleaned
+```
+
+校对必须依据实际录音；识别结果不是用户预先给出的剧本。`transcript.json` 只能复用于同一输入文件，换容器或重编码后不能沿用其来源摘要。`mix` 同样支持 `--transcript`，复用后会按剪辑区间重排字幕，不重复识别。
+
+### 复用旁白与背景 → 只改字幕
+
+先复制上次的 `project.json` 并修改字幕配置。假设上次使用 IndexTTS、整句字幕：
+
+```bash
+uv run videocut render --tts indextts \
+  --config projects/revised-captions.json --materials examples/materials.json \
+  --speech-manifest outputs/previous/speech/index-manifest.json \
+  --background outputs/previous/background.mp4 \
+  --output outputs/revised-captions
+```
+
+这里的 `previous` 是已有结果目录占位符。原稿与配音清单必须匹配，背景宽高和总时长必须兼容；更换稿子、配音或镜头安排时不要直接复用旧背景。默认句末切换仍需要 Qwen 环境，或显式提供同音频的 `--caption-alignment .../qwen-alignment.json`。
+
+## 4. 三种时间数据不要混用
+
+| 数据 | 代表什么 | 正确用途 |
+| --- | --- | --- |
+| 下载的字幕轨 / SRT | 来源平台提供的字幕与时间 | 保留语言和来源，按需展示或后期烧录 |
+| `transcript.json` | faster-whisper 的识别文字与估计词时间 | `cut / mix / render --audio` 的 `--transcript` |
+| `qwen-alignment.json` | 给定原稿与同一音频的强制对齐记录 | 生成配音的 `--caption-alignment` |
+
+`transcribe` 的 `no_speech` 是有效独立结果；编辑器需要足以剪辑的词时间，不能为让剪辑成功而伪造词记录。ASR 文字仍需校对。
+
+字幕模式也要区分：IndexTTS 默认启用 `speech`；Edge、macOS、F5 默认按 WAV 区间显示，需显式 `--caption-mode speech` 才进入对齐流程。默认整句 `previous_speech_end` 提前展示下一句是预读策略；显式 `audio_clip` 按当前 WAV 区间显示，显式拆条按固定文本对齐。不要以“模型分歧”为由自行合并用户确定的分条。
+
+## 5. 交付前检查
+
+依据本次命令读取相应产物：
+
+| 任务 | 要检查的文件或结果 |
+| --- | --- |
+| 下载 | `download-report.json`、素材清单、失败项与实际流信息 |
+| 转录 | `transcription-report.json`、TXT/SRT/JSON、语言、状态、来源摘要和缓存统计 |
+| 精剪 | `cleaned.mp4`、`cleaned.srt`、`transcript.json`、`edit-plan.json` 的删除理由与时间区间 |
+| 混剪 | `final.mp4`、`verification.json`、`timeline.json`、`sources.json`、`contact-sheet.jpg` |
+| 语音对齐字幕 | 另看 `caption-plan.json`、实际 SRT、`caption-alignment.json` 和 `subtitle-sync-verification.json` |
+| FFmpeg 后期 | 工具 JSON、实际输出探测与画面；平台交付时再运行对应 `check` |
+
+打开真实截图，核对文字可读性、裁切、贴纸、转场附近画面；涉及声音时播放检查。机器验收不等于听感、语义和素材选择已经通过人工评审。无播放条件时要说明听感尚未检查。
+
+`final.mp4` 存在不代表所有字幕模式都通过强制对齐验收。看 `verification.json` 的 `subtitle_sync`；未做验收时 `passed=null`。独立 FFmpeg 的 `verified`、`check` 和录音 `sync` 均不等于本项目 `videocut/sync.py` 的字幕与音轨门禁；后期产生的新文件也不自动继承旧报告。
+
+最终简要交付：成片或文本路径、真实参数、检查过的截图、报告路径、保留的未决问题。耗时说明是否命中缓存，不把下载、首次模型加载等未计入项目说成已包含。
+
+## 修改代码时
+
+按照 [AGENTS.md](../AGENTS.md) 保留验收断言和各工具边界。完整测试前运行：
+
+```bash
+uv sync --extra download --extra asr
+uv run pytest -q
+```
+
+确定性套件使用本地 HTTP 和 FFmpeg；平台联网和真实模型 smoke 单独记录。新增能力同步对应使用指南和架构；实际跑过的结果写入验证记录。测试失败先查实现，不通过削弱要求换取通过。

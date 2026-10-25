@@ -1,0 +1,129 @@
+{
+  "description": "README demo media derived from the actual Edge TTS coffee render",
+  "source_video": "outputs/coffee-edge/final.mp4",
+  "source_video_sha256": "6eb3635985eed82f208ae635a0dee4ab924c93d5bb0d7f285eca55fb0da2444f",
+  "source_render_report": {
+    "duration_seconds": 41.108,
+    "width": 720,
+    "height": 1280,
+    "video_codec": "h264",
+    "audio_codec": "aac",
+    "video_duration": 41.083333,
+    "audio_duration": 41.108,
+    "av_delta_seconds": 0.024666999999993777,
+    "full_decode": "passed",
+    "bytes": 11681214,
+    "elapsed_seconds": 50.43,
+    "speech_provider": "edge",
+    "paid_api_calls": 0,
+    "cost_note": "No paid API invoked. Local compute, bandwidth and storage are not priced here.",
+    "scene_count": 6,
+    "caption_count": 12,
+    "sticker_count": 6,
+    "transitions": [
+      "fade",
+      "slideleft",
+      "fade",
+      "wipeleft",
+      "fade"
+    ],
+    "loudness_target_lufs": -16,
+    "cleaning": null
+  },
+  "gif_excerpt_seconds": [
+    5,
+    10
+  ],
+  "materials": [
+    {
+      "id": "coffee-photo",
+      "kind": "image",
+      "page": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085",
+      "url": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1600&q=85",
+      "credit": "Unsplash / photo-1495474472287-4d71bcdd2085",
+      "license": "Unsplash License — https://unsplash.com/license",
+      "sha256": "715138397dd11ef3238eb3ccc9832a2dab582e682a9a4f2cc1204e49f3131c1c"
+    },
+    {
+      "id": "beans",
+      "kind": "video",
+      "page": "https://mixkit.co/free-stock-video/coffee-beans-falling-on-a-layer-of-more-beans-4982/",
+      "url": "https://assets.mixkit.co/videos/4982/4982-1080.mp4",
+      "credit": "Mixkit / clip 4982",
+      "license": "Mixkit Stock Video Free License — https://mixkit.co/license/#videoFree",
+      "sha256": "4caeb3810812faf18b17adfa80867ec627c4d99d597118a30f571d87338a30c6"
+    },
+    {
+      "id": "espresso",
+      "kind": "video",
+      "page": "https://mixkit.co/free-stock-video/cup-being-filled-with-coffee-in-a-coffee-machine-41865/",
+      "url": "https://assets.mixkit.co/videos/41865/41865-1080.mp4",
+      "credit": "Mixkit / clip 41865",
+      "license": "Mixkit Stock Video Free License — https://mixkit.co/license/#videoFree",
+      "sha256": "de5d4801b2b308a38ba323bfe67bf6d0a715af809bfd3ceb47a6fb2bff444c94"
+    },
+    {
+      "id": "pour",
+      "kind": "video",
+      "page": "https://mixkit.co/free-stock-video/filling-a-white-cup-of-coffee-236/",
+      "url": "https://assets.mixkit.co/videos/236/236-1080.mp4",
+      "credit": "Mixkit / clip 236",
+      "license": "Mixkit Stock Video Free License — https://mixkit.co/license/#videoFree",
+      "sha256": "2a3fa912990bd32d460ad5e19335c76983831cbb0549da157e0e5daa79517ccf"
+    },
+    {
+      "id": "coffee-desk",
+      "kind": "image",
+      "page": "https://unsplash.com/photos/coffee",
+      "url": "https://images.unsplash.com/photo-1442512595331-e89e73853f31?auto=format&fit=crop&w=1600&q=85",
+      "credit": "Unsplash / photo-1442512595331-e89e73853f31",
+      "license": "Unsplash License — https://unsplash.com/license",
+      "sha256": "20db0d554de6ee90400bd99535893213f2fced090857bea9a42398a06587bade"
+    },
+    {
+      "id": "cup-beans",
+      "kind": "video",
+      "page": "https://mixkit.co/free-stock-video/cup-of-coffee-on-top-of-coffee-beans-4992/",
+      "url": "https://assets.mixkit.co/videos/4992/4992-1080.mp4",
+      "credit": "Mixkit / clip 4992",
+      "license": "Mixkit Stock Video Free License — https://mixkit.co/license/#videoFree",
+      "sha256": "b1a7ac538d784a870f6d0dea5f119e4727050dbb23f2c669264d23295facb3e6"
+    },
+    {
+      "id": "coffee",
+      "kind": "sticker",
+      "page": "https://github.com/jdecked/twemoji",
+      "url": "https://raw.githubusercontent.com/jdecked/twemoji/main/assets/72x72/2615.png",
+      "credit": "Twemoji graphics / Twitter and contributors",
+      "license": "CC-BY-4.0 — https://github.com/jdecked/twemoji/blob/main/LICENSE-GRAPHICS",
+      "sha256": "7698fb9dcbaf4459b3e29ee97eba2df94c0adf2daf118c91dbfeb3e569d470ab"
+    },
+    {
+      "id": "sparkles",
+      "kind": "sticker",
+      "page": "https://github.com/jdecked/twemoji",
+      "url": "https://raw.githubusercontent.com/jdecked/twemoji/main/assets/72x72/2728.png",
+      "credit": "Twemoji graphics / Twitter and contributors",
+      "license": "CC-BY-4.0 — https://github.com/jdecked/twemoji/blob/main/LICENSE-GRAPHICS",
+      "sha256": "ad3afa9c7beee612fdc68691d25b36dda934204a3d8916ff3d14df83548a0f84"
+    },
+    {
+      "id": "heart",
+      "kind": "sticker",
+      "page": "https://github.com/jdecked/twemoji",
+      "url": "https://raw.githubusercontent.com/jdecked/twemoji/main/assets/72x72/1f49b.png",
+      "credit": "Twemoji graphics / Twitter and contributors",
+      "license": "CC-BY-4.0 — https://github.com/jdecked/twemoji/blob/main/LICENSE-GRAPHICS",
+      "sha256": "f868eae088efc7423d0e369ed7a6dc0c47d2014795ae356ba4e49c671bbd4434"
+    },
+    {
+      "id": "jazz",
+      "kind": "music",
+      "page": "https://mixkit.co/free-stock-music/tag/jazz/",
+      "url": "https://assets.mixkit.co/music/493/493.mp3",
+      "credit": "Mixkit / music track 493",
+      "license": "Mixkit Stock Music Free License — https://mixkit.co/license/#musicFree",
+      "sha256": "3ccd950625b4278992809e597575cb1fd3ec27629199c4825d9a0e61959e3e0d"
+    }
+  ]
+}

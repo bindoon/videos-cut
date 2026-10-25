@@ -2,6 +2,8 @@
 
 项目内提供 [ffmpeg-skill](https://github.com/kajisho5/ffmpeg-skill) 2.16.1 的 42 个本地文件处理工具。它们补充现有混剪管线，适用于处理素材、后期音频和导出新版本。既有 `download / transcribe / render / mix / cut` 保持各自入口和验收规则。
 
+[文档导航](README.md) · [使用指南](usage.md) · [AI 操作指南](ai-guide.md)
+
 ## 安装与发现
 
 ```bash
@@ -14,7 +16,7 @@ uv run videocut ffmpeg audio --help
 uv run videocut ffmpeg contract --json --static
 ```
 
-技能和运行脚本已随项目保存，不需要运行 `npx` 或额外下载工具。项目技能从下一轮对话可发现；CLI 立即可用。`doctor` 检查当前构建的滤镜、编码器、字体和逐工具可用性，不执行完整视频验收。必需能力缺失时返回非零；可选的 Parakeet/Whisper 引擎无需为普通视频处理安装。
+技能和运行脚本已随项目保存，不需要运行 `npx` 或额外下载工具。项目技能位于 `.agents/skills/ffmpeg-skill/SKILL.md`，AI 应先阅读其工作流，再通过 CLI 调用。`doctor` 检查当前构建的滤镜、编码器、字体和逐工具可用性，不执行完整视频验收。必需能力缺失时返回非零；可选的 Parakeet/Whisper 引擎无需为普通视频处理安装。
 
 Homebrew 的 `ffmpeg-full` 为 keg-only。上游工具检测到 PATH 上的 Homebrew 精简版 FFmpeg 后，自动使用同一前缀的完整版本及 ffprobe，无需 `brew link --force` 或修改 shell 配置。其他来源的 FFmpeg 沿用其 PATH 设置；需要切换时，可以只为本次命令设置 PATH。原有混剪命令仍沿用系统入口。
 

@@ -1,6 +1,6 @@
 # Project rules
 
-Usage and current architecture live in `README.md` and `docs/architecture.md`; actual validation history lives in `docs/verification.md`.
+Start at `README.md` and `docs/README.md`; usage lives in `docs/usage.md`, AI operation in `docs/ai-guide.md`, and current architecture in `docs/architecture.md`. Actual validation history lives in `docs/verification.md`.
 
 - A failing test means suspect the implementation first. Do not weaken, skip, or delete an acceptance assertion merely to make a change pass; changing the intended requirement needs the user's agreement.
 - Download tests require the optional backend: use `uv sync --extra download --extra asr` before the complete suite. The checks in `tests/test_downloads.py` use actual local HTTP and FFmpeg; keep network platform smoke checks separate from the deterministic suite.

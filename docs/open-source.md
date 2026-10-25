@@ -1,35 +1,65 @@
-# 开源选型与边界
+# 开源来源与集成说明
 
-首次调研于 2026-10-24，后续接入按实际代码更新。Star 是调研时 GitHub 显示的约数，主要作为社区规模参考；依赖版本以锁文件为准。
+本项目把成熟的语音、下载和视频处理组件组织成一条可复现的本地工作流。这里说明**用了谁的哪部分、怎样接入，以及本项目补了什么**。确切依赖版本以锁文件和固定来源记录为准，不使用会过期的 Star 数量衡量能力。
 
-| 项目 | 约 Star | 本项目如何使用 |
+[文档导航](README.md) · [架构](architecture.md) · [验证记录](verification.md)
+
+## 吸收的思路与实际接入
+
+| 来源 | 吸收或使用的部分 | 接入方式 | 本项目负责的部分 |
+| --- | --- | --- | --- |
+| [MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo) | 脚本→配音→素材→字幕→合成的工作流，MoviePy/Pillow 分层合成思路 | **设计参考**；本地阅读过素材、语音和视频服务代码 | 独立 CLI 与 JSON 配置、逐句实际音频时间轴、素材选择与处理报告 |
+| [MoviePy](https://github.com/Zulko/moviepy) / [Pillow](https://github.com/python-pillow/Pillow) | 视频/音频图层、文字栅格化、渐变遮罩、动态贴纸与进度条 | **实际依赖调用**，主要在 `videocut/render.py` | 统一图层顺序、转场后再叠字幕、配置化画面包装 |
+| [FFmpeg](https://ffmpeg.org/) | 运镜、裁切、xfade 转场、重采样、响度、编码、媒体探测和完整解码 | **系统程序调用**，经 `media.py` 等模块执行 | 音画按帧共同裁切、错误/超时处理与实际成片检查 |
+| [faster-whisper](https://github.com/SYSTRAN/faster-whisper) | Whisper 识别、VAD 与逐词时间 | **可选 ASR 依赖**；当前后端 CPU int8 | 分段有界解码、原文件时间归属、校验缓存与恢复、TXT/SRT/JSON 导出，以及编辑消费者的准入检查 |
+| [Auto-Editor](https://github.com/WyattBlue/auto-editor) | 按静音进行粗剪 | **可选 CLI 调用**，由 `rough-cut` 启动 | 单独保留粗剪入口；中文口头词精剪由本项目 `cleaning.py` 处理 |
+| [Qwen3-ASR / ForcedAligner](https://github.com/QwenLM/Qwen3-ASR) | 给定音频与原稿的字词起止定位 | **官方接口调用**，`scripts/align_qwen.py` 使用独立环境 | 固定字幕分条、句末预读策略、SRT 回读，以及成片全部帧和音轨偏移验收 |
+| [Edge TTS](https://github.com/rany2/edge-tts) | 在线文字转语音 | **实际依赖调用**，`--tts edge` | 逐句合成、声音显式选择、PCM 时长和缓存；另提供 macOS 系统音色入口 |
+| [F5-TTS MLX](https://github.com/lucasnewman/f5-tts-mlx) / [Vocos](https://github.com/gemelo-ai/vocos) | 参考音频与对应文字条件下生成新旁白、还原波形 | **Apple Silicon 独立模型环境**，`--tts clone` | 逐句生成清单、参考/模型摘要、48kHz 转换和视频接入 |
+| [IndexTTS](https://github.com/index-tts/index-tts) | 2.5 参考音色、原生语速、数值情绪向量、中文拼音标记 | **固定官方代码与独立模型环境**，`--tts indextts` | 逐句参数覆盖、缓存与归属记录、音频格式统一、字幕和镜头重算 |
+| [yt-dlp](https://github.com/yt-dlp/yt-dlp) | 网页媒体、音轨、字幕和播放列表解析 | **可选 Python API 依赖**，`download` extra | 素材协议、规格隔离缓存、大小预算、媒体校验、失败项和续传恢复 |
+| [ffmpeg-skill](https://github.com/kajisho5/ffmpeg-skill) | 42 个本地处理工具、技能说明、交付模板与工具合同 | **随项目固定分发上游文件**，`videocut ffmpeg` 转发调用 | 工具发现、入口和 wheel 打包；与主项目 ASR/字幕验收保持明确边界 |
+| [Twemoji](https://github.com/jdecked/twemoji) | 透明表情图形，作为动态贴纸素材 | **下载图形资产**，图形许可 CC-BY-4.0 | 贴纸位置、缩放/浮动动画与素材归属记录 |
+
+上表中的本项目部分主要是可审计的编排和验收：`timeline.json`、`edit-plan.json`、ASR 分段缓存、来源校验、固定字幕计划与成片检查。模型推理、编码器和上游工具的能力归属于对应项目。
+
+## 设计参考：MoneyPrinterTurbo
+
+参考基线为 **v1.3.9 / `6992380c5e82f07f3e1fc46b90927b6f1c655407`**。本地稀疏检出保存在忽略的 `upstream/MoneyPrinterTurbo-reference/`，重点阅读 `app/services/video.py`、`app/services/voice.py` 和素材/任务处理代码。
+
+吸收的是分阶段完成作品的工作流与分层合成方式。当前仓库使用较小的独立编排层，未复制其业务代码，也没有运行其完整 WebUI、任务服务或供应商集合；复现本项目不需要安装整个 MoneyPrinterTurbo。
+
+## 直接分发：ffmpeg-skill
+
+固定版本 **2.16.1**，提交 **`f2d90ea603a663711c3d6aa9775d2a2380d83182`**，MIT。运行脚本、技能、模板及相关说明保存在 [.agents/skills/ffmpeg-skill](../.agents/skills/ffmpeg-skill/SKILL.md)，省略了上游演示 GIF，保留 [LICENSE](../.agents/skills/ffmpeg-skill/LICENSE) 和 [UPSTREAM.json](../.agents/skills/ffmpeg-skill/UPSTREAM.json) 的来源与文件 SHA-256。
+
+源码文件保持上游内容。`videocut/ffmpeg_tools.py` 使用当前 Python 启动这些工具，不经 shell，不在每次运行时下载或更新代码。wheel 同样携带工具副本。主流程与上游的 `render` 使用不同项目 JSON 格式；主流程 `cut` 与 `ffmpeg cut` 也分别对应口头词精剪和指定区间裁切。
+
+安装、升级和验证方法见 [FFmpeg 工具说明](ffmpeg-tools.md)。上游 `verified` 和平台 `check` 只覆盖其自身合同；可选 `--transcribe` 不使用本项目转录缓存与来源协议。
+
+## 版本与复现入口
+
+| 组件 | 固定或记录的位置 | 安装与使用 |
 | --- | --- | --- |
-| [MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo) | 135k | 参考主题/脚本→配音→素材→字幕→合成的工作流，以及 MoviePy/Pillow 的分层合成方式；不宣称整个上游应用已经作为本项目后端运行 |
-| [WhisperX](https://github.com/m-bain/whisperX) | 24k | 早期参考其中文 CTC 选型；没有安装完整 WhisperX 或复制其对齐实现，旧实验保留 |
-| [Qwen3-ASR / ForcedAligner](https://github.com/QwenLM/Qwen3-ASR) | 以仓库为准 | 默认整句字幕使用官方 Qwen3ForcedAligner 定位上一句末字结束以立即切换；显式 audio_clip 按 PCM 区间显示无需模型 |
-| [MoviePy](https://github.com/Zulko/moviepy) | 15k | 实际用于字幕、渐变遮罩、浮动贴纸、进度条、配音/配乐的合成 |
-| [faster-whisper](https://github.com/SYSTRAN/faster-whisper) | 以仓库为准 | 独立 `transcribe` 与原有精剪共用的识别实现，分段解码、逐词时间和可校验缓存；CPU int8，不需要 CUDA |
-| [yt-dlp](https://github.com/yt-dlp/yt-dlp) | 以仓库为准 | 可选 `download` extra 固定 2026.10.21；官方 Python API 解析网页视频、音轨、字幕与播放列表，结果校验后进入本地素材清单 |
-| [Auto-Editor](https://github.com/WyattBlue/auto-editor) | 5.5k | `rough-cut` 命令真实调用上游 CLI，做静音粗剪 |
-| [Edge TTS](https://github.com/rany2/edge-tts) | 以仓库为准 | 提供可选在线中文配音；演示还支持明确选择 macOS 本地声音 |
-| [F5-TTS MLX](https://github.com/lucasnewman/f5-tts-mlx) | 以仓库为准 | 实际生成参考音色的 12 句旁白，并接入完整视频；v1 4-bit 权重、Vocos、独立 MLX 环境 |
-| [IndexTTS](https://github.com/index-tts/index-tts) | 24.7k | 2.5 官方实现已跑通 7 组音频控制实验，并接入 `--tts indextts` 完整视频配音；支持原生语速、情绪向量与逐句拼音输入 |
-| [FFmpeg](https://ffmpeg.org/) | 不以 GitHub 镜像 Star 比较 | 实际用于图片运镜、音画裁切、xfade 转场、编码、探测和完整解码验收 |
-| [ffmpeg-skill](https://github.com/kajisho5/ffmpeg-skill) | 以仓库为准 | MIT；2.16.1 / `f2d90ea603a663711c3d6aa9775d2a2380d83182` 的运行脚本、技能与模板纳入 `.agents/skills/ffmpeg-skill/`，省略演示 GIF；通过 `videocut ffmpeg` 调用，来源与摘要见 `UPSTREAM.json` |
-| [Twemoji](https://github.com/jdecked/twemoji) | 以仓库为准 | 下载透明贴纸图，图形为 CC-BY-4.0；来源与归属保存在成片目录 |
+| MoviePy、Pillow、faster-whisper、Auto-Editor、Edge TTS、yt-dlp 等主环境包 | `pyproject.toml` 声明范围，`uv.lock` 固定解析版本；yt-dlp 当前固定 `2026.10.21` | [使用指南](usage.md) |
+| FFmpeg / ffprobe | 系统安装；实际版本记录于对应运行证据，不由 `uv.lock` 锁定 | [FFmpeg 工具说明](ffmpeg-tools.md) |
+| F5-TTS MLX / Vocos | `requirements-voice.lock.txt`，模型下载目录的 `source.json` | [声音克隆](voice-cloning.md) |
+| IndexTTS-2.5 | `requirements-index.lock.txt`；实测代码 `d9e41aac89fd00b3d71497fddb287b7f24613712`，主模型修订 `c39ce5ba981572cb187443877ff559dfb246ce63` | [IndexTTS 安装与控制](voice-controls.md) |
+| Qwen3-ForcedAligner-0.6B | `requirements-align.lock.txt`，`qwen-asr==0.0.6`；模型修订 `c7cbfc2048c462b0d63a45797104fc9db3ad62b7` | [字幕同步](subtitle-sync.md) |
+| ffmpeg-skill | 仓库内 `UPSTREAM.json`、LICENSE 和固定文件 | [工具来源与更新](ffmpeg-tools.md#来源与更新) |
 
-MoneyPrinterTurbo 的参考基线是 v1.3.9 / `6992380c5e82f07f3e1fc46b90927b6f1c655407`。本地稀疏检出在忽略的 `upstream/MoneyPrinterTurbo-reference/`，重点阅读 `app/services/video.py`、`app/services/voice.py` 和素材/任务处理代码。本项目采用较小的独立编排层，没有复制上游业务代码后声称是自主实现。
+模型与上游工作区不进入 Git。下载脚本会保存修订和摘要；新机器首次下载时需核对专项文档中的已验证修订，不能把未来仓库的最新权重当作同一份模型。
 
-剪辑依赖的确切解析版本由 `uv.lock` 固定；F5 与 IndexTTS 分别记录在 `requirements-voice.lock.txt`、`requirements-index.lock.txt`。上游 Auto-Editor 的 GitHub 最新实现与 PyPI 发布可能不同，实际执行版本以安装包和运行报告为准。
+## 素材与展示归属
 
-示例视频来自 Mixkit，照片来自 Unsplash，配乐来自 Mixkit，贴纸来自 Twemoji。每个下载结果都保留 URL、许可引用和 SHA-256，不把外部素材冒充自制素材。
+示例视频及音乐来自 Mixkit，照片来自 Unsplash，贴纸来自 Twemoji。原始清单在 [examples/materials.json](../examples/materials.json)，每次实际下载保留 URL、许可引用、大小和 SHA-256；未知许可记作 `unknown`，不推断为可任意使用。
 
-参考声音克隆使用 [F5-TTS 的 MLX 实现](https://github.com/lucasnewman/f5-tts-mlx)，在独立 Apple Silicon 环境加载本地 v1 4-bit 权重；安装与模型来源见 [voice-cloning.md](voice-cloning.md)。
+README 的图片和动图是本项目真实渲染结果的截图与节选，来源和归属保存在 [展示媒体说明](media/README.md)。代码、模型权重、素材分别适用各自的许可；本项目的集成不会改变上游许可。
 
-IndexTTS-2.5 的实测代码修订为 `d9e41aac89fd00b3d71497fddb287b7f24613712`，主模型修订为 `c39ce5ba981572cb187443877ff559dfb246ce63`。其数值情绪和拼音控制属于模型接口，完整视频提供方已接入这些原生参数；SSML 停顿及标签转换属于单独的实验适配层，尚未用于视频输入。完整下载命令、支持边界与本机试听见 [voice-controls.md](voice-controls.md)。
+## 历史参考与实验边界
 
-当前默认一条完整字幕对应一句口播，上一句末字结束即显示下一句。句末定位及显式拆条使用 [Qwen3-ForcedAligner-0.6B](https://huggingface.co/Qwen/Qwen3-ForcedAligner-0.6B)，官方 `qwen-asr==0.0.6`，独立依赖见 `requirements-align.lock.txt`。早期中文 Wav2Vec2 CTC 与 Whisper 交叉对齐保留为历史实验，不能再用“分歧就合并字幕”的规则。安装、固定分条和成片验收见 [subtitle-sync.md](subtitle-sync.md)。
+- **WhisperX**：早期参考中文 CTC 模型选型，没有安装完整 WhisperX 或复制其对齐实现。旧 Wav2Vec2 CTC 与 Whisper 交叉对齐作为历史实验保留；当前生成旁白的句末定位及显式拆条使用 Qwen，不能沿用旧“模型分歧就合并字幕”规则。
+- **SSML**：`scripts/test_indextts_controls.py` 有局部标签转换与静音拼接适配层。7 组短句实验覆盖语速、情绪、拼音及停顿对照；它尚未接入完整视频提供方，不能称为 IndexTTS 原生完整 SSML。
+- **Kokoro-FastAPI、CosyVoice**：早期调研过控制接口，本项目未完成运行接入，不能列作已验证提供方。
 
-对话中也调研了 Kokoro-FastAPI、CosyVoice 的相关控制接口，但本机本轮没有运行这些模型，不能把文档中的能力记作本项目验证通过。
-
-当前没有实现：任意素材的视觉模型自动打标、专门的呼吸声检测、交互式时间线编辑器、`w` 强制连读约束、词级重读/情绪及完整 SSML 兼容。这些与实际能跑的混剪/精剪管线和短句实验分开记录。
+当前没有任意视频的视觉自动打标、专门呼吸识别、交互式时间线、`w` 强制连读约束、词级重读/情绪及完整 SSML。ffmpeg-skill 可以导出时间线、测量场景并给出高光候选，但不等于新增了这些语义理解或交互能力。具体已跑过的输入和结果见[验证记录](verification.md)。
