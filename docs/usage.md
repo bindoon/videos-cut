@@ -9,6 +9,7 @@
 | 你手里有什么 | 想得到什么 | 命令 |
 | --- | --- | --- |
 | 剧本与素材目录 | 配音、字幕、转场齐全的短片 | `render --config ... --materials ...` |
+| Agent 编写的创作计划 | 待生素材清单，或可直接渲染的本地配置 | `prepare --plan ... --output ...` |
 | 已有旁白 | 保留声音、自动配画面与字幕 | `render --audio ...` |
 | 口播视频 | 删除停顿和指定口头词 | `cut input.mp4` |
 | 口播视频与素材 | 精剪后穿插原片和素材 | `mix input.mp4` |
@@ -65,6 +66,51 @@ uv run videocut demo --tts macos --materials examples/materials-preview.json --w
 - `verification.json`：实际分辨率、时长、音轨、完整解码和本次处理耗时。
 - `contact-sheet.jpg`：六个时间点的画面，供检查字幕、裁切与贴纸。
 - `project.json`：本次配置快照。
+
+## 宿主 Agent 创作与本地素材交接
+
+Codex、WorkBuddy 等宿主负责理解需求、写旁白、设计分镜和提示词；宿主有生图工具时直接调用，再把实际图片文件交给本项目。CLI 的 `prepare` 不调用模型、不联网，也不要求 API Key。宿主生图是否联网、是否占用额度取决于当前宿主和账户，不代表整条链路离线或免费。
+
+从 [creation-plan.json](../examples/creation-plan.json) 复制一份计划，分别填写：
+
+- `project`：现有渲染配置；`scenes[].lines` 是实际旁白原稿，每镜用 `material_id` 绑定素材。
+- `assets`：素材的 `id/kind/source/path`。`path` 与 `references` 的相对路径都以**原计划文件所在目录**为基准；输出清单使用绝对路径。
+- `publication`：独立发布文案，不进入配音、字幕和画面提示词。
+
+`source=local` 接收已有文件；`host_image` 请求宿主生成图片或透明贴纸；`external_video` 表示需要另行生成的 AI 视频。后两者必须提供 `prompt`，可用 `references` 指定本地参考图；`generation` 可记录实际工具、模型、参数等 JSON 元数据，不记录密钥，不猜测未知模型。所有素材都应指定预期落盘路径。
+
+```bash
+uv run videocut prepare --plan examples/creation-plan.json \
+  --output outputs/creation-check-01
+```
+
+命令输出 JSON，并生成 `creation-plan.json`（原计划快照）、`creation-report.json`、`asset-requests.json` 和 `publication.json`：
+
+| 状态 / 退出码 | 含义与下一步 |
+| --- | --- |
+| `pending` / 2 | 尚有文件缺失；宿主按 `asset-requests.json` 逐项补齐，先处理 `missing_references` |
+| `invalid` / 1 | 已有文件损坏、类型错误或 SHA-256 不符；查看 `failures`，修复素材 |
+| `ready` / 0 | 所有素材通过本地媒体检查，额外输出 `project.json` 和 `materials.json` |
+
+计划结构错误或输出目录已存在时，命令直接报错（退出码 2），不会覆盖已有文件。每次重新检查使用新输出目录。继续修改原计划，快照仅供追溯；不要直接从输出目录运行带相对路径的原计划快照。
+
+宿主读取 `generate_image_with_host` 任务后，使用当前可用的生图工具；贴纸任务的 `transparent_background=true` 要传给工具。生图工具若返回其他文件位置，将文件复制到 `output_path`，或在原计划中填入实际路径；不要仅保存预览链接。参考图需按宿主工具的要求检查、传入。没有宿主生图能力时，可让用户提供图片或使用已获授权的本地模型，不能静默改成收费 API。
+
+`external_video_required` 只列明需求，不提交远程任务、不产生费用。可以接收用户在外部生成的成片，或由 Agent 在用户明确选择外部生成方式后执行，再记录真实来源。如果普通照片运镜、已有素材或本地剪辑足以表达镜头，优先使用这些方式；生成式 AI 视频是单独选择。
+
+`prompt` 保存计划要求，不证明已有图片实际使用了这份提示词；`generation` 是调用者提供的实际生成记录，准备器不替宿主验证。只改提示词不会让已有图片自动失效；要重做时用新的文件路径，更新实际文件与生成记录。可选 `sha256` 能固定预期文件内容；未知素材许可保持 `unknown`。
+
+文件补齐后重新检查，再使用现有渲染命令。例如 macOS 使用本地系统声音：
+
+```bash
+uv run videocut prepare --plan examples/creation-plan.json \
+  --output outputs/creation-check-02
+uv run videocut render --config outputs/creation-check-02/project.json \
+  --materials outputs/creation-check-02/materials.json \
+  --tts macos --output outputs/creation-film-01
+```
+
+Linux 或参考音色需求按已有指南显式选择本地配音。`prepare` 就绪只表示文件可交给渲染，不评判画面语义、构图、发音、素材许可，也不代表最终视频通过 Qwen 字幕同步验收。调整某个镜头时，保留其他素材路径，仅修改该镜头的提示词/文件，重新检查并输出新成片；这不提供增量合成缓存，最终仍走已有渲染流程。
 
 ## FFmpeg 扩展工具
 

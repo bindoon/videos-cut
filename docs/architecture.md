@@ -8,6 +8,7 @@
 
 ```text
 网页链接 / 文件直链 → 下载与校验 → materials.json → 渲染素材入口
+宿主 Agent 写计划/生图 → 本地文件 → prepare 缺项与媒体检查 → project.json + materials.json → 渲染
 本地音视频 → 独立 ASR → TXT / SRT / transcript.json → 可选的编辑消费
 剧本 + 素材目录 → 配音/字幕时间轴 → 选素材 → 画面和转场 → 叠字幕/贴纸/配乐 → 成片
 原始口播视频 → 真实 ASR → 删停顿/配置词 → 精剪视频 + 重排词时间轴 → 同一条混剪管线
@@ -29,7 +30,8 @@
 
 | 文件 | 职责 |
 | --- | --- |
-| `videocut/cli.py` | 提供 `download / transcribe / demo / render / mix / cut / rough-cut / raw-sample` 和 `ffmpeg` 转发入口 |
+| `videocut/cli.py` | 提供 `prepare / download / transcribe / demo / render / mix / cut / rough-cut / raw-sample` 和 `ffmpeg` 转发入口 |
+| `videocut/creation.py` | `prepare` 检查宿主创作计划，输出待补素材任务或现有渲染器配置；不调用模型或网络 |
 | `videocut/assets.py` | 下载、来源记录和标签选片；不做未接入的视觉模型理解 |
 | `videocut/downloads.py` | HTTP Range 与 yt-dlp 导入、规格隔离缓存、大小预算、逐项失败结果和媒体校验；网页下载依赖可选 `download` extra |
 | `videocut/wechat_downloads.py` | 微信视频号本地 API 适配、捕获记录匹配、格式选择与解密流接入；复用下载校验与素材协议 |
@@ -58,6 +60,14 @@ ASR 和 Auto-Editor 是 `asr` 可选依赖，普通脚本混剪不需要安装�
 `videocut ffmpeg TOOL ...` 是独立的文件处理入口：当前 Python 启动 `.agents/skills/ffmpeg-skill/scripts/` 中的固定工具，保留调用者工作目录，不经过 shell，也不自动下载或更新代码。`doctor` / `contract` 交给上游 `_contract.py`；42 个公开工具的参数由各自解析器定义。上游在 macOS 检测到 Homebrew 精简版 FFmpeg 时，优先使用相同 Homebrew 前缀的 `opt/ffmpeg-full/bin`；项目原有命令仍使用其原来的 FFmpeg 入口。wheel 内也包含同一份工具，安装后从 `videocut/_vendor/ffmpeg_skill` 读取。版本与文件摘要见技能目录的 `UPSTREAM.json`。
 
 扩展工具可以显式接收当前流程输出的 MP4、WAV、SRT，再写出新文件。上游的 `verified` 与平台 `check` 只代表其自己的文件检查，不代表通过本项目 `sync.py` 的字幕逐帧和音轨同步验收；上游自带 `--transcribe` 也不共享项目 ASR 缓存与审计格式。用法与边界见 [ffmpeg-tools.md](ffmpeg-tools.md)。
+
+## 宿主创作边界
+
+`videocut-creation-v1` 包含现有 `project` 配置、显式绑定的 `assets` 与独立 `publication` 文案。宿主拥有创意、提示词和图像生成能力；本地准备器只检查结构、解析原计划目录下的文件路径，并复用 `downloads.inspect_material` 做图片验证、音视频完整解码与 SHA-256。生成需求通过文件交接，不运行模型服务、数据库或后台任务。
+
+缺失素材按 `local / host_image / external_video` 输出不同动作；已有文件即使带生成提示词，也只校验并复用，不重新生成。可选 `sha256` 不符或文件损坏会产生 `invalid`，不会自动覆盖；缺文件产生 `pending`；全部就绪才输出渲染配置和素材清单。每次占用新目录，保留计划原始快照与摘要。素材清单中的 `creation` 保留提示词、参考路径与调用者提供的生成元数据，通过现有素材导入继续进入 `sources.json`。参考路径不等于参考文件的不可变快照，宿主需另行保存生成服务实际采用的参考信息。
+
+`prepare` 不做内容质量评审，也不接管旁白、字幕或同步验收。宿主生图可能联网并使用账户额度；准备命令自身的零模型/零网络统计不代表全流程成本。`external_video` 是显式缺项，当前没有自动提交 AI 视频服务的适配器。批量调度、浏览器发布和增量合成未新增。
 
 ## 素材导入边界
 

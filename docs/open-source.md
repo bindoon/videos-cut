@@ -9,6 +9,7 @@
 | 来源 | 吸收或使用的部分 | 接入方式 | 本项目负责的部分 |
 | --- | --- | --- | --- |
 | [MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo) | 脚本→配音→素材→字幕→合成的工作流，MoviePy/Pillow 分层合成思路 | **设计参考**；本地阅读过素材、语音和视频服务代码 | 独立 CLI 与 JSON 配置、逐句实际音频时间轴、素材选择与处理报告 |
+| [AiToEarn](https://github.com/yikart/AiToEarn) | 结构化创作计划、媒体生成工具拆分、画面要求与发布文案分离 | **设计参考**；未复制业务代码或引入服务端运行时 | 宿主 Agent 写稿/生图，`prepare` 用本地文件交接、检查缺项并衔接原渲染器 |
 | [MoviePy](https://github.com/Zulko/moviepy) / [Pillow](https://github.com/python-pillow/Pillow) | 视频/音频图层、文字栅格化、渐变遮罩、动态贴纸与进度条 | **实际依赖调用**，主要在 `videocut/render.py` | 统一图层顺序、转场后再叠字幕、配置化画面包装 |
 | [FFmpeg](https://ffmpeg.org/) | 运镜、裁切、xfade 转场、重采样、响度、编码、媒体探测和完整解码 | **系统程序调用**，经 `media.py` 等模块执行 | 音画按帧共同裁切、错误/超时处理与实际成片检查 |
 | [faster-whisper](https://github.com/SYSTRAN/faster-whisper) | Whisper 识别、VAD 与逐词时间 | **可选 ASR 依赖**；当前后端 CPU int8 | 分段有界解码、原文件时间归属、校验缓存与恢复、TXT/SRT/JSON 导出，以及编辑消费者的准入检查 |
@@ -29,6 +30,12 @@
 参考基线为 **v1.3.9 / `6992380c5e82f07f3e1fc46b90927b6f1c655407`**。本地稀疏检出保存在忽略的 `upstream/MoneyPrinterTurbo-reference/`，重点阅读 `app/services/video.py`、`app/services/voice.py` 和素材/任务处理代码。
 
 吸收的是分阶段完成作品的工作流与分层合成方式。当前仓库使用较小的独立编排层，未复制其业务代码，也没有运行其完整 WebUI、任务服务或供应商集合；复现本项目不需要安装整个 MoneyPrinterTurbo。
+
+## 设计参考：AiToEarn
+
+参考提交 **`cc13deb6ab6d17b55e733d9353ad3300e31f40f7`**（2026-10-29 核对），阅读了 [draft-generation-planner.service.ts](https://github.com/yikart/AiToEarn/blob/cc13deb6ab6d17b55e733d9353ad3300e31f40f7/project/aitoearn-backend/apps/aitoearn-ai/src/core/draft-generation/draft-generation-planner.service.ts)、[media.mcp.ts](https://github.com/yikart/AiToEarn/blob/cc13deb6ab6d17b55e733d9353ad3300e31f40f7/project/aitoearn-backend/apps/aitoearn-ai/src/core/agent/mcp/media.mcp.ts) 及视频编辑工具的结构化参数。
+
+本项目借鉴其规划与工具边界，具体执行采用本地 `creation.py`，宿主生成素材后通过文件交接。未接入 AiToEarn API、Relay、数据库、队列或平台授权；未移植其云端视频处理和字幕实现。宿主无生图能力时不会静默改调付费服务。生成式 AI 视频仅标记外部需求，调用适配器尚未实现。
 
 ## 直接分发：ffmpeg-skill
 

@@ -47,6 +47,7 @@
 | 删除长停顿、口头词 | `videocut cut` | [已有录音和精剪](usage.md#已有录音和口播精剪) |
 | 精剪后加素材与包装 | `videocut mix` | 同上 |
 | 自己的剧本和素材 | `videocut render --config ...` | [配置和素材](usage.md#换成自己的内容) |
+| 从需求规划并生成素材 | 宿主写计划/生图 → `videocut prepare` → `render` | [宿主创作与素材交接](usage.md#宿主-agent-创作与本地素材交接) |
 | 保留已有旁白 | `videocut render --audio ...` | [已有录音和精剪](usage.md#已有录音和口播精剪) |
 | F5 参考音色 | `render --tts clone` | [声音克隆](voice-cloning.md) |
 | IndexTTS 参考音色与控制 | `render --tts indextts` | [IndexTTS 控制](voice-controls.md)、[字幕同步](subtitle-sync.md) |
@@ -54,6 +55,17 @@
 | 修改项目实现 | 先追踪对应模块和测试 | [架构](architecture.md)、[验证记录](verification.md) |
 
 本项目提供执行工具，AI 负责理解意图、编写剧本、挑选画面和组织命令。项目没有内置自由调用大模型写稿的服务，也没有任意视频的视觉自动打标。
+
+### 本地优先的创作流程
+
+1. 使用当前宿主 Agent 写稿、分镜和生图提示词，按 `examples/creation-plan.json` 写本地计划。区分旁白、画面提示词与发布文案，不把生成指令混入朗读内容；参考图、风格描述可以复用，但不承诺跨镜人物自动一致。
+2. 优先复用用户已有素材和本地工具；需要新图片时使用宿主已有生图能力。调用前遵循宿主的图像工具与技能要求，本项目不另外调用写稿/生图 API。宿主无此能力时明确说明缺项，不自动切到收费服务。
+3. 执行 `prepare`，读取 JSON 状态和 `asset-requests.json`。退出码 2 的 `pending` 是等待素材的正常交接。生成前先补齐 `missing_references`，透明贴纸传透明背景参数；把实际文件放到请求路径，或更新原计划的 `path`。在 `generation` 中只记录已知工具和模型信息。
+4. AI 视频不是每个镜头的必需品；照片运镜或已有视频能满足时直接使用。确实需要生成式 AI 视频时保留 `external_video` 请求，明确外部工具与费用选择后再执行，不能用静态图冒充已生成的视频，也不能自动调用付费服务。
+5. 用新的输出目录重新 `prepare`。只有 `ready` 才读取生成的 `project.json/materials.json` 进入现有渲染；默认方案优先显式选择本地配音。不要按字数估计最终镜头时间，仍由实际音频建立时间轴。
+6. 检查真实成片与原有验收报告。浏览器发布作为用户另行指令下的后续工具操作；当前 CLI 没有自动发布入口。
+
+`creation-report.json.execution` 仅统计准备命令自身的模型/网络调用，不能据此声称宿主生图或后续配音也离线、免费。宿主的可用能力依当前会话判断，不假定所有 Codex、WorkBuddy 环境都提供生图工具。
 
 ## 2. 检查输入和环境
 

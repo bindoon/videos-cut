@@ -1,0 +1,39 @@
+{
+  "schema": "videocut-creation-v1",
+  "project": {
+    "title": "给早晨，留一杯咖啡",
+    "width": 720,
+    "height": 1280,
+    "fps": 24,
+    "caption_layout": "utterance",
+    "caption_switch": "previous_speech_end",
+    "transition_seconds": 0.35,
+    "scenes": [
+      {
+        "label": "慢下来的早晨",
+        "lines": ["给早晨，留一杯咖啡的时间。"],
+        "kind": "image",
+        "material_id": "morning-coffee",
+        "transition": "fade"
+      }
+    ]
+  },
+  "assets": [
+    {
+      "id": "morning-coffee",
+      "kind": "image",
+      "source": "host_image",
+      "path": "../assets/created/morning-coffee.png",
+      "prompt": "竖版 9:16，清晨自然光下的木桌与一杯热咖啡，真实摄影质感，温暖克制，画面下方留出字幕空间，不添加文字。",
+      "references": [],
+      "tags": ["咖啡", "早晨"],
+      "credit": "填写实际生成工具与归属，不推断模型或授权",
+      "generation": null
+    }
+  ],
+  "publication": {
+    "title": "每天给自己一点慢下来的时间",
+    "description": "从一杯咖啡开始今天的小仪式。",
+    "topics": ["咖啡", "日常"]
+  }
+}

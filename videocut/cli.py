@@ -484,6 +484,11 @@ def main() -> None:
     )
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("ffmpeg", help="42 local FFmpeg tools; videocut ffmpeg --help")
+    command = sub.add_parser(
+        "prepare", help="Check a host-agent creation plan; no model or network calls"
+    )
+    command.add_argument("--plan", type=Path, required=True)
+    command.add_argument("--output", type=Path, required=True)
     for name in ("demo", "render", "mix"):
         command = sub.add_parser(name)
         command.add_argument(
@@ -697,6 +702,15 @@ def main() -> None:
     command.add_argument("input", type=Path)
     command.add_argument("--output", type=Path, default=Path("outputs/auto-editor.mp4"))
     args = parser.parse_args()
+    if args.command == "prepare":
+        from .creation import prepare_creation
+
+        try:
+            report = prepare_creation(args.plan, args.output)
+        except (OSError, ValueError, TypeError) as exc:
+            parser.error(str(exc))
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+        raise SystemExit({"ready": 0, "pending": 2, "invalid": 1}[report["status"]])
     require_tools()
     if args.command in {"demo", "render", "mix"}:
         render(args)

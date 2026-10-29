@@ -1,5 +1,12 @@
 # 验证记录
 
+## 宿主 Agent 创作交接（2026-10-29）
+
+- 新增 `prepare --plan ... --output ...`；写稿、提示词与生图由宿主负责，本地命令只检查计划和文件。AiToEarn 设计参考与固定修订见 [open-source.md](open-source.md#设计参考aitoearn)。
+- `tests/test_creation.py` 新增 11 项检查：真实 PNG 从缺失任务到就绪清单，再通过现有素材导入与选片；相对路径、原稿/发布文案隔离、摘要和提示词保留；损坏图片及错误摘要被拦截；无效绑定/类型/空台词/重复 ID 被拒绝；输出目录不能覆盖；外部视频和缺失参考图保持显式任务。禁用 PATH 后，图片准备 CLI 仍能返回正确的 pending/ready 退出码，无需 FFmpeg。
+- [实际示例报告](../outputs/creation-handoff-20261029/pending-example/creation-report.json) 为 `pending`，列出宿主生图需求，退出码 2；没有伪造图片或调用远程生成服务。测试图片是程序生成的纯色 PNG，仅验证文件交接，未测试宿主生图质量或外部 AI 视频服务。
+- 执行 `uv sync --extra download --extra asr` 后，[完整 pytest](../outputs/creation-handoff-20261029/pytest.txt) **71 项通过，28.94 秒**，保留现有 MoviePy / NumPy 弃用警告。Ruff 对新增模块与测试检查通过，`git diff --check` 通过。原有字幕/音轨验收及 ASR 缓存语义未修改。
+
 [文档导航](README.md) · [当前使用方法](usage.md) · [当前架构](architecture.md)
 
 ## 如何阅读这些记录
