@@ -18,6 +18,7 @@
 | [F5-TTS MLX](https://github.com/lucasnewman/f5-tts-mlx) / [Vocos](https://github.com/gemelo-ai/vocos) | 参考音频与对应文字条件下生成新旁白、还原波形 | **Apple Silicon 独立模型环境**，`--tts clone` | 逐句生成清单、参考/模型摘要、48kHz 转换和视频接入 |
 | [IndexTTS](https://github.com/index-tts/index-tts) | 2.5 参考音色、原生语速、数值情绪向量、中文拼音标记 | **固定官方代码与独立模型环境**，`--tts indextts` | 逐句参数覆盖、缓存与归属记录、音频格式统一、字幕和镜头重算 |
 | [yt-dlp](https://github.com/yt-dlp/yt-dlp) | 网页媒体、音轨、字幕和播放列表解析 | **可选 Python API 依赖**，`download` extra | 素材协议、规格隔离缓存、大小预算、媒体校验、失败项和续传恢复 |
+| [wx_channels_download](https://github.com/ltaoo/wx_channels_download) | 微信视频号捕获、本地 API 与视频解密流 | **可选的独立本地服务调用**，核对 v260907 API；不分发上游代码或二进制 | 明确目标匹配、格式选择、流大小预算、实测尺寸/完整解码、缓存与素材来源记录；证书和系统代理由外部服务单独管理 |
 | [ffmpeg-skill](https://github.com/kajisho5/ffmpeg-skill) | 42 个本地处理工具、技能说明、交付模板与工具合同 | **随项目固定分发上游文件**，`videocut ffmpeg` 转发调用 | 工具发现、入口和 wheel 打包；与主项目 ASR/字幕验收保持明确边界 |
 | [Twemoji](https://github.com/jdecked/twemoji) | 透明表情图形，作为动态贴纸素材 | **下载图形资产**，图形许可 CC-BY-4.0 | 贴纸位置、缩放/浮动动画与素材归属记录 |
 

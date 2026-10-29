@@ -72,9 +72,13 @@ def import_catalog_items(
                 )
                 importer.options = (
                     replace(options, mode="audio")
-                    if item.get("kind") == "music" and source == "web"
+                    if item.get("kind") == "music" and source in {"web", "wechat"}
                     else options
                 )
+                if item.get("wechat_feed_id"):
+                    importer.options = replace(
+                        importer.options, wechat_feed_id=str(item["wechat_feed_id"])
+                    )
                 rows = importer.acquire(
                     item["url"],
                     source=source,

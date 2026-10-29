@@ -42,6 +42,7 @@
 | 请求 | 入口 | 需要补读 |
 | --- | --- | --- |
 | 网页或直链素材 | `videocut download` | [使用指南：导入素材](usage.md#从视频链接导入素材) |
+| 微信视频号 | `download --wechat-list` → 核对标题/作者 → `download URL --wechat-feed-id ID` | [视频号本地服务](usage.md#微信视频号) |
 | 只有本地转录 | `videocut transcribe` | [独立转录](usage.md#独立转录) |
 | 删除长停顿、口头词 | `videocut cut` | [已有录音和精剪](usage.md#已有录音和口播精剪) |
 | 精剪后加素材与包装 | `videocut mix` | 同上 |
@@ -69,6 +70,7 @@ uv run videocut ffmpeg probe /absolute/path/input.mp4 --json
 - F5、IndexTTS 和 Qwen 分别有 `.venv-voice`、`.venv-index`、`.venv-align`；先按专项文档确认已安装，不把模型包装进主环境。
 - 检查配置的图片/视频镜头能在素材目录中匹配。素材 `path` 优先使用绝对路径，标签由调用者提供；要固定画面可使用 `material_id`。
 - 独立 FFmpeg 操作按技能使用 `videocut ffmpeg`。先读实际工具的 `--help`；失败提示缺少媒体能力时，再用 `doctor --json` 定位。预演使用 `--dry-run --json`，其具体行为见工具说明。
+- 视频号需要外部 `wx_channels_download` 服务和微信播放。先只读查询捕获记录并核对目标，再明确指定 ID；不能以最近一条代替匹配。服务未准备好时返回具体失败原因。证书/代理设置需按用户授权单独处理，并记录和恢复；下载命令自身不会操作这些设置。实测文件尺寸才是画质证据。
 
 ## 3. 用文件连接工具
 

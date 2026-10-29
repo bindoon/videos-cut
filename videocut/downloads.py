@@ -50,6 +50,8 @@ class DownloadOptions:
     sub_langs: str = "zh.*,en.*"
     proxy: str | None = None
     cookies: str | None = None
+    wechat_api: str = "http://127.0.0.1:2022"
+    wechat_feed_id: str | None = None
 
     def __post_init__(self):
         if self.mode not in {"video", "audio"} or self.quality not in {
@@ -65,6 +67,14 @@ class DownloadOptions:
             raise ValueError(
                 "Download limits must be positive; retries cannot be negative"
             )
+        from .wechat_downloads import validate_api_url
+
+        validate_api_url(self.wechat_api)
+        if self.wechat_feed_id is not None and (
+            not isinstance(self.wechat_feed_id, str)
+            or not self.wechat_feed_id.isdecimal()
+        ):
+            raise ValueError("--wechat-feed-id must be a numeric captured video ID")
 
     def public(self):
         # Keep credentials out of reports. Retry reads fresh explicit CLI settings.
@@ -75,9 +85,12 @@ class DownloadOptions:
         }
 
     def variant(self):
-        return {
+        variant = {
             k: getattr(self, k) for k in ("mode", "quality", "subtitles", "sub_langs")
         }
+        if self.wechat_feed_id:
+            variant["wechat_feed_id"] = self.wechat_feed_id
+        return variant
 
 
 class DownloadFailure(RuntimeError):
@@ -303,16 +316,18 @@ class Importer:
             / (_hash([url, source, self.options.variant()]) + ".json")
         )
 
-    def _http(self, url: str, target: Path, referer: str = ""):
+    def _http(self, url: str, target: Path, referer: str = "", *, local: bool = False):
         key = str(target)
         self._clear_retained(key)
         try:
-            self._http_transfer(url, target, referer)
+            self._http_transfer(url, target, referer, local=local)
         except (Exception, KeyboardInterrupt):
             self._retain(key, [target.with_name(target.name + ".part")])
             raise
 
-    def _http_transfer(self, url: str, target: Path, referer: str = ""):
+    def _http_transfer(
+        self, url: str, target: Path, referer: str = "", *, local: bool = False
+    ):
         part = target.with_name(target.name + ".part")
         state = part.with_name(part.name + ".json")
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -334,7 +349,9 @@ class Importer:
                     headers.update({"Range": f"bytes={offset}-", "If-Range": validator})
                 request = urllib.request.Request(url, headers=headers)
                 handler = (
-                    urllib.request.ProxyHandler(
+                    urllib.request.ProxyHandler({})
+                    if local
+                    else urllib.request.ProxyHandler(
                         {"http": self.options.proxy, "https": self.options.proxy}
                     )
                     if self.options.proxy is not None
@@ -743,6 +760,10 @@ class Importer:
                 raise DownloadFailure(
                     "INVALID_URL", "Expected an http:// or https:// media URL"
                 )
+            from .wechat_downloads import import_wechat, is_wechat_url
+
+            if source == "wechat" or source in {"auto", "web"} and is_wechat_url(url):
+                return import_wechat(self, url)
             if source == "auto":
                 source = (
                     "direct"
@@ -781,6 +802,8 @@ def download_urls(
     output: Path | None = None,
 ) -> dict:
     options = options or DownloadOptions()
+    if options.wechat_feed_id and len(urls) != 1:
+        raise ValueError("wechat_feed_id applies to exactly one source URL")
     importer = Importer(cache, options)
     results = []
     for index, url in enumerate(urls):

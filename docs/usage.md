@@ -164,7 +164,61 @@ uv run videocut download --retry-failed outputs/batch/download-report.json --out
 
 每个任务输出 `download-report.json` 与可用素材清单。网页素材按平台、视频 ID 和音频／视频／清晰度／字幕规格分别缓存；通用 HTML5 页面再按来源 URL 隔离。重跑先检查文件大小与 SHA-256；缓存损坏时重新下载。直链支持带 ETag 或 Last-Modified 的 HTTP Range 续传，网页流使用 yt-dlp 的续传和重试；Ctrl-C 后重新执行相同命令即可继续，已完成素材有独立记录。缓存锁依赖 macOS/Linux 的 `flock`。
 
-字幕是平台提供的轨道，保留语言、来源和摘要；平台没有明确提供人工／自动属性时记录为 `unspecified`。这不会运行 Whisper，也不能替代精剪所需的逐词时间。B 站、TikTok 已实测；YouTube 可能要求登录，微信视频号目前仍不支持。可显式传 `--proxy` 或 `--cookies cookies.txt`；程序不会自动读取浏览器 Cookie。
+字幕是平台提供的轨道，保留语言、来源和摘要；平台没有明确提供人工／自动属性时记录为 `unspecified`。这不会运行 Whisper，也不能替代精剪所需的逐词时间。B 站、TikTok 已实测；YouTube 可能要求登录。微信视频号通过下节的本地服务导入。可显式传 `--proxy` 或 `--cookies cookies.txt`；程序不会自动读取浏览器 Cookie。
+
+### 微信视频号
+
+通过独立运行的 [wx_channels_download](https://github.com/ltaoo/wx_channels_download) 接入，已核对 **v260907** 的 API。它在微信中捕获视频并提供解密流；本项目通过本地 HTTP 接收已解密的视频，执行大小限制、完整解码、SHA-256 校验及素材登记。无需 yt-dlp 的视频号支持，也不复制上游二进制或解密实现。
+
+1. 从上游 Releases 安装对应系统的下载器，按其[安装说明](https://ltaoo.github.io/wx_channels_download/guide/start.html)完成证书与代理配置，再启动服务。默认 API 为 `http://127.0.0.1:2022`。
+2. 在电脑微信中重新打开目标视频，播放几秒后可暂停。若页面在代理配置之前已经打开，应先关闭视频窗口再打开。
+3. 列出捕获记录，核对标题和作者，再用明确的视频 ID 下载：
+
+```bash
+uv run videocut download --wechat-list
+uv run videocut download "https://weixin.qq.com/sph/分享码" \
+  --wechat-feed-id 15034134739333679808 \
+  --quality edit --output outputs/wechat-import
+```
+
+`--wechat-list` 输出 JSON，包含 `feed_id`、标题和作者，`--limit` 控制显示条数（默认 20）。示例 ID 必须换成实际捕获的 ID。分享短链接只有在本地捕获记录的 URL 精确匹配时才能自动关联；不会默认下载最近播放的视频。带 `oid/nid` 或 `eid` 的视频号详情链接可直接解析，无需额外指定 ID。`--wechat-feed-id` 表示明确选择该捕获视频，一次只能用于一个 URL。
+
+```bash
+# API 端口不同，或只需要音轨。
+uv run videocut download "视频号链接" --wechat-feed-id 123456789 \
+  --wechat-api http://127.0.0.1:2022 --mode audio --output outputs/wechat-audio
+# 只重试报告中的失败项；报告保留本地 API 地址和视频选择参数。
+uv run videocut download --retry-failed outputs/wechat-import/download-report.json \
+  --output outputs/wechat-retry
+```
+
+清单批量导入时，每条材料分别填写 `wechat_feed_id`：
+
+```json
+[
+  {
+    "url": "https://weixin.qq.com/sph/分享码",
+    "source": "wechat",
+    "wechat_feed_id": "15034134739333679808",
+    "kind": "video",
+    "tags": ["服饰", "参考"]
+  }
+]
+```
+
+`preview/edit/source` 分别选择短边不超过 360/720 或可用最高分辨率；同等分辨率优先 H.264，再比较码率。没有符合规格的格式时返回 `FORMAT_UNAVAILABLE`。上游标注的“原始视频”可能实际返回低清转码，因此只选择明确列出的格式，并比对下载后的真实尺寸；不会把 576p 文件标成 1080p。素材包含实际流信息、`wechat_spec`、作者、来源链接和未知许可标记。`--mode audio` 提取原音轨；`--subtitles auto` 不会将画面中的字幕识别为独立字幕轨，也不运行 ASR。直播和图片不在此入口范围内。
+
+API 地址只接受 `localhost`、`127.0.0.1`、`[::1]` 的 HTTP origin，不接受账号、密码或路径。控制请求与解密流直接访问本地服务，不经过 `--proxy` 或系统代理；上游服务的出站代理需在其自身配置中设置。报告与素材清单不保存解密密钥、签名 CDN 地址或 Cookie。视频号流失败后重新获取详情并重试；为了不保留临时签名和密钥，不承诺跨进程的分片续传。已完成且摘要有效的缓存不需要服务或微信在线。
+
+**系统设置由外部下载器管理。** `videocut download` 不启动/关闭下载器，不自动安装或移除证书、不更改系统代理，也不索取管理员密码。配置捕获服务前保存原代理设置；使用独立生成的证书；用完停止下载器、恢复原代理并按上游说明移除专用证书。若已有 Clash 等代理，应按上游文档配置上游或定向转发，避免覆盖后丢失原设置。
+
+| 失败代码 | 处理 |
+| --- | --- |
+| `WECHAT_SERVICE_UNAVAILABLE` | 启动本地下载器，检查 `--wechat-api` 与版本 |
+| `WECHAT_PAGE_REQUIRED` | 在微信中重新打开并播放目标视频 |
+| `WECHAT_CAPTURE_REQUIRED` | 使用 `--wechat-list` 核对并明确指定 `--wechat-feed-id` |
+| `WECHAT_API_ERROR` / `WECHAT_PROFILE_ERROR` | 检查上游 API 版本与视频详情，重新捕获 |
+| `WECHAT_TRANSFER_FAILED` | 解密流中断或签名失效，重新播放后重试 |
 
 原有 `videocut download --materials examples/materials.json` 继续可用。清单可混合本地文件、文件直链和网页视频；B 站、YouTube、TikTok 等已知域名自动识别，其他网页填写 `"source": "web"`。自定义 `id`、标签和归属信息会保留；未知许可记录为 `unknown`。远程文件完成流类型检查和完整解码后才登记，图片使用 Pillow 校验；剪辑遇到失败素材会停止，并给出失败报告。
 

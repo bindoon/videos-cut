@@ -629,6 +629,19 @@ def main() -> None:
         type=Path,
         help="Retry only failed entries from a previous download-report.json",
     )
+    command.add_argument(
+        "--wechat-api",
+        help="Local wx_channels_download API (default http://127.0.0.1:2022)",
+    )
+    command.add_argument(
+        "--wechat-feed-id",
+        help="Explicit captured video ID for one WeChat link; use --wechat-list to find it",
+    )
+    command.add_argument(
+        "--wechat-list",
+        action="store_true",
+        help="List captured WeChat video IDs/titles; does not download",
+    )
     command = sub.add_parser(
         "transcribe",
         help="Transcribe a local audio/video file without downloading or editing",
@@ -728,12 +741,13 @@ def main() -> None:
                     bool(args.urls),
                     args.materials is not None,
                     args.retry_failed is not None,
+                    args.wechat_list,
                 ]
             )
             > 1
         ):
             parser.error(
-                "Use URLs, --materials, or --retry-failed as separate input modes"
+                "Use URLs, --materials, --retry-failed, or --wechat-list as separate input modes"
             )
         previous = (
             json.loads(args.retry_failed.read_text()) if args.retry_failed else {}
@@ -748,6 +762,8 @@ def main() -> None:
             "sub_langs",
             "proxy",
             "cookies",
+            "wechat_api",
+            "wechat_feed_id",
         ):
             if getattr(args, field) is not None:
                 values[field] = getattr(args, field)
@@ -763,6 +779,39 @@ def main() -> None:
             options = DownloadOptions(**values)
         except (ValueError, TypeError) as exc:
             parser.error(str(exc))
+        if args.wechat_list:
+            from .downloads import DownloadFailure
+            from .wechat_downloads import WeChatClient
+
+            try:
+                captures = WeChatClient(options.wechat_api).captures(options.limit)
+            except DownloadFailure as exc:
+                parser.error(f"{exc.code}: {exc}")
+            print(
+                json.dumps(
+                    {
+                        "videos": [
+                            {
+                                "feed_id": row.get("external_id"),
+                                "title": row.get("title"),
+                                "authors": [
+                                    a.get("nickname") for a in row.get("accounts", [])
+                                ],
+                            }
+                            for row in captures
+                        ]
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                )
+            )
+            return
+        if options.wechat_feed_id and (
+            args.materials or (args.urls and len(args.urls) != 1)
+        ):
+            parser.error(
+                "--wechat-feed-id applies to one URL; catalogs use per-item wechat_feed_id"
+            )
         cache = args.cache or Path(previous.get("cache", "assets/cache"))
         output = args.output or Path("outputs/downloads") / time.strftime(
             "%Y%m%d-%H%M%S"
