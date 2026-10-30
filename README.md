@@ -34,6 +34,7 @@
 | **参考音色与语音控制** | F5-TTS MLX 与 IndexTTS-2.5 生成新旁白；IndexTTS 支持原生语速、情绪向量与逐句拼音纠音 |
 | **字幕显示与成片验收** | IndexTTS 默认用 Qwen 定位句末，上一句结束即显示下一句；固定分条、SRT 回读、全部编码帧及音轨偏移检查 |
 | **42 个 FFmpeg 工具** | 改画幅、字幕烧录、音乐自动压低、HDR 转 SDR、多机位同步、平台导出、批处理与剪辑软件时间线导出 |
+| **代码动画逐帧出片** | 本地 Canvas / Three.js 页面按 `render(t)` 绘制，支持分镜静帧、局部预览、分段续跑与实际编码文件完整性检查 |
 
 ### 值得开发者关注的设计
 
@@ -97,6 +98,18 @@ uv run videocut ffmpeg fit input.mp4 --aspect 9:16 --fit blur \
 ```
 
 具体参数、预演和平台导出见 [FFmpeg 工具说明](docs/ffmpeg-tools.md)。
+
+城市白模、数据动画等代码画面使用独立的 `codefilm` 入口；需要 Node.js、影片内的 Playwright 和 Chromium。先用自带两秒示例检查环境：
+
+```bash
+npm ci --prefix examples/codefilm
+# 使用 Playwright 默认 Chromium，或设置 PLAYWRIGHT_CHROME 指向已安装的可执行文件。
+uv run videocut codefilm plan --config examples/codefilm/codefilm.json
+uv run videocut codefilm render --config examples/codefilm/codefilm.json --output outputs/codefilm-demo
+uv run videocut codefilm verify outputs/codefilm-demo/render-manifest.json
+```
+
+浏览器安装、配置、缓存与[城市短片工作流](docs/code-films.md)见专项指南；[杭州工程](films/hangzhou/README.md)保留实际的数据、叙事、配音和后期范例。该入口先输出无声画面分段，声音与交付通过文件衔接。
 
 ## 如何让 AI 使用
 

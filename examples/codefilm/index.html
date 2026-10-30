@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>Code film example</title>
+<style>html,body{margin:0;overflow:hidden;background:#071224}canvas{display:block}</style>
+<canvas id="frame"></canvas>
+<script>
+const canvas = document.querySelector('canvas');
+canvas.width = innerWidth; canvas.height = innerHeight;
+const ctx = canvas.getContext('2d');
+window.render = t => {
+  const w = canvas.width, h = canvas.height;
+  ctx.fillStyle = '#071224'; ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = '#7ce8df'; ctx.beginPath();
+  ctx.arc(w * (.15 + .7 * t / 2), h * .50, h * .1, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#ffffff'; ctx.font = `${h * .065}px sans-serif`;
+  ctx.fillText('CODE → FRAMES → FILM', w * .08, h * .20);
+  ctx.font = `${h * .045}px monospace`;
+  ctx.fillText(`t = ${t.toFixed(3)} s`, w * .08, h * .82);
+};
+window.READY = true;
+</script></html>

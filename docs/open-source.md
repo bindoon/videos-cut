@@ -22,6 +22,8 @@
 | [wx_channels_download](https://github.com/ltaoo/wx_channels_download) | 微信视频号捕获、本地 API 与视频解密流 | **可选的独立本地服务调用**，核对 v260907 API；不分发上游代码或二进制 | 明确目标匹配、格式选择、流大小预算、实测尺寸/完整解码、缓存与素材来源记录；证书和系统代理由外部服务单独管理 |
 | [ffmpeg-skill](https://github.com/kajisho5/ffmpeg-skill) | 42 个本地处理工具、技能说明、交付模板与工具合同 | **随项目固定分发上游文件**，`videocut ffmpeg` 转发调用 | 工具发现、入口和 wheel 打包；与主项目 ASR/字幕验收保持明确边界 |
 | [Twemoji](https://github.com/jdecked/twemoji) | 透明表情图形，作为动态贴纸素材 | **下载图形资产**，图形许可 CC-BY-4.0 | 贴纸位置、缩放/浮动动画与素材归属记录 |
+| [Three.js](https://github.com/mrdoob/three.js) / [Playwright](https://github.com/microsoft/playwright) | 城市白模 WebGL 绘制与私有 Chromium 的逐帧捕获 | **影片内 npm 依赖**；各工程 `package-lock.json` 固定版本 | `codefilm` 配置、确定性检查、分段续跑、实际媒体与摘要校验 |
+| [Lemo Opuscar](https://github.com/lemomo-ai/lemo-opuscar) | 杭州影片后处理和 headless GPU 启动方式参考 | **杭州工程内固定 MIT 源码**，修订 `f17136060781a0068a7951245a3aa7835a7230de`；保留许可 | 真实杭州模型、相机、光层与共享渲染器；通用命令不依赖其 studio 服务 |
 
 上表中的本项目部分主要是可审计的编排和验收：`timeline.json`、`edit-plan.json`、ASR 分段缓存、来源校验、固定字幕计划与成片检查。模型推理、编码器和上游工具的能力归属于对应项目。
 
@@ -46,6 +48,8 @@
 安装、升级和验证方法见 [FFmpeg 工具说明](ffmpeg-tools.md)。上游 `verified` 和平台 `check` 只覆盖其自身合同；可选 `--transcribe` 不使用本项目转录缓存与来源协议。
 
 ## 版本与复现入口
+
+城市建筑、水系、字体、参考片与解说来源见杭州 [CREDITS](../films/hangzhou/CREDITS.md)。代码视频的浏览器和 GIS 依赖隔离在影片工程，不混入 Python 主环境；[共享工作流](code-films.md)说明复现及验收边界。
 
 | 组件 | 固定或记录的位置 | 安装与使用 |
 | --- | --- | --- |

@@ -1,0 +1,17 @@
+{
+  "historical_geometry_policy":"Present-day CMAB model with historical locations and schematic light fields; no claim of reconstructed ancient building stock or exact historical city boundaries.",
+  "claims":[
+    {"id":"589-1138-907","claims":["589年置杭州","907年吴越国","1138年南宋定都临安"],"url":"https://www.hzsc.gov.cn/module/download/downfile.jsp?classid=0&filename=c65c2518cc7c47c88909c185edcff715.pdf","source":"上城年鉴2022，历史沿革"},
+    {"id":"sudi","claims":["1090年苏轼疏浚西湖，湖泥筑堤"],"url":"https://hangzhou.zjol.com.cn/jrsd/bwzg/201811/t20181118_8771007.shtml","source":"浙江在线与杭州市档案局《杭州记忆》"},
+    {"id":"open","claims":["1913年拆除旗营、城墙，西湖与城区连通"],"url":"https://www.hzzx.gov.cn/cshz/content/2021-07/01/content_7998500_4.htm","source":"杭州政协网《100年！杭州经济社会发展报告》"},
+    {"id":"river","claims":["2001年钱江新城开工","从西湖时代到钱塘江时代"],"url":"https://hzyjfz.cn/","source":"杭州市钱江新城建设管理委员会"},
+    {"id":"banks","claims":["沿江开发、跨江发展","滨江、钱江新城、钱江世纪城"],"url":"https://www.hzyjfz.cn/index.php?a=read&g=&id=3&m=yongj","source":"中共杭州市委杭州市人民政府关于实施拥江发展战略的意见"},
+    {"id":"westlake","claims":["2011年西湖文化景观列入世界遗产"],"url":"https://whc.unesco.org/en/list/1334/","source":"UNESCO World Heritage Centre"},
+    {"id":"canal","claims":["大运河的南北交通作用","2014年大运河列入世界遗产"],"url":"https://whc.unesco.org/en/list/1443/","source":"UNESCO World Heritage Centre"},
+    {"id":"liangzhu","claims":["2019年良渚古城遗址列入世界遗产"],"url":"https://whc.unesco.org/en/list/1592/","source":"UNESCO World Heritage Centre"}
+  ],
+  "geometry_sources":[
+    {"name":"CMAB v2","url":"https://doi.org/10.6084/m9.figshare.27992417.v2","license":"CC BY 4.0","citation":"Zhang, Y., Zhao, H. & Long, Y. CMAB: A Multi-Attribute Building Dataset of China. Scientific Data 12, 430 (2025).","note":"Rooftops and estimated heights; not an exact present-day survey or historical reconstruction."},
+    {"name":"OpenStreetMap","url":"https://www.openstreetmap.org/copyright","license":"ODbL","attribution":"© OpenStreetMap contributors","note":"Water polygons, roads and waterways; clipped to film extent. Derived source retained locally."}
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "title": "一城山水，千年生长",
+  "subtitle": "THE RINGS OF HANGZHOU",
+  "voice": "zh-CN-YunxiNeural",
+  "rate": "-6%",
+  "scenes": [
+    {"id":"prologue","year":"杭州","title":"一城山水","en":"A CITY SHAPED BY WATER","lines":[
+      ["这座城，把山水写进了自己的故事。","This city writes its story in hills and water."],
+      ["一面是湖，一面是江。","A lake on one side. A river on the other."],
+      ["杭州的年轮，就藏在它们之间。","Between them lie the rings of Hangzhou."]]},
+    {"id":"name","year":"589","title":"杭州之名","en":"THE NAME HANGZHOU","lines":[
+      ["公元五百八十九年，隋朝设置杭州。","In 589, the Sui established Hangzhou prefecture."],
+      ["这个名字，沿着时光流传至今。","The name has travelled through the centuries."],
+      ["城，依着西湖东岸展开。","The city took shape east of West Lake."]]},
+    {"id":"canal","year":"隋唐","title":"运河通南北","en":"A WATERWAY TO THE NORTH","lines":[
+      ["运河把杭州，接入了南北水路。","The canal connected Hangzhou to north and south."],
+      ["船载着粮食、丝绸，也载来远方。","Boats brought grain, silk, and distant worlds."],
+      ["一座江南城市，从此有了更大的天地。","A city in Jiangnan found a wider horizon."]]},
+    {"id":"wuyue","year":"907","title":"吴越钱塘","en":"THE WUYUE CAPITAL","lines":[
+      ["五代，杭州成为吴越国的都城。","In the Five Dynasties, Hangzhou was Wuyue's capital."],
+      ["城郭、海塘与寺塔，留下新的印记。","City walls, sea dikes and temples left their marks."]]},
+    {"id":"sudi","year":"1090","title":"一堤留千年","en":"A CAUSEWAY THROUGH TIME","lines":[
+      ["一千零九十年，苏轼主持疏浚西湖。","In 1090, Su Shi directed the dredging of West Lake."],
+      ["挖出的湖泥，筑成一条贯湖南北的长堤。","Dredged mud became a causeway across the lake."],
+      ["后来，人们叫它苏堤。","People would call it the Su Causeway."]]},
+    {"id":"linan","year":"1138","title":"南宋临安","en":"LIN'AN, SOUTHERN SONG","lines":[
+      ["一千一百三十八年，南宋定都临安。","In 1138, Lin'an became the Southern Song capital."],
+      ["皇城在南，街市向北。","The palace lay south; the markets stretched north."],
+      ["湖山之间，铺开一幅繁华的城市长卷。","Between lake and hills, urban life unfolded."]]},
+    {"id":"open","year":"1913","title":"把西湖迎进城","en":"THE CITY OPENS TO THE LAKE","lines":[
+      ["一九一三年，拆城开路。","In 1913, walls came down and roads opened."],
+      ["城墙退去，西湖与街巷重新相遇。","The lake and city streets met again."],
+      ["城市的边界，开始向外舒展。","The city's boundaries began to open outward."]]},
+    {"id":"river","year":"2001","title":"向钱塘江生长","en":"GROWING TOWARD THE RIVER","lines":[
+      ["进入新世纪，杭州把目光投向钱塘江。","In the new century, Hangzhou looked to the Qiantang."],
+      ["二零零一年，钱江新城开工建设。","Construction of Qianjiang New City began in 2001."],
+      ["城市的重心，开始从湖畔走向江岸。","The city's focus moved from lakeside to riverbank."]]},
+    {"id":"bridges","year":"跨江","title":"一江连接两岸","en":"ONE RIVER, TWO CONNECTED BANKS","lines":[
+      ["桥梁跨过江面，两岸彼此连接。","Bridges crossed the water, joining the two banks."],
+      ["钱江新城、滨江、钱江世纪城，交相呼应。","Qianjiang New City, Binjiang and Century City grew together."],
+      ["曾经的城市边缘，成为新的中心。","What was once an edge became a new centre."]]},
+    {"id":"heritage","year":"2011—2019","title":"三处世界遗产","en":"THREE WORLD HERITAGE INSCRIPTIONS","lines":[
+      ["二零一一年，西湖文化景观列入世界遗产。","West Lake's cultural landscape was inscribed in 2011."],
+      ["二零一四年，大运河。","The Grand Canal followed in 2014."],
+      ["二零一九年，良渚古城遗址。","The Archaeological Ruins of Liangzhu City in 2019."],
+      ["三个时间坐标，照见杭州的深度。","Three points in time reveal Hangzhou's depth."]]},
+    {"id":"today","year":"今日","title":"古今在此交汇","en":"WHERE PAST MEETS POSSIBILITY","lines":[
+      ["今天，新的楼宇沿江而立。","Today, new towers stand along the river."],
+      ["新的想象，在这座城里生长。","New possibilities grow within the city."],
+      ["但湖、河与江，仍是读懂杭州的线索。","Lake, canal and river still tell us who Hangzhou is."]]},
+    {"id":"epilogue","year":"杭州","title":"一城山水，千年生长","en":"THE RINGS OF HANGZHOU","lines":[
+      ["年轮向外，山水在心。","The rings grow outward. The landscape stays at heart."],
+      ["这，就是杭州。","This is Hangzhou."]]}
+  ]
+}

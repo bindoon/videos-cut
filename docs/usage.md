@@ -16,6 +16,7 @@
 | 本地音频或视频 | 文字、SRT、逐词 JSON | `transcribe input.mp4` |
 | 视频网页或文件链接 | 可直接剪辑的素材清单 | `download 'URL'` |
 | 已有媒体文件 | 改画幅、调音、字幕烧录或平台导出 | `ffmpeg TOOL ...` |
+| 本地 Canvas / Three.js 工程 | 分镜静帧、逐帧出片、续跑与完整性检查 | `codefilm plan / stills / render / verify`，见[代码视频指南](code-films.md) |
 | 参考声音与新稿 | 参考音色旁白和完整视频 | `render --tts clone/indextts ...` |
 
 `demo` 与 `render` 使用同一套参数和渲染逻辑，默认读取咖啡示例；`rough-cut` 则单独调用 Auto-Editor 做静音粗剪。

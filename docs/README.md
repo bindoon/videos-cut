@@ -22,7 +22,9 @@
 | [声音克隆](voice-cloning.md) | Apple Silicon 上的 F5-TTS MLX、参考逐字稿与逐句旁白 |
 | [IndexTTS 控制](voice-controls.md) | IndexTTS-2.5 安装、语速/情绪/拼音、完整视频与 SSML 实验边界 |
 | [FFmpeg 工具](ffmpeg-tools.md) | 42 个工具的常用命令、后期处理、平台导出和原管线边界 |
+| [代码视频与城市短片工作流](code-films.md) | `codefilm` 配置、逐帧渲染、缓存验收，以及从真实数据、解说到交付的制作步骤 |
 | [展示媒体](media/README.md) | README 实际截图和 GIF 的来源、归属与复现方法 |
+| [杭州白模短片](../films/hangzhou/README.md) | 真实杭州建筑、水系与代码光层，Three.js 逐帧渲染及复现方法 |
 
 ## 文档与文件分别代表什么
 

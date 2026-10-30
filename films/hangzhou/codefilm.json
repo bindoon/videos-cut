@@ -1,0 +1,13 @@
+{
+  "schema": "codefilm-v1",
+  "entry": "index.html",
+  "timeline": "data/timeline.json",
+  "width": 1920,
+  "height": 1080,
+  "chunk_frames": 120,
+  "sources": [
+    "index.html", "main.js", "city.js", "vendor/lemo/post.js",
+    "package-lock.json", "data/model.json", "data/timeline.json",
+    "data/stats.json", "fonts"
+  ]
+}

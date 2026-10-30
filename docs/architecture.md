@@ -2,6 +2,8 @@
 
 本地 CLI 项目，不依赖数据库或云端任务服务。CLI 参数与 JSON 文件定义一次任务，`outputs/` 保存结果，`assets/cache/` 保存可复用素材与转录。
 
+`codefilm` 是独立的代码画面入口：本地 HTML / Canvas / Three.js 按确定性的 `render(t)` 绘制，经无损 PNG 与现有 `videocut ffmpeg sequence` 编码成可续跑的片段。`films/hangzhou/` 拥有城市 GIS 转换、历史内容、相机和配音/配乐，通过配置复用该渲染器。完整制作流程见[代码视频指南](code-films.md)，具体数据与片子复现见[杭州短片说明](../films/hangzhou/README.md)。
+
 [文档导航](README.md) · [使用指南](usage.md) · [AI 操作指南](ai-guide.md) · [开源来源](open-source.md)
 
 ## 入口与数据流
@@ -16,6 +18,7 @@
 参考录音 + 新稿 + 原生控制参数 → IndexTTS-2.5 → 22.05kHz WAV → 48kHz 逐句 WAV → 同一条混剪管线
 参考录音 + 控制样例 → IndexTTS-2.5 / SSML 实验适配层 → 独立音频对照与验收
 已有媒体 → videocut ffmpeg TOOL → 新媒体 / 工具报告 / 可选剪辑软件时间线
+本地代码 + 数据 + 时间轴 → codefilm → 静帧 / 已校验分段 + manifest → FFmpeg 后期与独立交付检查
 ```
 
 ## 数据与边界
@@ -30,7 +33,7 @@
 
 | 文件 | 职责 |
 | --- | --- |
-| `videocut/cli.py` | 提供 `prepare / download / transcribe / demo / render / mix / cut / rough-cut / raw-sample` 和 `ffmpeg` 转发入口 |
+| `videocut/cli.py` | 提供 `prepare / download / transcribe / demo / render / mix / cut / rough-cut / raw-sample`，以及 `ffmpeg / codefilm` 转发入口 |
 | `videocut/creation.py` | `prepare` 检查宿主创作计划，输出待补素材任务或现有渲染器配置；不调用模型或网络 |
 | `videocut/assets.py` | 下载、来源记录和标签选片；不做未接入的视觉模型理解 |
 | `videocut/downloads.py` | HTTP Range 与 yt-dlp 导入、规格隔离缓存、大小预算、逐项失败结果和媒体校验；网页下载依赖可选 `download` extra |
@@ -48,6 +51,7 @@
 | `videocut/render.py` | FFmpeg 运镜/转场，MoviePy 图层合成，音量标准化与完整解码验收 |
 | `videocut/media.py` | 有超时、检查退出码的进程调用与 ffprobe |
 | `videocut/ffmpeg_tools.py` | `ffmpeg` 子命令，将工具参数、标准输出和退出码原样交给项目内固定的 ffmpeg-skill；不接管配音、ASR 或字幕同步门禁 |
+| `videocut/codefilm.py`、`codefilm_runner.mjs` | 配置与输入摘要、私有浏览器逐帧捕获、输出锁、分段缓存、实际媒体校验；不负责 GIS、叙事、配音或 Qwen 验收 |
 
 `mix` 使用同一份剪后音频时间轴：原视频镜头从对应时间截取，插入素材时只替换画面。不会把原片声音和旁白重复播放。字幕图层在背景转场之后叠加，避免两条字幕跟着转场重影。
 
@@ -68,6 +72,10 @@ ASR 和 Auto-Editor 是 `asr` 可选依赖，普通脚本混剪不需要安装�
 缺失素材按 `local / host_image / external_video` 输出不同动作；已有文件即使带生成提示词，也只校验并复用，不重新生成。可选 `sha256` 不符或文件损坏会产生 `invalid`，不会自动覆盖；缺文件产生 `pending`；全部就绪才输出渲染配置和素材清单。每次占用新目录，保留计划原始快照与摘要。素材清单中的 `creation` 保留提示词、参考路径与调用者提供的生成元数据，通过现有素材导入继续进入 `sources.json`。参考路径不等于参考文件的不可变快照，宿主需另行保存生成服务实际采用的参考信息。
 
 `prepare` 不做内容质量评审，也不接管旁白、字幕或同步验收。宿主生图可能联网并使用账户额度；准备命令自身的零模型/零网络统计不代表全流程成本。`external_video` 是显式缺项，当前没有自动提交 AI 视频服务的适配器。批量调度、浏览器发布和增量合成未新增。
+
+## 代码画面与影片工程
+
+代码画面使用 `codefilm-v1` 配置、JSON 时间轴和 `window.READY / render(t)` 页面接口；配置与结果不等于主混剪配置或 ffmpeg-skill 后期配置。输入文件、工具包装代码、画幅设置和浏览器/GPU 身份参与缓存；完成段保存摘要，复用仍重新探测实际文件。源码改变采用新的整片缓存键；局部预览不会自动与其他源码版本合并。完整性检查拒绝片段缺口与局部预览冒充整片，字幕声学验收另行进行。具体协议与限制见[代码视频指南](code-films.md)。
 
 ## 素材导入边界
 
@@ -131,5 +139,6 @@ IndexTTS-2.5 使用 `.venv-index`（Python 3.11 / PyTorch MPS）。`--tts indext
 | 字幕计划与显示验收 | `captions.py`、`sync.py`、`tests/test_caption_alignment.py`、`tests/test_subtitle_delivery.py` |
 | 画面图层与合成 | `render.py`；保持转场与字幕分层关系，结合实际截图检查 |
 | FFmpeg 扩展接入 | `ffmpeg_tools.py`、`tests/test_ffmpeg_tools.py`、`scripts/verify_ffmpeg_tools.py` |
+| 代码动画、浏览器逐帧与分段完整性 | `codefilm.py`、`codefilm_runner.mjs`、`tests/test_codefilm.py`、`scripts/verify_codefilm.py` |
 
 各模式通过显式文件衔接，没有隐藏任务队列。主项目配置与 ffmpeg-skill 项目配置不是同一协议，不能直接互换；后期输出也不自动继承旧的同步验收。完整测试需安装 `download` 与 `asr` 两个 extra，执行方式见[使用指南](usage.md)。

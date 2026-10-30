@@ -52,6 +52,7 @@
 | F5 参考音色 | `render --tts clone` | [声音克隆](voice-cloning.md) |
 | IndexTTS 参考音色与控制 | `render --tts indextts` | [IndexTTS 控制](voice-controls.md)、[字幕同步](subtitle-sync.md) |
 | 调整画幅、调音、字幕烧录、导出 | `videocut ffmpeg TOOL` | 项目内 [ffmpeg-skill](../.agents/skills/ffmpeg-skill/SKILL.md)、[工具接入说明](ffmpeg-tools.md) |
+| 城市白模、数据图解等代码视频 | `videocut codefilm plan / stills / render / verify` | [代码视频工作流](code-films.md)、[杭州范例](../films/hangzhou/README.md) |
 | 修改项目实现 | 先追踪对应模块和测试 | [架构](architecture.md)、[验证记录](verification.md) |
 
 本项目提供执行工具，AI 负责理解意图、编写剧本、挑选画面和组织命令。项目没有内置自由调用大模型写稿的服务，也没有任意视频的视觉自动打标。
@@ -68,6 +69,8 @@
 `creation-report.json.execution` 仅统计准备命令自身的模型/网络调用，不能据此声称宿主生图或后续配音也离线、免费。宿主的可用能力依当前会话判断，不假定所有 Codex、WorkBuddy 环境都提供生图工具。
 
 ## 2. 检查输入和环境
+
+代码视频先读 [code-films.md](code-films.md)，用 `codefilm plan` 检查真实输入，再做 `stills` 和局部预览；检查实际截图后才全片渲染。每次明确 `--output`，把字体、模型、时间轴和依赖锁列入配置 `sources`。完整交付前运行 `codefilm verify`；局部预览只能显式 `--allow-partial` 检查。它的帧数、格式、摘要检查不代表字幕声学同步通过，最终声音和字幕另验。不要将不同源码版本的镜头缓存手工拼成全片。
 
 ```bash
 uv run videocut --help

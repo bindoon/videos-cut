@@ -1,5 +1,27 @@
 # 验证记录
 
+## 2026-10-30：代码视频工具与制作工作流沉淀
+
+- 新增 `videocut codefilm plan / stills / render / verify`，从杭州脚本抽出本地浏览器捕获、A→B→A 截图检查、无损 PNG 分段编码、输入摘要与缓存校验。`examples/codefilm/` 为两秒 Canvas 示例，杭州改用 `codefilm.json` 与共享入口，影片内容及 GIS 转换仍在 `films/hangzhou/`。未修改 ASR 缓存、Qwen 或 `sync.py`。
+- 5 项新增确定性测试使用实际本地 FFmpeg：计划只读及源码摘要变化、实际帧数/格式验收、同大小视频损坏、时间轴缺口、局部片段冒充全片、伪造帧数、严格 JSON 输出解析，以及杭州旁白要求显式输出并保护旧成片。各分支集中于 5 个测试函数，没有通过跳过或削弱原断言换取通过。
+- 浏览器烟测实际使用 Apple M4 / ANGLE Metal、Chromium headless shell 与影片锁定的 Playwright 1.63.0：**48 帧、640×360、24fps、4 段**完整输出；重跑复用全部 4 段且视频文件摘要和修改时间不变。故意翻转一段末尾字节，续跑明确拒绝摘要不符，随后恢复测试文件。两个场景静帧、合片后的实际 48 帧与截图均检查通过。证据：`outputs/codefilm-integration-20261030-v2/`。
+- 杭州真实模型经新入口完成 **118～119 秒、640×360、24 帧**局部渲染，并通过显式 `--allow-partial` 验收；查看了实际编码帧中的跨江画面、光层和双语字幕。证据：`outputs/hangzhou-codefilm-regression-20261030/`。没有用这个短段冒充重新渲染过全部 4,100 帧。
+- 杭州音乐脚本用明确的新输出目录实际重生成原 170.833 秒混音，修复其旧式单行入口遗漏输出参数的问题。后期通过原成片截出的两秒测试夹具（**48 帧、1920×1080、24fps**）验证合片、混音、响度、章节和截图；关键帧取样改为按章节计算。后期重跑不改写最终 MP4；故意修改测试混音后明确拒绝复用旧结果，恢复原混音。平台检查 **0 失败、1 警告**（没有独立语言字幕轨）。实际看板已查看。证据：`outputs/hangzhou-post-regression-20261030-v2/post-smoke-verification.json`。这是后期回归夹具，不是新的完整杭州成片，也未重新跑在线 TTS、GIS 下载或 35 条 OCR。
+- 失败与恢复：第一版两秒烟测误用 `join` 默认淡化，改成显式 `transition=none` 后通过。额外完整时长后期回归遇到 **No space left on device**，未交付不完整输出，保留 `outputs/hangzhou-post-regression-20261030/disk-full-*` 日志；只清理本轮生成/复制的可再生测试 WAV，再缩小后期夹具。并行套件当时一项原有 PCM 字幕测试失败，不能仅据此确认与磁盘的因果关系；原断言未改，单独复跑通过，随后完整套件通过。
+- 按项目约定先执行 `uv sync --extra download --extra asr`，最终 **`uv run pytest -q`：76 passed，29.44 秒**。保留 MoviePy / NumPy 的 **588 条既有弃用警告**。主模块、新测试/烟测通过 Ruff；影片脚本通过致命错误规则检查，Python 编译、Node 语法和 `git diff --check` 均通过。
+- wheel 构建通过，确认包含 `codefilm_runner.mjs` 和固定 `sequence.py` 工具；安装到隔离目标目录，从仓库外运行其 `codefilm plan` 成功。核对本轮涉及文档的 **112 处本地文件链接**，无缺失。新增 [代码视频工作流](code-films.md)，同步首页、使用/AI 指南、架构、来源与杭州复现说明。原杭州交付 MP4 SHA-256 仍为 `0b45beeb09add5d70187299cea75b657e7794b50ac0161e8df37d321fd416e14`。
+
+## 杭州城市白模短片（2026-10-30）
+
+- 新增独立工程 [films/hangzhou](../films/hangzhou/README.md)，使用 Three.js / Canvas 渲染真实杭州建筑、水系与历史区位光层。CMAB 杭州原始文件含 124,455 条记录，取景矩形约 515.82 km²；最终含 75,139 个建筑轮廓，其中 40 个采用明确 OSM 楼高，替换 14 个重叠的 CMAB 部分。原始 ZIP 成员按 HTTP Range 获取并校验长度与 CRC；不是程序随机生成的城市。
+- [成片](../outputs/hangzhou-rings-20261030/杭州-一城山水千年生长.mp4)：4,100 帧，视频 170.833333 秒，容器 170.967 秒；1920×1080、24fps、H.264 High / yuv420p / BT.709 视频范围，AAC 双声道 48kHz，12 个章节。容器与视频尾长差异来自音频编码，不增加画面帧数。
+- 解说为原创杭州稿，Edge TTS `zh-CN-YunxiNeural`；35 条字幕按真实 PCM 采样数生成 SRT 并回读。配乐与音效由代码合成，所有城市画面来自代码渲染，没有调用生图或生视频模型。
+- [字幕 OCR 回读](../outputs/hangzhou-rings-20261030/caption-ocr-verification.json)：35 条中文字幕分别从实际编码视频的字幕中点抽一帧，系统 Vision 独立识别后全部匹配。它是每条字幕的一帧抽样，不是全部帧验收，也不是 Qwen 强制对齐。
+- [交付报告](../outputs/hangzhou-rings-20261030/verification.json)：从成片提取音轨，与原始混音比较 9 个波形窗口，测得偏移均为 0，最低相关性约 0.9884。`subtitle_sync.passed=null`，没有把独立检查标作原主链路 `sync.py` 门禁通过；未记录人工听感复核。
+- [媒体检查](../outputs/hangzhou-rings-20261030/final-check.json)：0 项失败、1 项提示，测得约 -14.1 LUFS / -1.7 dBTP；黑帧、冻帧和静音检测通过。提示为没有内置可切换字幕轨，双语字幕已烧录，独立 SRT 随工程保留。
+- 已查看[真实成片看板](../outputs/hangzhou-rings-20261030/contact-sheet.png)及开场、西湖、跨江、天际线和片尾的编码帧。修正了宽景下近裁面造成的深度条纹，并从 JPEG 中间帧改为无损 PNG，使项目工具明确执行 RGB→BT.709 视频范围转换；没有放宽 yuv420p 或帧数断言。早期全范围输出和工具失败报告留在结果目录，成片使用后来通过检查的版本。
+- Node 语法检查、Python 编译、Ruff 的未定义名称/语法规则和 `git diff --check` 通过。主混剪、ASR 缓存和 Qwen 实现未改动；本次没有把历史 51 项测试结果当作本轮完整测试结果。
+
 ## 宿主 Agent 创作交接（2026-10-29）
 
 - 新增 `prepare --plan ... --output ...`；写稿、提示词与生图由宿主负责，本地命令只检查计划和文件。AiToEarn 设计参考与固定修订见 [open-source.md](open-source.md#设计参考aitoearn)。

@@ -475,6 +475,10 @@ def raw_sample(args) -> None:
 
 
 def main() -> None:
+    if len(sys.argv) > 1 and sys.argv[1] == "codefilm":
+        from .codefilm import main as codefilm_main
+
+        raise SystemExit(codefilm_main(sys.argv[2:]))
     if len(sys.argv) > 1 and sys.argv[1] == "ffmpeg":
         from .ffmpeg_tools import main as ffmpeg_main
 
@@ -483,6 +487,7 @@ def main() -> None:
         description="素材混剪：配音、字幕、转场、贴纸和口播精剪"
     )
     sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser("codefilm", help="Deterministic browser film: plan / stills / render / verify")
     sub.add_parser("ffmpeg", help="42 local FFmpeg tools; videocut ffmpeg --help")
     command = sub.add_parser(
         "prepare", help="Check a host-agent creation plan; no model or network calls"

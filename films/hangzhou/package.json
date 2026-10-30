@@ -1,0 +1,13 @@
+{
+  "name": "hangzhou-rings-film",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "still": "node tools/render.mjs --stills",
+    "render": "node tools/render.mjs"
+  },
+  "dependencies": {
+    "three": "0.170.0",
+    "playwright-core": "1.63.0"
+  }
+}

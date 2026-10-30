@@ -3,9 +3,39 @@
 from __future__ import annotations
 
 import argparse
+import json
 import subprocess
 import sys
 from pathlib import Path
+
+
+def parse_json_output(stdout: str) -> dict:
+    """The look tool prints declared output paths after its JSON document."""
+    source = stdout.lstrip()
+    doc, end = json.JSONDecoder().raw_decode(source)
+    if not isinstance(doc, dict):
+        raise TypeError("Expected a JSON object from videocut ffmpeg")
+    trailing = [line.strip() for line in source[end:].splitlines() if line.strip()]
+    if any(line not in doc.get("outputs", []) for line in trailing):
+        raise ValueError("Unexpected non-JSON tool output")
+    return doc
+
+
+def invoke_json(arguments: list[str], *, report: Path | None = None) -> dict:
+    """Call the pinned tools without a shell; preserve raw evidence if requested."""
+    result = subprocess.run(
+        [sys.executable, "-m", "videocut.ffmpeg_tools", *map(str, arguments)],
+        capture_output=True, text=True, check=False,
+    )
+    if report:
+        report.with_name(report.name + ".stdout").write_text(result.stdout)
+        report.with_name(report.name + ".stderr").write_text(result.stderr)
+    if result.returncode:
+        raise RuntimeError(f"videocut ffmpeg {arguments[0]} failed ({result.returncode}): {result.stderr[-1800:]}")
+    doc = parse_json_output(result.stdout)
+    if report:
+        report.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n")
+    return doc
 
 
 def skill_directory() -> Path:
