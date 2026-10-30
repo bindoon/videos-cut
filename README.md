@@ -31,7 +31,7 @@
 | **口播精剪与素材穿插** | 按真实词时间删除指定口头词和长停顿，按视频帧同时切音画，重排字幕；`mix` 再交替使用原片和素材 |
 | **本地语音转录** | 输出 TXT、SRT、逐词 JSON；长音频分段解码，完成段可缓存、恢复，损坏段单独重算 |
 | **网页视频 / 音频导入** | yt-dlp 网页解析，以及微信视频号本地捕获/解密服务接入；清晰度选择、字幕轨、缓存和失败重试；输出可直接用于渲染的素材清单 |
-| **参考音色与语音控制** | F5-TTS MLX 与 IndexTTS-2.5 生成新旁白；IndexTTS 支持原生语速、情绪向量与逐句拼音纠音 |
+| **参考音色与语音控制** | 默认使用 IndexTTS-2.5 生成新旁白；IndexTTS 支持原生语速、情绪向量与逐句拼音纠音 |
 | **字幕显示与成片验收** | IndexTTS 默认用 Qwen 定位句末，上一句结束即显示下一句；固定分条、SRT 回读、全部编码帧及音轨偏移检查 |
 | **42 个 FFmpeg 工具** | 改画幅、字幕烧录、音乐自动压低、HDR 转 SDR、多机位同步、平台导出、批处理与剪辑软件时间线导出 |
 | **代码动画逐帧出片** | 本地 Canvas / Three.js 页面按 `render(t)` 绘制，支持分镜静帧、局部预览、分段续跑与实际编码文件完整性检查 |
@@ -53,7 +53,7 @@ uv sync
 uv run videocut demo --tts macos --output outputs/coffee-local
 ```
 
-默认输出 `720×1280 / 24fps`；macOS 系统 Tingting 配音在本地运行，首次仍需下载示例素材。使用在线 Edge 配音可显式选择 `--tts edge`。网络较慢时，先生成小尺寸预览：
+语音合成默认使用 **IndexTTS-2.5**（`--tts indextts`），需提供 `--reference-audio`；先按 [IndexTTS 安装说明](docs/voice-controls.md#安装与下载) 和 [字幕对齐说明](docs/subtitle-sync.md) 准备模型。上面的快速检查显式使用 macOS 系统声音。默认输出 `720×1280 / 24fps`；macOS 系统 Tingting 配音在本地运行，首次仍需下载示例素材。使用在线 Edge 配音可显式选择 `--tts edge`。网络较慢时，先生成小尺寸预览：
 
 ```bash
 uv run videocut demo --tts macos \
@@ -62,7 +62,7 @@ uv run videocut demo --tts macos \
 
 结果目录包含 `final.mp4`、`captions.srt`、`timeline.json`、`sources.json`、`verification.json`、`contact-sheet.jpg` 和配置快照。更换剧本、素材、声音以及各模式的附加产物见[使用指南](docs/usage.md)。
 
-主链路实跑平台是 macOS Apple Silicon。F5 的 MLX 路径依赖 Apple Silicon；下载/ASR 文件锁依赖 macOS/Linux 的 `flock`。Linux 需准备中文字体并选择相应配音方案，原生 Windows 全流程尚未验证。
+主链路实跑平台是 macOS Apple Silicon。IndexTTS 默认使用 MPS，可显式选择 CPU/CUDA；下载/ASR 文件锁依赖 macOS/Linux 的 `flock`。Linux 需准备中文字体并选择相应配音方案，原生 Windows 全流程尚未验证。
 
 ## 按任务使用
 
@@ -85,7 +85,7 @@ uv run videocut render --config examples/coffee.json \
   --materials examples/materials.json --tts edge --output outputs/my-video
 ```
 
-下载视频链接、已有旁白、F5 / IndexTTS 安装及配置，参见[完整使用方法](docs/usage.md)。每次成片使用新的 `--output` 目录。
+下载视频链接、已有旁白、IndexTTS 安装及配置，参见[完整使用方法](docs/usage.md)。每次成片使用新的 `--output` 目录。
 
 独立后期操作走项目内固定的 ffmpeg-skill，无需另装全局技能：
 
@@ -129,7 +129,7 @@ uv run videocut codefilm verify outputs/codefilm-demo/render-manifest.json
 | MoviePy / Pillow / FFmpeg | 实际执行画面图层、文字、贴纸、转场、音画裁切与编码 |
 | faster-whisper / Auto-Editor | 逐词转录与独立静音粗剪；本项目负责缓存、精剪计划与字幕重排 |
 | Qwen3-ForcedAligner | 给定原稿与音频，定位字词及句末；本项目补充固定展示计划与成片验收 |
-| F5-TTS MLX / IndexTTS / Edge TTS | 参考音色、本地语音控制及在线配音 |
+| IndexTTS / Edge TTS | 默认参考音色、本地语音控制及在线配音 |
 | yt-dlp | 网页视频、音轨、字幕和播放列表解析；本项目负责素材接入、校验与失败恢复 |
 | ffmpeg-skill | 随项目固定分发 2.16.1 的 42 个工具、技能说明与模板，通过 CLI 直接调用 |
 

@@ -84,6 +84,34 @@ def existing_audio(
     return scenes, cues, audio
 
 
+def generate_index_speech(config: dict, args) -> dict:
+    if not args.reference_audio:
+        raise ValueError("--tts indextts requires --reference-audio")
+    request = {
+        "config": config,
+        "reference_audio": str(args.reference_audio.resolve()),
+        "model_path": str(args.index_model.resolve()),
+        "upstream_path": str(args.index_upstream.resolve()),
+        "device": args.index_device,
+        "output": str((args.output / "speech").resolve()),
+    }
+    request_path = args.output / "index-request.json"
+    write_json(request_path, request)
+    print("使用本地 IndexTTS-2.5 生成参考音色旁白", flush=True)
+    result = run(
+        [
+            str(args.index_python),
+            "-u",
+            "scripts/index_narration.py",
+            "--request",
+            str(request_path),
+        ],
+        timeout=1800,
+    )
+    print(result.stdout, flush=True)
+    return json.loads((args.output / "speech/index-manifest.json").read_text())
+
+
 def render(args) -> None:
     from .render import compose, inspect_output, render_backgrounds
 
@@ -100,8 +128,14 @@ def render(args) -> None:
         raise ValueError("--caption-alignment conflicts with --caption-mode file")
     if args.speech_manifest and (args.audio or args.command == "mix"):
         raise ValueError("--speech-manifest applies only to generated narration")
-    if args.speech_manifest and args.tts not in {"clone", "indextts"}:
-        raise ValueError("--speech-manifest requires --tts clone or indextts")
+    if args.speech_manifest and args.tts != "indextts":
+        raise ValueError("--speech-manifest requires --tts indextts")
+    if (
+        args.tts == "indextts"
+        and not (args.audio or args.command == "mix" or args.speech_manifest)
+        and not args.reference_audio
+    ):
+        raise ValueError("--tts indextts (default) requires --reference-audio")
     speech_captions = not (args.audio or args.command == "mix") and (
         args.caption_mode == "speech"
         or args.caption_alignment is not None
@@ -195,9 +229,7 @@ def render(args) -> None:
             import hashlib
 
             cloned = json.loads(args.speech_manifest.read_text())
-            expected_provider = {"indextts": "IndexTTS-2.5", "clone": "F5-TTS-MLX"}.get(
-                args.tts
-            )
+            expected_provider = "IndexTTS-2.5"
             if cloned.get("provider") != expected_provider:
                 raise ValueError("Speech manifest provider does not match --tts")
             prepared_speech = {}
@@ -210,33 +242,7 @@ def render(args) -> None:
                 prepared_speech[record["text"]] = str(path)
             clone_metadata = {k: v for k, v in cloned.items() if k != "utterances"}
         if args.tts == "indextts" and prepared_speech is None:
-            if not args.reference_audio:
-                raise ValueError("--tts indextts requires --reference-audio")
-            request = {
-                "config": config,
-                "reference_audio": str(args.reference_audio.resolve()),
-                "model_path": str(args.index_model.resolve()),
-                "upstream_path": str(args.index_upstream.resolve()),
-                "device": args.index_device,
-                "output": str((args.output / "speech").resolve()),
-            }
-            request_path = args.output / "index-request.json"
-            write_json(request_path, request)
-            print("使用本地 IndexTTS-2.5 生成参考音色旁白", flush=True)
-            result = run(
-                [
-                    str(args.index_python),
-                    "-u",
-                    "scripts/index_narration.py",
-                    "--request",
-                    str(request_path),
-                ],
-                timeout=1800,
-            )
-            print(result.stdout, flush=True)
-            cloned = json.loads(
-                (args.output / "speech/index-manifest.json").read_text()
-            )
+            cloned = generate_index_speech(config, args)
             clone_metadata = {
                 key: cloned[key]
                 for key in (
@@ -246,58 +252,6 @@ def render(args) -> None:
                     "model_sha256",
                     "model_revision",
                     "upstream_revision",
-                    "cache_key",
-                )
-            }
-            prepared_speech = {r["text"]: r["path"] for r in cloned["utterances"]}
-        if args.tts == "clone" and prepared_speech is None:
-            if not args.reference_audio:
-                raise ValueError("--tts clone requires --reference-audio")
-            reference_text = args.reference_text
-            if not reference_text:
-                from .cleaning import transcribe
-
-                reference_transcript = transcribe(
-                    args.reference_audio,
-                    args.output / "reference-transcript.json",
-                    args.model,
-                    args.language,
-                )
-                reference_text = "".join(
-                    s["text"] for s in reference_transcript["segments"]
-                )
-            request = {
-                "config": config,
-                "reference_audio": str(args.reference_audio.resolve()),
-                "reference_text": reference_text,
-                "model_path": str(args.clone_model.resolve()),
-                "vocoder_path": str(args.clone_vocoder.resolve()),
-                "output": str((args.output / "speech").resolve()),
-            }
-            request_path = args.output / "clone-request.json"
-            write_json(request_path, request)
-            print("本地克隆参考音色并生成新旁白", flush=True)
-            result = run(
-                [
-                    str(args.voice_python),
-                    "-u",
-                    "scripts/clone_narration.py",
-                    "--request",
-                    str(request_path),
-                ],
-                timeout=1800,
-            )
-            print(result.stdout, flush=True)
-            cloned = json.loads(
-                (args.output / "speech/clone-manifest.json").read_text()
-            )
-            clone_metadata = {
-                key: cloned[key]
-                for key in (
-                    "provider",
-                    "reference_audio",
-                    "reference_sha256",
-                    "model_sha256",
                     "cache_key",
                 )
             }
@@ -405,6 +359,10 @@ def raw_sample(args) -> None:
         "嗯，那个。",
         "慢慢来，也是一种生活的节奏。",
     ]
+    prepared_speech = None
+    if args.tts == "indextts":
+        manifest = generate_index_speech({"scenes": [{"lines": lines}]}, args)
+        prepared_speech = {r["text"]: r["path"] for r in manifest["utterances"]}
     total = 0
     truth = []
     with wave.open(str(folder / "raw.wav"), "wb") as writer:
@@ -412,8 +370,10 @@ def raw_sample(args) -> None:
         writer.setsampwidth(2)
         writer.setframerate(48000)
         for i, text in enumerate(lines):
-            audio = synthesize_line(
-                text, speech, args.tts, "zh-CN-XiaoxiaoNeural", "-5%"
+            audio = (
+                Path(prepared_speech[text])
+                if prepared_speech is not None
+                else synthesize_line(text, speech, args.tts, "zh-CN-XiaoxiaoNeural", "-5%")
             )
             with wave.open(str(audio), "rb") as reader:
                 frames = reader.getnframes()
@@ -474,6 +434,28 @@ def raw_sample(args) -> None:
     print(f"可控精剪测试素材（合成旁白＋下载画面）: {(folder / 'raw.mp4').resolve()}")
 
 
+def add_tts_arguments(command: argparse.ArgumentParser) -> None:
+    command.add_argument(
+        "--tts",
+        choices=["indextts", "edge", "macos"],
+        default="indextts",
+        help="Speech engine (default: IndexTTS-2.5; requires --reference-audio)",
+    )
+    command.add_argument("--reference-audio", type=Path)
+    command.add_argument(
+        "--index-python", type=Path, default=Path(".venv-index/bin/python")
+    )
+    command.add_argument(
+        "--index-model", type=Path, default=Path("assets/models/IndexTTS-2.5")
+    )
+    command.add_argument(
+        "--index-upstream", type=Path, default=Path("upstream/index-tts-reference")
+    )
+    command.add_argument(
+        "--index-device", choices=["mps", "cpu", "cuda"], default="mps"
+    )
+
+
 def main() -> None:
     if len(sys.argv) > 1 and sys.argv[1] == "codefilm":
         from .codefilm import main as codefilm_main
@@ -503,11 +485,7 @@ def main() -> None:
             "--materials", type=Path, default=Path("examples/materials.json")
         )
         command.add_argument("--output", type=Path, default=Path("outputs/coffee"))
-        command.add_argument(
-            "--tts", choices=["edge", "macos", "clone", "indextts"], default="edge"
-        )
-        command.add_argument("--reference-audio", type=Path)
-        command.add_argument("--reference-text")
+        add_tts_arguments(command)
         command.add_argument(
             "--caption-mode",
             choices=["speech", "file"],
@@ -535,27 +513,6 @@ def main() -> None:
             "--background",
             type=Path,
             help="Reuse an explicitly supplied rendered background",
-        )
-        command.add_argument(
-            "--clone-model", type=Path, default=Path("assets/models/F5-TTS-MLX")
-        )
-        command.add_argument(
-            "--clone-vocoder", type=Path, default=Path("assets/models/vocos-mel-24khz")
-        )
-        command.add_argument(
-            "--voice-python", type=Path, default=Path(".venv-voice/bin/python")
-        )
-        command.add_argument(
-            "--index-python", type=Path, default=Path(".venv-index/bin/python")
-        )
-        command.add_argument(
-            "--index-model", type=Path, default=Path("assets/models/IndexTTS-2.5")
-        )
-        command.add_argument(
-            "--index-upstream", type=Path, default=Path("upstream/index-tts-reference")
-        )
-        command.add_argument(
-            "--index-device", choices=["mps", "cpu", "cuda"], default="mps"
         )
         command.add_argument(
             "--audio",
@@ -686,7 +643,7 @@ def main() -> None:
         "--video", type=Path, default=Path("assets/cache/espresso.mp4")
     )
     command.add_argument("--output", type=Path, default=Path("outputs/raw-sample"))
-    command.add_argument("--tts", choices=["edge", "macos"], default="edge")
+    add_tts_arguments(command)
     command = sub.add_parser("cut")
     command.add_argument("input", type=Path)
     command.add_argument("--output", type=Path, default=Path("outputs/cleaned"))

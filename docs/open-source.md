@@ -16,8 +16,8 @@
 | [Auto-Editor](https://github.com/WyattBlue/auto-editor) | 按静音进行粗剪 | **可选 CLI 调用**，由 `rough-cut` 启动 | 单独保留粗剪入口；中文口头词精剪由本项目 `cleaning.py` 处理 |
 | [Qwen3-ASR / ForcedAligner](https://github.com/QwenLM/Qwen3-ASR) | 给定音频与原稿的字词起止定位 | **官方接口调用**，`scripts/align_qwen.py` 使用独立环境 | 固定字幕分条、句末预读策略、SRT 回读，以及成片全部帧和音轨偏移验收 |
 | [Edge TTS](https://github.com/rany2/edge-tts) | 在线文字转语音 | **实际依赖调用**，`--tts edge` | 逐句合成、声音显式选择、PCM 时长和缓存；另提供 macOS 系统音色入口 |
-| [F5-TTS MLX](https://github.com/lucasnewman/f5-tts-mlx) / [Vocos](https://github.com/gemelo-ai/vocos) | 参考音频与对应文字条件下生成新旁白、还原波形 | **Apple Silicon 独立模型环境**，`--tts clone` | 逐句生成清单、参考/模型摘要、48kHz 转换和视频接入 |
-| [IndexTTS](https://github.com/index-tts/index-tts) | 2.5 参考音色、原生语速、数值情绪向量、中文拼音标记 | **固定官方代码与独立模型环境**，`--tts indextts` | 逐句参数覆盖、缓存与归属记录、音频格式统一、字幕和镜头重算 |
+| [F5-TTS MLX](https://github.com/lucasnewman/f5-tts-mlx) / [Vocos](https://github.com/gemelo-ai/vocos) | 参考音频与对应文字条件下生成新旁白、还原波形 | **历史实验**，已移除 CLI 选项；保留旧脚本与锁文件 | 逐句生成清单、参考/模型摘要、48kHz 转换和视频接入 |
+| [IndexTTS](https://github.com/index-tts/index-tts) | 2.5 参考音色、原生语速、数值情绪向量、中文拼音标记 | **默认语音引擎，固定官方代码与独立模型环境**，`--tts indextts` | 逐句参数覆盖、缓存与归属记录、音频格式统一、字幕和镜头重算 |
 | [yt-dlp](https://github.com/yt-dlp/yt-dlp) | 网页媒体、音轨、字幕和播放列表解析 | **可选 Python API 依赖**，`download` extra | 素材协议、规格隔离缓存、大小预算、媒体校验、失败项和续传恢复 |
 | [wx_channels_download](https://github.com/ltaoo/wx_channels_download) | 微信视频号捕获、本地 API 与视频解密流 | **可选的独立本地服务调用**，核对 v260907 API；不分发上游代码或二进制 | 明确目标匹配、格式选择、流大小预算、实测尺寸/完整解码、缓存与素材来源记录；证书和系统代理由外部服务单独管理 |
 | [ffmpeg-skill](https://github.com/kajisho5/ffmpeg-skill) | 42 个本地处理工具、技能说明、交付模板与工具合同 | **随项目固定分发上游文件**，`videocut ffmpeg` 转发调用 | 工具发现、入口和 wheel 打包；与主项目 ASR/字幕验收保持明确边界 |
@@ -55,7 +55,7 @@
 | --- | --- | --- |
 | MoviePy、Pillow、faster-whisper、Auto-Editor、Edge TTS、yt-dlp 等主环境包 | `pyproject.toml` 声明范围，`uv.lock` 固定解析版本；yt-dlp 当前固定 `2026.10.21` | [使用指南](usage.md) |
 | FFmpeg / ffprobe | 系统安装；实际版本记录于对应运行证据，不由 `uv.lock` 锁定 | [FFmpeg 工具说明](ffmpeg-tools.md) |
-| F5-TTS MLX / Vocos | `requirements-voice.lock.txt`，模型下载目录的 `source.json` | [声音克隆](voice-cloning.md) |
+| F5-TTS MLX / Vocos | `requirements-voice.lock.txt`，模型下载目录的 `source.json` | [F5 历史实验](voice-cloning-f5-history.md) |
 | IndexTTS-2.5 | `requirements-index.lock.txt`；实测代码 `d9e41aac89fd00b3d71497fddb287b7f24613712`，主模型修订 `c39ce5ba981572cb187443877ff559dfb246ce63` | [IndexTTS 安装与控制](voice-controls.md) |
 | Qwen3-ForcedAligner-0.6B | `requirements-align.lock.txt`，`qwen-asr==0.0.6`；模型修订 `c7cbfc2048c462b0d63a45797104fc9db3ad62b7` | [字幕同步](subtitle-sync.md) |
 | ffmpeg-skill | 仓库内 `UPSTREAM.json`、LICENSE 和固定文件 | [工具来源与更新](ffmpeg-tools.md#来源与更新) |

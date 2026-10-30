@@ -49,8 +49,7 @@
 | 自己的剧本和素材 | `videocut render --config ...` | [配置和素材](usage.md#换成自己的内容) |
 | 从需求规划并生成素材 | 宿主写计划/生图 → `videocut prepare` → `render` | [宿主创作与素材交接](usage.md#宿主-agent-创作与本地素材交接) |
 | 保留已有旁白 | `videocut render --audio ...` | [已有录音和精剪](usage.md#已有录音和口播精剪) |
-| F5 参考音色 | `render --tts clone` | [声音克隆](voice-cloning.md) |
-| IndexTTS 参考音色与控制 | `render --tts indextts` | [IndexTTS 控制](voice-controls.md)、[字幕同步](subtitle-sync.md) |
+| 默认 IndexTTS-2.5 参考音色与控制 | `render --reference-audio ...`（等同 `--tts indextts`） | [IndexTTS 控制](voice-controls.md)、[字幕同步](subtitle-sync.md) |
 | 调整画幅、调音、字幕烧录、导出 | `videocut ffmpeg TOOL` | 项目内 [ffmpeg-skill](../.agents/skills/ffmpeg-skill/SKILL.md)、[工具接入说明](ffmpeg-tools.md) |
 | 城市白模、数据图解等代码视频 | `videocut codefilm plan / stills / render / verify` | [代码视频工作流](code-films.md)、[杭州范例](../films/hangzhou/README.md) |
 | 修改项目实现 | 先追踪对应模块和测试 | [架构](architecture.md)、[验证记录](verification.md) |
@@ -63,7 +62,7 @@
 2. 优先复用用户已有素材和本地工具；需要新图片时使用宿主已有生图能力。调用前遵循宿主的图像工具与技能要求，本项目不另外调用写稿/生图 API。宿主无此能力时明确说明缺项，不自动切到收费服务。
 3. 执行 `prepare`，读取 JSON 状态和 `asset-requests.json`。退出码 2 的 `pending` 是等待素材的正常交接。生成前先补齐 `missing_references`，透明贴纸传透明背景参数；把实际文件放到请求路径，或更新原计划的 `path`。在 `generation` 中只记录已知工具和模型信息。
 4. AI 视频不是每个镜头的必需品；照片运镜或已有视频能满足时直接使用。确实需要生成式 AI 视频时保留 `external_video` 请求，明确外部工具与费用选择后再执行，不能用静态图冒充已生成的视频，也不能自动调用付费服务。
-5. 用新的输出目录重新 `prepare`。只有 `ready` 才读取生成的 `project.json/materials.json` 进入现有渲染；默认方案优先显式选择本地配音。不要按字数估计最终镜头时间，仍由实际音频建立时间轴。
+5. 用新的输出目录重新 `prepare`。只有 `ready` 才读取生成的 `project.json/materials.json` 进入现有渲染；默认使用 IndexTTS-2.5 并提供参考录音；先确认模型及 Qwen 对齐环境可用。不要按字数估计最终镜头时间，仍由实际音频建立时间轴。
 6. 检查真实成片与原有验收报告。浏览器发布作为用户另行指令下的后续工具操作；当前 CLI 没有自动发布入口。
 
 `creation-report.json.execution` 仅统计准备命令自身的模型/网络调用，不能据此声称宿主生图或后续配音也离线、免费。宿主的可用能力依当前会话判断，不假定所有 Codex、WorkBuddy 环境都提供生图工具。
@@ -82,7 +81,7 @@ uv run videocut ffmpeg probe /absolute/path/input.mp4 --json
 
 - 基础混剪：`uv sync`。下载网页加 `--extra download`，转录和精剪加 `--extra asr`；两个都需要时用 `uv sync --extra download --extra asr`。
 - macOS 系统声音为 `--tts macos`；在线声音为 `--tts edge`，不会在服务失败时静默切换声音。
-- F5、IndexTTS 和 Qwen 分别有 `.venv-voice`、`.venv-index`、`.venv-align`；先按专项文档确认已安装，不把模型包装进主环境。
+- 语音合成默认使用 IndexTTS-2.5，需要 `--reference-audio`；已移除 F5 的 `--tts clone` 及专用参数。IndexTTS 和 Qwen 分别有 `.venv-index`、`.venv-align`；先按专项文档确认已安装，不把模型包装进主环境。
 - 检查配置的图片/视频镜头能在素材目录中匹配。素材 `path` 优先使用绝对路径，标签由调用者提供；要固定画面可使用 `material_id`。
 - 独立 FFmpeg 操作按技能使用 `videocut ffmpeg`。先读实际工具的 `--help`；失败提示缺少媒体能力时，再用 `doctor --json` 定位。预演使用 `--dry-run --json`，其具体行为见工具说明。
 - 视频号需要外部 `wx_channels_download` 服务和微信播放。先只读查询捕获记录并核对目标，再明确指定 ID；不能以最近一条代替匹配。服务未准备好时返回具体失败原因。证书/代理设置需按用户授权单独处理，并记录和恢复；下载命令自身不会操作这些设置。实测文件尺寸才是画质证据。
@@ -139,7 +138,7 @@ uv run videocut render --tts indextts \
 
 `transcribe` 的 `no_speech` 是有效独立结果；编辑器需要足以剪辑的词时间，不能为让剪辑成功而伪造词记录。ASR 文字仍需校对。
 
-字幕模式也要区分：IndexTTS 默认启用 `speech`；Edge、macOS、F5 默认按 WAV 区间显示，需显式 `--caption-mode speech` 才进入对齐流程。默认整句 `previous_speech_end` 提前展示下一句是预读策略；显式 `audio_clip` 按当前 WAV 区间显示，显式拆条按固定文本对齐。不要以“模型分歧”为由自行合并用户确定的分条。
+字幕模式也要区分：IndexTTS 默认启用 `speech`；Edge、macOS 默认按 WAV 区间显示，需显式 `--caption-mode speech` 才进入对齐流程。默认整句 `previous_speech_end` 提前展示下一句是预读策略；显式 `audio_clip` 按当前 WAV 区间显示，显式拆条按固定文本对齐。不要以“模型分歧”为由自行合并用户确定的分条。
 
 ## 5. 交付前检查
 

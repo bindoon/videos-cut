@@ -2,7 +2,7 @@
 
 [文档导航](README.md) · [使用指南](usage.md) · [AI 操作指南](ai-guide.md)
 
-本文描述 `--caption-mode speech` 的生成旁白流程。IndexTTS 默认启用；Edge、macOS 和 F5 需要显式选择。普通 `file` 模式与已有录音的 ASR 字幕不自动进入该强制对齐验收。
+本文描述 `--caption-mode speech` 的生成旁白流程。IndexTTS 默认启用；Edge 和 macOS 需要显式选择。普通 `file` 模式与已有录音的 ASR 字幕不自动进入该强制对齐验收。
 
 ## 当前规则
 

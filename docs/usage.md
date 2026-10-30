@@ -8,7 +8,7 @@
 
 | 你手里有什么 | 想得到什么 | 命令 |
 | --- | --- | --- |
-| 剧本与素材目录 | 配音、字幕、转场齐全的短片 | `render --config ... --materials ...` |
+| 剧本、素材目录与参考录音 | 配音、字幕、转场齐全的短片 | `render --config ... --materials ... --reference-audio ...` |
 | Agent 编写的创作计划 | 待生素材清单，或可直接渲染的本地配置 | `prepare --plan ... --output ...` |
 | 已有旁白 | 保留声音、自动配画面与字幕 | `render --audio ...` |
 | 口播视频 | 删除停顿和指定口头词 | `cut input.mp4` |
@@ -17,15 +17,23 @@
 | 视频网页或文件链接 | 可直接剪辑的素材清单 | `download 'URL'` |
 | 已有媒体文件 | 改画幅、调音、字幕烧录或平台导出 | `ffmpeg TOOL ...` |
 | 本地 Canvas / Three.js 工程 | 分镜静帧、逐帧出片、续跑与完整性检查 | `codefilm plan / stills / render / verify`，见[代码视频指南](code-films.md) |
-| 参考声音与新稿 | 参考音色旁白和完整视频 | `render --tts clone/indextts ...` |
+| 参考声音与新稿 | 参考音色旁白和完整视频 | `render --reference-audio ...`（默认 IndexTTS-2.5） |
 
-`demo` 与 `render` 使用同一套参数和渲染逻辑，默认读取咖啡示例；`rough-cut` 则单独调用 Auto-Editor 做静音粗剪。
+`demo` 与 `render` 使用同一套参数和渲染逻辑，默认读取咖啡示例；`rough-cut` 则单独调用 Auto-Editor 做静音粗剪。语音合成默认使用 IndexTTS-2.5（`--tts indextts`），需要 `--reference-audio`；`raw-sample` 也采用相同默认值。Edge 与 macOS 系统声音可显式选择。
+
+| 语音引擎 | 选择方式 | 准备条件 |
+| --- | --- | --- |
+| IndexTTS-2.5（默认） | 省略 `--tts`，或 `--tts indextts` | 参考录音、独立模型环境；默认字幕另需 Qwen 对齐环境 |
+| Edge | `--tts edge` | 网络连接 |
+| macOS 系统声音 | `--tts macos` | macOS 的 `say` 命令 |
+
+`render --audio` 和 `mix` 保留输入声音，不要求参考录音。IndexTTS 也可通过 `--speech-manifest` 复用已生成并核对摘要的语音；具体见 [声音克隆](voice-cloning.md)。F5 已移出当前 CLI，可查阅 [历史实验](voice-cloning-f5-history.md)。
 
 ## 环境与平台
 
 主环境要求 Python `>=3.12,<3.14`，推荐 3.12。需要 `uv`、PATH 上可用的 `ffmpeg` / `ffprobe`，以及能显示中文的字体。macOS 会查找 PingFang / Heiti，Linux 会查找 Noto Sans CJK；也可显式设置 `VIDEOCUT_FONT=/absolute/path/font.ttc`。
 
-已实跑环境为 macOS Apple Silicon。macOS 系统配音和 F5 的 MLX 路径依赖 Apple 平台；Edge 配音依赖网络。下载及 ASR 的文件锁使用 `flock`，当前不承诺原生 Windows 全流程可用。
+已实跑环境为 macOS Apple Silicon。macOS 系统配音依赖 Apple 平台，IndexTTS 默认使用 MPS，也可显式选择 CPU/CUDA；Edge 配音依赖网络。下载及 ASR 的文件锁使用 `flock`，当前不承诺原生 Windows 全流程可用。
 
 ```bash
 # 主环境；全部可选功能与完整测试使用这一条。
@@ -176,7 +184,7 @@ uv run videocut render --config projects/my-video.json \
 
 素材清单应覆盖计划使用的类型与 ID；每个图片/视频镜头必须有可用素材，贴纸和配乐则是可选图层。例如保留咖啡示例的图片镜头、贴纸与配乐时，不能只提供一条视频。纯视频导入可从 `examples/download-demo.json` 开始。
 
-复制修改 `examples/coffee.json` 的标题、各镜 `lines`、素材查询标签 `query`、转场和贴纸。基础时间轴取逐句音频的真实采样数；IndexTTS 默认再按实际语音和短语边界安排字幕，不根据字数估算整句时长。
+复制修改 `examples/coffee.json` 的标题、各镜 `lines`、素材查询标签 `query`、转场和贴纸。基础时间轴取逐句音频的真实采样数；IndexTTS 默认再按上一句末字结束点切换整句字幕，不根据字数估算整句时长。
 
 `examples/materials.json` 是素材目录。每条包括 `id`、`kind`、`filename`、`tags`，以及下载 `url` 或本地 `path`。`kind` 支持 `video`、`image`、`sticker`、`music`。本地文件同样填写 `filename`。可以用 `material_id` 在镜头中固定某条素材。
 
@@ -318,12 +326,10 @@ uv run --extra asr videocut cut /absolute/path/talking.mp4 --fillers 嗯 呃 那
 
 `render --audio` 保留现有声音，以实际识别结果做字幕，并按实际语句边界分配镜头；字幕不是把给定剧本硬贴到不一致的音频上。它不等于声音复刻。
 
-要用参考录音的音色朗读新稿，在 Apple Silicon 上使用本地 F5-TTS：按 [声音克隆说明](voice-cloning.md) 安装独立模型环境，然后运行 `videocut demo --tts clone --reference-audio /absolute/path/reference.m4a --output outputs/new-voice-run`。请使用新的输出目录保留之前的测试结果。
-
-也可以选择 IndexTTS-2.5 生成完整视频。按 [安装与模型下载说明](voice-controls.md#安装与下载) 准备独立环境和本地权重后运行：
+用参考录音的音色朗读新稿，默认使用本地 IndexTTS-2.5。按 [安装与模型下载说明](voice-controls.md#安装与下载) 准备独立环境和本地权重；默认字幕还需准备 [Qwen 对齐环境](subtitle-sync.md)。使用新的输出目录运行（可省略 `--tts indextts`）：
 
 ```bash
-uv run --extra asr videocut demo --tts indextts \
+uv run videocut demo \
   --reference-audio /absolute/path/reference.m4a \
   --output outputs/new-index-video
 ```

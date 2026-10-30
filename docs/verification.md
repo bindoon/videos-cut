@@ -258,3 +258,11 @@ macOS arm64、16GB 内存、独立 Python 3.11.14 / PyTorch 2.8.0 MPS 环境，�
 - 系统 FFmpeg 9 的回归发现旧 `-filter_complex_script` 参数已被移除，两个原有精剪测试失败。实现改为 `-/filter_complex` 读取同一份脚本后，两项原断言通过；ASR、剪辑规则及字幕重排语义未改动。
 - 最终 `uv sync --extra download --extra asr` 后，升级后的系统环境执行[完整 pytest](../outputs/ffmpeg-integration-20261025/pytest-final.txt)：**51 项通过**，保留原有 MoviePy / NumPy 弃用警告。新增两项覆盖跨工作目录、带空格路径的真实裁切、音画时长、完整解码、预演不写文件、拒绝覆盖、源文件不变和工具帮助无需媒体程序。
 - Ruff、`git diff --check`、sdist → wheel 构建通过；wheel 安装到仓库外目录后，通过其内置工具实际探测 3 秒媒体，确认不依赖源码目录。新工具的 `verified` 与平台检查不替代本项目 Qwen 与 `sync.py` 门禁；未声称全部 42 个工具均做过媒体实测。
+
+## 2026-10-30 · 默认语音引擎改为 IndexTTS-2.5
+
+- `demo / render / mix / raw-sample` 的语音合成默认值统一为 `indextts`，继续使用现有 IndexTTS-2.5 模型与独立环境；Edge 和 macOS 系统声音可显式选择。生成新旁白需提供参考录音；缺少录音时提前报错。已有录音与 `mix` 保持使用原声。
+- 移除 F5 的 `--tts clone`、`--reference-text`、`--clone-model`、`--clone-vocoder`、`--voice-python` 及 CLI 生成分支。复用语音清单仍核对提供方和音频摘要，拒绝将 F5 清单作为 IndexTTS 使用。旧 F5 脚本、依赖锁和实验记录保留为历史材料。
+- 新增 CLI 默认选择、旧参数拒绝、缺少参考录音提前失败、默认语音字幕流程、IndexTTS-2.5 请求与已生成 PCM 使用、F5 清单拒绝等回归检查。执行 `uv sync --extra download --extra asr` 后，完整 `uv run pytest -q`：**91 项通过，55.68 秒**；保留 588 条既有 MoviePy/NumPy 弃用警告。
+- 实际检查 CLI 帮助仅列出 `indextts / edge / macos`，并显示默认版本 2.5。本次模型调用使用替身及合成 PCM 验证接口，没有新增实际模型推理、听感或视频验收结论。
+- 文档整理：当前声音克隆指南集中说明 IndexTTS-2.5 的输入、缓存和验收；F5 命令及结果移至 `voice-cloning-f5-history.md`，使用指南补充引擎选择表。提交前语音相关测试 **18 项通过，0.14 秒**；`git diff --check` 通过。

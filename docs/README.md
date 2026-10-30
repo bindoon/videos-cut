@@ -19,7 +19,7 @@
 | 文档 | 内容 |
 | --- | --- |
 | [字幕同步](subtitle-sync.md) | 整句预读、显式拆条、Qwen 安装、SRT 回读与全部帧验收 |
-| [声音克隆](voice-cloning.md) | Apple Silicon 上的 F5-TTS MLX、参考逐字稿与逐句旁白 |
+| [声音克隆](voice-cloning.md) | 默认 IndexTTS-2.5 参考音色、输入、缓存与验收 |
 | [IndexTTS 控制](voice-controls.md) | IndexTTS-2.5 安装、语速/情绪/拼音、完整视频与 SSML 实验边界 |
 | [FFmpeg 工具](ffmpeg-tools.md) | 42 个工具的常用命令、后期处理、平台导出和原管线边界 |
 | [代码视频与城市短片工作流](code-films.md) | `codefilm` 配置、逐帧渲染、缓存验收，以及从真实数据、解说到交付的制作步骤 |
@@ -30,6 +30,7 @@
 
 - `README.md` 是项目介绍，`usage.md` 与 `ai-guide.md` 说明当前怎么用，`architecture.md` 说明当前怎么工作。
 - `open-source.md` 记录本项目的集成方式与来源，确切包版本以依赖锁文件为准。
+- [F5 声音克隆历史实验](voice-cloning-f5-history.md) 保存已停用链路的命令和结果，不作为当前操作入口。
 - `verification.md` 是按阶段保存的历史证据。早期字幕策略可能已被替换，应以当前专项指南和代码为准。
 - `examples/*.json` 是可运行的示例输入；`docs/asr-*-lock.json` 是历史 ASR 模型元数据，不是用户配置。
 - 大型视频、模型和详细机器报告在忽略的 `outputs/`、`assets/` 等目录，仅克隆仓库不会带上。展示截图与 GIF 例外，保存于 `docs/media/`。

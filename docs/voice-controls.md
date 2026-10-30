@@ -2,7 +2,9 @@
 
 2026-10-24 已在本机跑通参考音色、语速、情绪向量、中文拼音纠音及 XML 停顿，共生成 7 组短句样例。参考音频为用户提供的录音，生成过程没有调用付费语音 API。
 
-本页先记录已保留的 7 组独立音频实验，再说明后续新增的 `--tts indextts` 完整视频配音。F5 仍可通过 [原有声音克隆链路](voice-cloning.md) 使用。SSML 实验适配器尚未进入视频提供方；视频使用原生语音参数及拼音标注。
+IndexTTS-2.5 是默认语音引擎。当前操作从 [声音克隆快速使用](voice-cloning.md)、[安装与下载](#安装与下载) 和 [完整视频配音](#完整视频配音) 开始；默认字幕还需 [Qwen 对齐环境](subtitle-sync.md)。
+
+本页同时保留 2026-10-24 的 7 组独立音频实验与后续成片记录。SSML 适配器仅用于短句实验，视频使用原生语音参数及拼音标注。[F5 记录](voice-cloning-f5-history.md) 仅供历史查阅。
 
 ## 运行流程与职责
 
@@ -30,7 +32,7 @@ SSML → 实验适配层 → 原生拼音标记 / 分段生成 → 插入指定�
 
 ## 安装与下载
 
-以下命令从项目根目录执行。实测环境为 macOS arm64、16GB 内存、Python 3.11.14、PyTorch 2.8.0 的 MPS 后端；依赖与剪辑环境、F5 的 MLX 环境分开。
+以下命令从项目根目录执行。实测环境为 macOS arm64、16GB 内存、Python 3.11.14、PyTorch 2.8.0 的 MPS 后端；依赖与剪辑环境分开。
 
 ### 1. 独立运行环境
 
@@ -39,7 +41,7 @@ uv venv --python 3.11 .venv-index
 uv pip install --python .venv-index/bin/python -r requirements-index.lock.txt
 ```
 
-`requirements-index.txt` 是推理所需依赖，`requirements-index.lock.txt` 固定本次实际安装版本。不要把这些依赖装进剪辑用的 `.venv` 或 F5 用的 `.venv-voice`。
+`requirements-index.txt` 是推理所需依赖，`requirements-index.lock.txt` 固定本次实际安装版本。不要把这些依赖装进剪辑用的 `.venv`。
 
 ### 2. 官方代码
 
@@ -167,17 +169,17 @@ ASR 能检查文字内容，不评判情绪是否自然、音色是否足够相�
 
 ## 完整视频配音
 
-在上述模型和独立环境准备好后，可直接生成完整视频：
+准备好上述模型、独立环境和 [Qwen 对齐环境](subtitle-sync.md) 后，可使用默认引擎生成完整视频：
 
 ```bash
-uv run --extra asr videocut demo --tts indextts \
+uv run videocut demo \
   --reference-audio /absolute/path/reference.m4a \
   --output outputs/my-new-index-video
 ```
 
-IndexTTS 不需要参考录音的逐字稿，也不使用 F5 的 `--reference-text`。CLI 通过 `scripts/index_narration.py` 启动 `.venv-index`，生成新稿的逐句语音，经 FFmpeg 重采样和响度处理转为单声道 48kHz PCM16，再复用字幕、选片、转场、贴纸和配乐流程。镜头以新 WAV 的真实采样数重算，字幕默认再根据实际语音对齐到原稿短语；原生发音标记不会显示在字幕中。
+IndexTTS 不需要参考录音的逐字稿。CLI 通过 `scripts/index_narration.py` 启动 `.venv-index`，生成新稿的逐句语音，经 FFmpeg 重采样和响度处理转为单声道 48kHz PCM16，再复用字幕、选片、转场、贴纸和配乐流程。镜头以新 WAV 的真实采样数重算，默认整句字幕再根据上一句末字结束点切换；原生发音标记不会显示在字幕中。
 
-默认路径及设备可用 `--index-python`、`--index-model`、`--index-upstream`、`--index-device` 指定；分别默认为 `.venv-index/bin/python`、`assets/models/IndexTTS-2.5`、`upstream/index-tts-reference`、`mps`。`--tts clone` 继续选择 F5，其他原有提供方保持可选。
+默认路径及设备可用 `--index-python`、`--index-model`、`--index-upstream`、`--index-device` 指定；分别默认为 `.venv-index/bin/python`、`assets/models/IndexTTS-2.5`、`upstream/index-tts-reference`、`mps`。省略 `--tts` 时默认选择 IndexTTS-2.5；`edge`、`macos` 可显式选择。F5 的 `clone` 选项与专用参数已移除。
 
 视频配置可增加以下可选部分，然后通过 `--config` 指定新的配置文件：
 
