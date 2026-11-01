@@ -1,0 +1,12 @@
+{
+  "fps": 30, "frames": 780, "duration": 26,
+  "scenes": [
+    {"id":"01-emergence", "start":0, "end":4},
+    {"id":"02-flight-cycle", "start":4, "end":8},
+    {"id":"03-carapace-release", "start":8, "end":12},
+    {"id":"04-drive-train", "start":12, "end":16},
+    {"id":"05-exploded-orbit", "start":16, "end":21},
+    {"id":"06-reassembly", "start":21, "end":24},
+    {"id":"07-departure", "start":24, "end":26}
+  ]
+}

@@ -21,6 +21,7 @@
 | [yt-dlp](https://github.com/yt-dlp/yt-dlp) | 网页媒体、音轨、字幕和播放列表解析 | **可选 Python API 依赖**，`download` extra | 素材协议、规格隔离缓存、大小预算、媒体校验、失败项和续传恢复 |
 | [wx_channels_download](https://github.com/ltaoo/wx_channels_download) | 微信视频号捕获、本地 API 与视频解密流 | **可选的独立本地服务调用**，核对 v260907 API；不分发上游代码或二进制 | 明确目标匹配、格式选择、流大小预算、实测尺寸/完整解码、缓存与素材来源记录；证书和系统代理由外部服务单独管理 |
 | [ffmpeg-skill](https://github.com/kajisho5/ffmpeg-skill) | 42 个本地处理工具、技能说明、交付模板与工具合同 | **随项目固定分发上游文件**，`videocut ffmpeg` 转发调用 | 工具发现、入口和 wheel 打包；与主项目 ASR/字幕验收保持明确边界 |
+| [native-subtitle-quote-image](https://github.com/chengyi-ai/native-subtitle-quote-image) | 原生/脚本字幕来源区分、候选帧复核、主图与连续字幕条工作流 | **设计参考**；本地独立编写图像工具与小红书场景技能，未分发上游脚本或安装其 Skill | `image-cards-v1`、复用本项目下载/ASR、内容摘要缓存、逐卡失败恢复、输入变化失效与报告 |
 | [Twemoji](https://github.com/jdecked/twemoji) | 透明表情图形，作为动态贴纸素材 | **下载图形资产**，图形许可 CC-BY-4.0 | 贴纸位置、缩放/浮动动画与素材归属记录 |
 | [Three.js](https://github.com/mrdoob/three.js) / [Playwright](https://github.com/microsoft/playwright) | 城市白模 WebGL 绘制与私有 Chromium 的逐帧捕获 | **影片内 npm 依赖**；各工程 `package-lock.json` 固定版本 | `codefilm` 配置、确定性检查、分段续跑、实际媒体与摘要校验 |
 | [Lemo Opuscar](https://github.com/lemomo-ai/lemo-opuscar) | 杭州影片后处理和 headless GPU 启动方式参考 | **杭州工程内固定 MIT 源码**，修订 `f17136060781a0068a7951245a3aa7835a7230de`；保留许可 | 真实杭州模型、相机、光层与共享渲染器；通用命令不依赖其 studio 服务 |

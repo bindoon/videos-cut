@@ -1078,6 +1078,7 @@ source = { editable = "." }
 dependencies = [
     { name = "edge-tts" },
     { name = "moviepy" },
+    { name = "pillow" },
     { name = "requests" },
 ]
 
@@ -1101,6 +1102,7 @@ requires-dist = [
     { name = "edge-tts", specifier = ">=7.2,<8" },
     { name = "faster-whisper", marker = "extra == 'asr'", specifier = ">=1.2,<2" },
     { name = "moviepy", specifier = "==2.2.1" },
+    { name = "pillow", specifier = ">=9.2,<12" },
     { name = "requests", specifier = ">=2.32,<3" },
     { name = "yt-dlp", extras = ["default", "curl-cffi"], marker = "extra == 'download'", specifier = "==2026.10.21" },
 ]

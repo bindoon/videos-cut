@@ -1,0 +1,74 @@
+{
+  "schema": "image-cards-v1",
+  "source": "../../outputs/mechanical-butterfly-v2-20261031/final.mp4",
+  "mode": "script",
+  "style": {
+    "width": 720,
+    "layout": "fixed",
+    "aspect": [
+      3,
+      4
+    ],
+    "band": [
+      0.55,
+      0.82
+    ],
+    "hero_fraction": 0.52,
+    "font_size": 26,
+    "fit": "cover"
+  },
+  "cards": [
+    {
+      "id": "butterfly-explained",
+      "title": "机械概念动画的后期说明",
+      "lines": [
+        {
+          "time": 3.8,
+          "text": "机械蝴蝶：从外形走进内部",
+          "reviewed": true,
+          "text_source": {
+            "kind": "user",
+            "reference": "scripts/build_readme_gallery.py; author commentary based on films/mechanical-butterfly/CINEMATIC.md"
+          }
+        },
+        {
+          "time": 8.8,
+          "text": "俯视四翼，观察结构与层次",
+          "reviewed": true,
+          "text_source": {
+            "kind": "user",
+            "reference": "scripts/build_readme_gallery.py; author commentary based on films/mechanical-butterfly/CINEMATIC.md"
+          }
+        },
+        {
+          "time": 14.5,
+          "text": "移开翼组件，展示电机剖视",
+          "reviewed": true,
+          "text_source": {
+            "kind": "user",
+            "reference": "scripts/build_readme_gallery.py; author commentary based on films/mechanical-butterfly/CINEMATIC.md"
+          }
+        },
+        {
+          "time": 17.5,
+          "text": "推近齿轮，观察传动示意",
+          "reviewed": true,
+          "text_source": {
+            "kind": "user",
+            "reference": "scripts/build_readme_gallery.py; author commentary based on films/mechanical-butterfly/CINEMATIC.md"
+          }
+        },
+        {
+          "time": 24,
+          "text": "分层展开，再看清各个部件",
+          "reviewed": true,
+          "text_source": {
+            "kind": "user",
+            "reference": "scripts/build_readme_gallery.py; author commentary based on films/mechanical-butterfly/CINEMATIC.md"
+          }
+        }
+      ]
+    }
+  ],
+  "source_sha256": "77024ba5017a30c0a338ff18806a66b217a3192d800c26d3fc1454d0766bc32b"
+}

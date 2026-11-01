@@ -1,0 +1,16 @@
+{
+  "name": "taiji-silk-reeling",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "serve": "python3 -m http.server 8768 --bind 127.0.0.1",
+    "package": "node tools/package.mjs"
+  },
+  "dependencies": {
+    "playwright-core": "1.63.0",
+    "three": "0.170.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.12"
+  }
+}

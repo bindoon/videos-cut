@@ -30,19 +30,19 @@ def normalize(text):
     return "".join(re.findall(r"[\u3400-\u9fffA-Za-z0-9]", text)).lower()
 
 
-def main():
-    final = OUT / "杭州-一城山水千年生长.mp4"
+def main(*, final_name="杭州-一城山水千年生长.mp4", manifest_name="render-manifest.json", expected_frames=4100, expected_cues=35, audio_times=(6, 25, 60, 78, 104, 120, 140, 153, 163)):
+    final = OUT / final_name
     timeline = json.loads((OUT / "timeline.json").read_text())
-    manifest = json.loads((OUT / "render-manifest.json").read_text())
+    manifest = json.loads((OUT / manifest_name).read_text())
     stats = json.loads((FILM / "data/stats.json").read_text())
     assert hashlib.sha256((FILM / "data/model.json").read_bytes()).hexdigest() == stats["model_sha256"]
     probe = run(["probe", final, "--json"], "verified-final-probe.json")
     v, a = probe["video"], probe["audio"]
-    assert v["nb_frames"] == manifest["frames"] == timeline["frames"] == 4100
+    assert v["nb_frames"] == manifest["frames"] == timeline["frames"] == expected_frames
     assert (v["width"], v["height"], v["fps"], v["pix_fmt"], v["color_range"]) == (1920, 1080, 24, "yuv420p", "tv")
     assert a["channels"] == 2 and a["sample_rate"] == 48000
     assert len(probe["chapters"]) == len(timeline["scenes"]) == 12
-    assert len(timeline["cues"]) == 35
+    assert len(timeline["cues"]) == expected_cues
 
     # Every caption is read back from a real encoded frame at its midpoint.
     args = ["look", final, "--width", "1920", "--no-timecode", "-o", OUT / "caption-frame.png", "--overwrite", "--json-brief"]
@@ -81,7 +81,7 @@ def main():
             return np.frombuffer(r.readframes(r.getnframes()), dtype="<i2").reshape(-1, r.getnchannels()).mean(axis=1).astype(np.float32)
     reference, actual = pcm(OUT / "mix.wav"), pcm(extracted)
     windows = []
-    for t in [6, 25, 60, 78, 104, 120, 140, 153, 163]:
+    for t in audio_times:
         start = int(t * 48000)
         ref = reference[start:start + 48000:6]
         got = actual[start - 2400:start + 50400:6]
@@ -100,7 +100,7 @@ def main():
         "container_duration": probe["duration"], "size_bytes": final.stat().st_size,
         "resolution": [1920, 1080], "fps": 24, "pixel_format": v["pix_fmt"], "color_range": v["color_range"],
         "audio": {"codec": a["codec"], "channels": a["channels"], "sample_rate": a["sample_rate"], "waveform_windows": windows, "timing_passed": audio_ok},
-        "captions": {"method": timeline["caption_method"], "cues": 35, "ocr_sample_per_cue": True, "ocr_matches": sum(c["match"] for c in checks), "all_sampled_captions_match": all_match},
+        "captions": {"method": timeline["caption_method"], "cues": expected_cues, "ocr_sample_per_cue": True, "ocr_matches": sum(c["match"] for c in checks), "all_sampled_captions_match": all_match},
         "subtitle_sync": {"passed": None, "reason": "Per-utterance PCM file intervals and encoded-frame OCR sampling; not the Qwen/sync.py acoustic gate"},
         "visual_generation": {"renderer": "Three.js / WebGL / Canvas", "generative_image_model_calls": 0, "generative_video_model_calls": 0},
         "data": stats,

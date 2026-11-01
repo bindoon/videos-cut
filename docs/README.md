@@ -7,6 +7,7 @@
 | 你要做什么 | 阅读入口 |
 | --- | --- |
 | 了解项目能力和效果 | [README](../README.md) |
+| 区分基础工具、场景技能和已有作品 | [能力地图](capabilities.md) |
 | 安装并用自己的内容出片 | [使用指南](usage.md) |
 | 让 AI 选择命令、执行并检查结果 | [AI 操作指南](ai-guide.md) |
 | 用宿主 Agent 写稿/生图，再交给本地渲染 | [创作计划与素材交接](usage.md#宿主-agent-创作与本地素材交接) |
@@ -22,9 +23,13 @@
 | [声音克隆](voice-cloning.md) | 默认 IndexTTS-2.5 参考音色、输入、缓存与验收 |
 | [IndexTTS 控制](voice-controls.md) | IndexTTS-2.5 安装、语速/情绪/拼音、完整视频与 SSML 实验边界 |
 | [FFmpeg 工具](ffmpeg-tools.md) | 42 个工具的常用命令、后期处理、平台导出和原管线边界 |
+| [通用图像工具](image-tools.md) | 精确候选帧、字幕区域、文字时间索引、原生/脚本图卡、内容缓存与真实文件校验 |
+| [小红书字幕图文](workflows/xiaohongshu-quotes.md) | 上层场景技能：选题、选句、版式、逐图检查及独立发布文案 |
 | [代码视频与城市短片工作流](code-films.md) | `codefilm` 配置、逐帧渲染、缓存验收，以及从真实数据、解说到交付的制作步骤 |
 | [展示媒体](media/README.md) | README 实际截图和 GIF 的来源、归属与复现方法 |
 | [杭州白模短片](../films/hangzhou/README.md) | 真实杭州建筑、水系与代码光层，Three.js 逐帧渲染及复现方法 |
+| [太极缠丝劲动画](../films/taiji-silk/README.md) | 太极动作、足部剖析、五趾抓地、生根与腿部螺旋的 36 秒图解 |
+| [机械蝴蝶电影版](../films/mechanical-butterfly/CINEMATIC.md) | 11 个机位、机芯剖视和分层拆装的 32 秒代码动画 |
 
 ## 文档与文件分别代表什么
 

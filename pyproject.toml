@@ -5,6 +5,7 @@ description = "Reproducible narration-led video editing with open-source compone
 requires-python = ">=3.12,<3.14"
 dependencies = [
   "moviepy==2.2.1",
+  "pillow>=9.2,<12",
   "edge-tts>=7.2,<8",
   "requests>=2.32,<3",
 ]
@@ -28,6 +29,17 @@ packages = ["videocut"]
 
 [tool.hatch.build.targets.wheel.force-include]
 ".agents/skills/ffmpeg-skill" = "videocut/_vendor/ffmpeg_skill"
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/videocut", "/tests", "/scripts", "/examples", "/docs", "/films",
+  "/README.md", "/AGENTS.md", "/pyproject.toml", "/uv.lock", "/requirements*.txt",
+  "/.agents/skills/ffmpeg-skill", "/.agents/skills/xiaohongshu-quotes",
+]
+exclude = [
+  "**/node_modules", "**/.venv", "**/.venv-*", "**/__pycache__",
+  "/films/**/data", "/films/**/models/**/*.glb",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

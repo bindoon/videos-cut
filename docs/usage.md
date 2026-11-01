@@ -14,6 +14,7 @@
 | 口播视频 | 删除停顿和指定口头词 | `cut input.mp4` |
 | 口播视频与素材 | 精剪后穿插原片和素材 | `mix input.mp4` |
 | 本地音频或视频 | 文字、SRT、逐词 JSON | `transcribe input.mp4` |
+| 视频和候选时间点 | 抽帧、字幕条、文字索引与图卡 | `images sample / band / index / plan / render / verify`，见[图像工具](image-tools.md) |
 | 视频网页或文件链接 | 可直接剪辑的素材清单 | `download 'URL'` |
 | 已有媒体文件 | 改画幅、调音、字幕烧录或平台导出 | `ffmpeg TOOL ...` |
 | 本地 Canvas / Three.js 工程 | 分镜静帧、逐帧出片、续跑与完整性检查 | `codefilm plan / stills / render / verify`，见[代码视频指南](code-films.md) |
@@ -77,6 +78,8 @@ uv run videocut demo --tts macos --materials examples/materials-preview.json --w
 - `project.json`：本次配置快照。
 
 ## 宿主 Agent 创作与本地素材交接
+
+基础工具、场景技能和作品工程的区别见[能力地图](capabilities.md)。小红书访谈字幕图文使用独立[场景技能](../.agents/skills/xiaohongshu-quotes/SKILL.md)与[工作流](workflows/xiaohongshu-quotes.md)，以通用 `images` 工具执行，不将平台规则混入渲染器。
 
 Codex、WorkBuddy 等宿主负责理解需求、写旁白、设计分镜和提示词；宿主有生图工具时直接调用，再把实际图片文件交给本项目。CLI 的 `prepare` 不调用模型、不联网，也不要求 API Key。宿主生图是否联网、是否占用额度取决于当前宿主和账户，不代表整条链路离线或免费。
 

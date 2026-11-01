@@ -1,0 +1,23 @@
+[
+  {
+    "file": "makehuman/male-163.glb",
+    "url": "https://files.innerscene.com/library/male-base-mesh-3d-person-rigged-a-pose-380e6d89/038f3a526b2fc3efd012/male-base-mesh-base_male.glb",
+    "license": "CC0-1.0",
+    "bytes": 4498248,
+    "sha256": "86c7cdfa989924b45e2e5110c131a4a4e6251ceb4e71246be68e468f3a32ca86"
+  },
+  {
+    "file": "anatomy/z-muscles.glb",
+    "url": "https://raw.githubusercontent.com/SeemaBansal1/3d-human-body-anatomy/main/web/public/models/muscles.glb",
+    "license": "CC-BY-SA-4.0",
+    "bytes": 1911456,
+    "sha256": "f290a69f84b899f1b9f2dc60c771f4e1cb12194f5bfb2be697d26de2c505ace9"
+  },
+  {
+    "file": "anatomy/z-skeleton.glb",
+    "url": "https://raw.githubusercontent.com/SeemaBansal1/3d-human-body-anatomy/main/web/public/models/skeleton.glb",
+    "license": "CC-BY-SA-4.0",
+    "bytes": 1195788,
+    "sha256": "2d159eddbc12de45d84195fc56957b274e7086b00224c245f22ea9d8ea6409eb"
+  }
+]

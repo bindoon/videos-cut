@@ -2,6 +2,8 @@
 
 本地 CLI 项目，不依赖数据库或云端任务服务。CLI 参数与 JSON 文件定义一次任务，`outputs/` 保存结果，`assets/cache/` 保存可复用素材与转录。
 
+架构分为通用工具、场景技能与作品工程。[能力地图](capabilities.md)维护完整清单。`.agents/skills/xiaohongshu-quotes/` 负责小红书图文的内容/版式决策，调用通用 `images`；`films/` 持有具体影片的数据和美术，复用 `codefilm`。工具不读取平台技能或隐式应用其默认值。
+
 `codefilm` 是独立的代码画面入口：本地 HTML / Canvas / Three.js 按确定性的 `render(t)` 绘制，经无损 PNG 与现有 `videocut ffmpeg sequence` 编码成可续跑的片段。`films/hangzhou/` 拥有城市 GIS 转换、历史内容、相机和配音/配乐，通过配置复用该渲染器。完整制作流程见[代码视频指南](code-films.md)，具体数据与片子复现见[杭州短片说明](../films/hangzhou/README.md)。
 
 [文档导航](README.md) · [使用指南](usage.md) · [AI 操作指南](ai-guide.md) · [开源来源](open-source.md)
@@ -12,6 +14,8 @@
 网页链接 / 文件直链 → 下载与校验 → materials.json → 渲染素材入口
 宿主 Agent 写计划/生图 → 本地文件 → prepare 缺项与媒体检查 → project.json + materials.json → 渲染
 本地音视频 → 独立 ASR → TXT / SRT / transcript.json → 可选的编辑消费
+视频 + SRT/VTT/同源 ASR → images index/sample/band → Agent 选题与核帧 → 图卡 manifest
+图卡 manifest → images plan/render → JPG + 内容摘要报告 → images verify + Agent 逐图检查
 剧本 + 素材目录 → 配音/字幕时间轴 → 选素材 → 画面和转场 → 叠字幕/贴纸/配乐 → 成片
 原始口播视频 → 真实 ASR → 删停顿/配置词 → 精剪视频 + 重排词时间轴 → 同一条混剪管线
 参考录音 + 新稿 + 原生控制参数 → IndexTTS-2.5 → 22.05kHz WAV → 48kHz 逐句 WAV → 同一条混剪管线
@@ -48,10 +52,15 @@
 | `videocut/transcription.py` | 独立 ASR 实现、分段读取、逐词时间归属、校验缓存和 TXT/SRT/JSON 导出；不调用下载、剪辑或大模型 |
 | `videocut/render.py` | FFmpeg 运镜/转场，MoviePy 图层合成，音量标准化与完整解码验收 |
 | `videocut/media.py` | 有超时、检查退出码的进程调用与 ffprobe |
+| `videocut/image_cli.py`、`image_ops.py` | 通用图像 CLI、双阶段 seek、区域预览、等比总览与像素指标 |
+| `videocut/text_index.py` | SRT/VTT/同源 ASR 检索索引、有限滚动字幕去重与来源记录；不改变 ASR 算法和缓存 |
+| `videocut/image_cards.py` | 原生像素拼接/脚本文字排版、输入合同、输出锁、按内容续跑和实际图片摘要/尺寸/边界检查 |
 | `videocut/ffmpeg_tools.py` | `ffmpeg` 子命令，将工具参数、标准输出和退出码原样交给项目内固定的 ffmpeg-skill；不接管配音、ASR 或字幕同步门禁 |
 | `videocut/codefilm.py`、`codefilm_runner.mjs` | 配置与输入摘要、私有浏览器逐帧捕获、输出锁、分段缓存、实际媒体校验；不负责 GIS、叙事、配音或 Qwen 验收 |
 
 `mix` 使用同一份剪后音频时间轴：原视频镜头从对应时间截取，插入素材时只替换画面。不会把原片声音和旁白重复播放。字幕图层在背景转场之后叠加，避免两条字幕跟着转场重影。
+
+`images` 不调用下载或 ASR。原生模式完整拼图统一缩放；脚本模式要求逐行校对声明和 `text_source`，字体参与缓存键。每卡输出文件名包含源视频/配置摘要；续跑按当前报告核对真实文件，变化项重算，旧版本保留。失败报告不引用旧总览。图片机械检查与 Agent 视觉/语义检查分别记录，不能继承视频的 Qwen 门禁。详见[图像工具](image-tools.md)。
 
 生成配音启用 `speech` 字幕模式时先冻结 `caption-plan.json`。IndexTTS 默认启用；Edge、macOS 默认是文件区间字幕，需显式 `--caption-mode speech` 才进入该流程。默认 `previous_speech_end` 使用 Qwen 的末字结束时间切换到下一句，保持相邻字幕无缝连接，末条到视频结束；这是预读策略，审计同时记录切换时刻与本句实际音频起点。显式 `audio_clip` 直接使用 WAV 采样区间，无需模型；显式拆条使用首字时间和阅读提前量。所有模式写出 SRT 后重新读取它作为渲染时间轴，并检查编码帧。见 [字幕同步工作流](subtitle-sync.md)。
 

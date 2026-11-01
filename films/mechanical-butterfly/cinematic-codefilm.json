@@ -1,0 +1,5 @@
+{
+  "schema":"codefilm-v1", "entry":"cinematic.html", "timeline":"cinematic-timeline.json",
+  "width":1920, "height":1080, "chunk_frames":90,
+  "sources":["cinematic.html","cinematic.js","cinematic-timeline.json","main.js","model.js","package-lock.json"]
+}

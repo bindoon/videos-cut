@@ -1,0 +1,5 @@
+{
+  "schema":"codefilm-v1", "entry":"model-study.html", "timeline":"model-study-timeline.json",
+  "width":1920, "height":1080, "chunk_frames":72,
+  "sources":["model-study.js","models/man-base","fonts","package-lock.json"]
+}

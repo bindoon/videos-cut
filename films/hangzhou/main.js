@@ -101,6 +101,8 @@ function drawHud(t,si,p){
   const cue=TL.cues.find(c=>c.start<=t&&t<c.end);if(cue){
     // Caption coordinates are independent of moving 3D geometry, and use the
     // exact serialized SRT times produced from the narration PCM.
+    font(31,500);const cw=g.measureText(cue.text).width;font(18,300);const ew=g.measureText(cue.en).width;
+    const plate=Math.min(1770,Math.max(cw,ew)+52);g.fillStyle='rgba(2,6,10,.86)';g.beginPath();g.roundRect(960-plate/2,941,plate,87,10);g.fill();
     text(cue.text,960,978,31,'#f1f2ed',500,'center');text(cue.en,960,1012,18,'#c1cbd3',300,'center');
   }
   text('真实城市数据 · 代码逐帧绘制',1848,1046,14,'#778591',300,'right');
@@ -129,7 +131,7 @@ window.render=t=>{
   C.U.uMode.value=si;C.U.uT.value=t;C.U.uProgress.value=smooth(0,.78,p);C.U.uCentre.value.set(...A[centreKeys[si]]);C.U.uAccent.value.set(colors[si]);
   for(const l of C.routes.children){const r=l.userData;let opacity=0;if(si===2&&r.kind==='canal')opacity=.85*smooth(0,.2,p);if(si===4&&(r.kind==='causeway'||r.name.includes('苏堤')))opacity=.95*smooth(.1,.5,p);if(si===8&&r.bridge==='yes')opacity=.85*smooth(0,.4,p);l.material.opacity=opacity;}
   C.post.dof.focus=dist;
-  const near=dist<.8;C.post.dof.aper=near?3.0:1.6;C.post.dof.maxCoc=near?10:3;C.post.dof.aoAmt=near?.45:0;
+  const near=dist<.8;const clarity=window.CITY_CLARITY??1;C.post.dof.aper=(near?3.0:1.6)/clarity;C.post.dof.maxCoc=(near?10:3)/clarity;C.post.dof.aoAmt=near?.45:0;
   C.post.bloom.strength=si===4?.34:.43;
   C.post.vig.uniforms.fade.value=smooth(0,.6,t)*(1-smooth(TL.duration-.6,TL.duration,t));
   C.post.composer.render();drawHud(t,si,p);

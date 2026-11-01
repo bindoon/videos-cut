@@ -75,3 +75,29 @@ films/hangzhou/.venv/bin/python films/hangzhou/tools/verify_delivery.py --output
 字幕来自逐句 PCM 区间与 SRT 回读，属于文件区间字幕。独立 ASR 可供内容复核，但不是 Qwen 强制对齐；后期工具检查也不代表通过原混剪管线 `videocut/sync.py` 的字幕门禁。`verification.json` 明确保留此区别。
 
 具体来源与上游归属见 [CREDITS](CREDITS.md)。
+
+## 两分钟版：Three.js为主，钱陈音色
+
+当前版本为120秒、2880帧、1920×1080/24fps。24句新解说使用本地IndexTTS-2.5和钱陈参考录音生成，参考文件及24kHz单声道缓存位于本地`assets/voices/qianchen/`，随`.gitignore`排除。原始录音来源、摘要及本地索引保存在素材库中。
+
+画面中98.833秒为完整Three.js主镜头（82.36%），12份实景各出现一次、每次1.5秒；其中8次以右侧约三分之一的辅助分屏呈现，城市模型继续运动。最后3.167秒为署名。模型景深通过可选`CITY_CLARITY`变得更清晰，原白模入口默认仍使用1；字幕加入深色底衬，避免亮色屋顶干扰数字字形。
+
+```bash
+# 从仓库根目录运行；先完成上文模型、语音环境与城市数据准备。
+.venv-index/bin/python scripts/index_narration.py \
+  --request films/hangzhou/qianchen-request.example.json
+.venv-index/bin/python films/hangzhou/tools/build_two_minute.py \
+  --output outputs/hangzhou-120
+films/hangzhou/.venv/bin/python films/hangzhou/tools/make_music.py \
+  --output outputs/hangzhou-120
+uv run videocut codefilm render --config films/hangzhou/montage-codefilm.json \
+  --output outputs/hangzhou-120/render --workers 1
+films/hangzhou/.venv/bin/python films/hangzhou/tools/finish_two_minute.py \
+  --output outputs/hangzhou-120
+```
+
+`story-two-minute.json`为当前中英文解说；`montage-edit.json`的`at/until`直接对应新旁白时间。建时间轴时检查每句原始生成文件摘要，仅去掉外缘静音并保留120ms保护。本次24句原始音频总长108.53秒，未做变速；按实际采样数和章节留白组成120秒。该工具可选的保音高变速有1.35倍上限，参数写入时间记录，不将其标为Qwen对齐。
+
+`montage-sources.json`固定本地素材的页面、作者、许可与摘要；具体使用的12份素材见[MONTAGE-CREDITS](MONTAGE-CREDITS.md)。旧快节奏版与最初白模版成片保留在各自输出目录，当前配置不再对应旧171秒时间轴。旧紧凑时间轴后期脚本仅保留为前次实验记录。
+
+当前版本重新验收2880帧、12章节、24句字幕中点OCR和9处实际音轨波形。`verify_delivery.main`的旧默认仍为4100帧/35句，新片通过显式参数定义新的验收规格；未删除或放松断言。Qwen/sync.py未运行时继续保留`passed=null`。

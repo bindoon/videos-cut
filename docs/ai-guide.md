@@ -42,6 +42,8 @@
 | 请求 | 入口 | 需要补读 |
 | --- | --- | --- |
 | 网页或直链素材 | `videocut download` | [使用指南：导入素材](usage.md#从视频链接导入素材) |
+| 通用候选帧、字幕区域、文字索引或图卡 | `videocut images sample / band / index / plan / render / verify` | [通用图像工具](image-tools.md) |
+| 小红书访谈截图/字幕图文 | 阅读项目内 `xiaohongshu-quotes` 技能，再组合通用工具 | [场景技能](../.agents/skills/xiaohongshu-quotes/SKILL.md)、[工作流](workflows/xiaohongshu-quotes.md) |
 | 微信视频号 | `download --wechat-list` → 核对标题/作者 → `download URL --wechat-feed-id ID` | [视频号本地服务](usage.md#微信视频号) |
 | 只有本地转录 | `videocut transcribe` | [独立转录](usage.md#独立转录) |
 | 删除长停顿、口头词 | `videocut cut` | [已有录音和精剪](usage.md#已有录音和口播精剪) |
@@ -55,6 +57,8 @@
 | 修改项目实现 | 先追踪对应模块和测试 | [架构](architecture.md)、[验证记录](verification.md) |
 
 本项目提供执行工具，AI 负责理解意图、编写剧本、挑选画面和组织命令。项目没有内置自由调用大模型写稿的服务，也没有任意视频的视觉自动打标。
+
+能力按[工具、技能、作品](capabilities.md)分层。新平台的选题、文案和排版习惯放在场景技能/模板；通用抽帧、图卡、缓存和校验放在 `images`。原生字幕的文字只来自真实帧像素，脚本字幕必须记录校对声明和来源；下载轨/ASR 只作定位时，不能声称它们是画面原字幕。图片 `mechanical_passed` 不是语义或声学字幕验收，完成后仍需查看每张实际成品。
 
 ### 本地优先的创作流程
 

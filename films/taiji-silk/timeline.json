@@ -1,0 +1,12 @@
+{
+  "fps": 24, "frames": 864, "duration": 36,
+  "scenes": [
+    {"id": "01-cloud-hands", "start": 0, "end": 6},
+    {"id": "02-follow-the-root", "start": 6, "end": 9},
+    {"id": "03-foot-cutaway", "start": 9, "end": 14},
+    {"id": "04-toes-and-roots", "start": 14, "end": 20},
+    {"id": "05-outward-intent", "start": 20, "end": 25},
+    {"id": "06-thigh-spiral", "start": 25, "end": 31},
+    {"id": "07-one-continuous-thread", "start": 31, "end": 36}
+  ]
+}

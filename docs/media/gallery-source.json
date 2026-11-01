@@ -1,0 +1,127 @@
+{
+  "schema": "readme-gallery-v1",
+  "date": "2026-11-01",
+  "source_selection": "Prior project sessions, cross-checked against local delivered files",
+  "visual_review": {
+    "status": "reviewed",
+    "reviewer": "host Agent",
+    "checks": [
+      "Viewed all three encoded-frame galleries and both actual image cards",
+      "Native strips preserve the four consecutive source captions",
+      "Script text is author commentary, distinct from native subtitles",
+      "Landscape geometry remains proportional; gallery includes the live-action auxiliary panel"
+    ]
+  },
+  "items": [
+    {
+      "id": "hangzhou",
+      "session": "制定代码复刻视频方案",
+      "source": "outputs/hangzhou-two-minute-qianchen-20261030/delivery-v2/杭州-城市年轮-钱陈音色-两分钟.mp4",
+      "times": [
+        3.578,
+        21.2,
+        45.492,
+        60.635,
+        85.892,
+        110.082
+      ],
+      "credits": "films/hangzhou/CREDITS.md; films/hangzhou/MONTAGE-CREDITS.md",
+      "video": {
+        "sha256": "1bd27b7fbb863730837bb49c75eefb239fdf580669cecd705a97afd779020aaf",
+        "duration": 120.0,
+        "width": 1920,
+        "height": 1080,
+        "codec": "h264"
+      },
+      "image": "hangzhou-gallery.jpg",
+      "image_sha256": "541169500a8c3091ec162115be4b1cc71f74501125cc4245929c7fa3a16dfb19",
+      "transformation": "Decoded delivered frames, uniform thumbnail scaling, time labels"
+    },
+    {
+      "id": "butterfly",
+      "session": "制作机械蝴蝶",
+      "source": "outputs/mechanical-butterfly-v2-20261031/final.mp4",
+      "times": [
+        3.8,
+        8.8,
+        14.5,
+        17.5,
+        24,
+        28
+      ],
+      "credits": "films/mechanical-butterfly/CINEMATIC.md",
+      "video": {
+        "sha256": "77024ba5017a30c0a338ff18806a66b217a3192d800c26d3fc1454d0766bc32b",
+        "duration": 32.0,
+        "width": 1920,
+        "height": 1080,
+        "codec": "h264"
+      },
+      "image": "butterfly-gallery.jpg",
+      "image_sha256": "242d02a6bb36687d04c0ae6bcb84d7ca00ed2eeb75b176277fd959c6e7792b0e",
+      "transformation": "Decoded delivered frames, uniform thumbnail scaling, time labels"
+    },
+    {
+      "id": "taiji",
+      "session": "制作太极缠丝劲动画",
+      "source": "outputs/taiji-v2-20261031/delivery/final.mp4",
+      "times": [
+        3,
+        11.5,
+        16.5,
+        21,
+        27.5,
+        33
+      ],
+      "credits": "films/taiji-silk/CREDITS-V2.md; CC BY-SA 4.0",
+      "video": {
+        "sha256": "2ec2fd0d413d39f7b5a4e5bf2899dc64626e04c29a3f594a69779f564b9175fb",
+        "duration": 36.0,
+        "width": 1920,
+        "height": 1080,
+        "codec": "h264"
+      },
+      "image": "taiji-gallery.jpg",
+      "image_sha256": "11f7f5ba3c6ad22cf8bff2e4035edd3252065e0e284e194447a92d1adf180719",
+      "transformation": "Decoded delivered frames, uniform thumbnail scaling, time labels"
+    },
+    {
+      "image": "cards-native.jpg",
+      "image_sha256": "295488f614b4311646acf0615586ea6dd18cf7584c5c268161f974e392fc8990",
+      "mode": "native",
+      "manifest": "cards-native.json",
+      "verification": {
+        "schema": "image-card-verification-v1",
+        "mechanical_passed": true,
+        "cards": 1,
+        "mode": "native",
+        "visual_review": "pending",
+        "semantic_verified": false,
+        "subtitle_sync": {
+          "passed": null,
+          "reason": "Still images; not audio alignment acceptance"
+        }
+      },
+      "text_origin": "source_pixels"
+    },
+    {
+      "image": "cards-script.jpg",
+      "image_sha256": "2f315688d35cb9b3e2466d16a152cfca2597fe4802a4875879d3eb77dede5d89",
+      "mode": "script",
+      "manifest": "cards-script.json",
+      "verification": {
+        "schema": "image-card-verification-v1",
+        "mechanical_passed": true,
+        "cards": 1,
+        "mode": "script",
+        "visual_review": "pending",
+        "semantic_verified": false,
+        "subtitle_sync": {
+          "passed": null,
+          "reason": "Still images; not audio alignment acceptance"
+        }
+      },
+      "text_origin": "post_added"
+    }
+  ]
+}

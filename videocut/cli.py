@@ -457,6 +457,10 @@ def add_tts_arguments(command: argparse.ArgumentParser) -> None:
 
 
 def main() -> None:
+    if len(sys.argv) > 1 and sys.argv[1] == "images":
+        from .image_cli import main as images_main
+
+        raise SystemExit(images_main(sys.argv[2:]))
     if len(sys.argv) > 1 and sys.argv[1] == "codefilm":
         from .codefilm import main as codefilm_main
 
@@ -469,6 +473,7 @@ def main() -> None:
         description="素材混剪：配音、字幕、转场、贴纸和口播精剪"
     )
     sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser("images", help="Generic frame sampling, subtitle index and image cards")
     sub.add_parser("codefilm", help="Deterministic browser film: plan / stills / render / verify")
     sub.add_parser("ffmpeg", help="42 local FFmpeg tools; videocut ffmpeg --help")
     command = sub.add_parser(

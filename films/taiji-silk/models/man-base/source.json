@@ -1,0 +1,15 @@
+{
+  "page": "https://grab3d.com/models/characters/man-base-character/",
+  "download": "https://grab3d.com/dl/man-base-character-rigged/man-base-character-rigged.glb",
+  "bytes": 11354468,
+  "sha256": "3038f56e1225d0ef9692189ed19ff688f1424e669281148a4cc6995fed568496",
+  "license": "CC0-1.0",
+  "origin": "AI-assisted Meshy base, cleaned/scaled/textured/checked in Blender, according to provider",
+  "triangles": 262348,
+  "skin_joints": 24,
+  "animations": [
+    "run",
+    "walk"
+  ],
+  "limitation": "No independent finger or individual toe bones; not yet suitable for detailed toe-gripping animation."
+}

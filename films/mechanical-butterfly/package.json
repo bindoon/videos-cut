@@ -1,0 +1,16 @@
+{
+  "name": "aurelia-mechanical-butterfly",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "serve": "python3 -m http.server 8766 --bind 127.0.0.1",
+    "verify": "node tools/verify.mjs"
+  },
+  "dependencies": {
+    "playwright-core": "1.63.0",
+    "three": "0.170.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.12"
+  }
+}

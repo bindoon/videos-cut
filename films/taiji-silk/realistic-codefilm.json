@@ -1,0 +1,5 @@
+{
+ "schema":"codefilm-v1","entry":"realistic.html","timeline":"realistic-timeline.json",
+ "width":1920,"height":1080,"chunk_frames":96,
+ "sources":["realistic.js","character-v2.js","fonts","models/man-base/man-base-character-rigged.glb","models/makehuman/male-163.glb","models/anatomy/z-muscles.glb","models/anatomy/z-skeleton.glb","package-lock.json"]
+}

@@ -1,5 +1,17 @@
 # 验证记录
 
+## 2026-11-01：通用图像工具、场景技能与 README 作品展示
+
+- 新增 `videocut images sample / band / index / plan / render / verify`，实现双阶段 seek 候选帧、原像素区域预览、SRT/VTT/同源 ASR 索引、原生/脚本图卡、输出锁、逐卡结果、内容摘要续跑和实际文件检查。原生不重绘字，脚本要求校对声明和文字来源；没有修改独立 ASR、Qwen 或 `sync.py` 的算法/缓存。
+- 小红书选题、受众、说话人核实、版式和文案放在独立 `.agents/skills/xiaohongshu-quotes/` 与场景文档中；通用工具无平台字段，不自动调用模型、下载器或发布服务。参考 native-subtitle-quote-image 的工作流，本地独立编写实现，未复制上游脚本。
+- `tests/test_images.py` 共 **20 项**，使用真实 FFmpeg 编码视频与 Pillow 像素结果：长 GOP 指定时间抽帧、区域像素保留、等比总览、原生整图统一缩放、实际中文文字像素/边界、越界拒绝、台词审核与来源、缺字字体拒绝、内容/字体/源视频变化失效、同大小损坏修复、重复条失败、部分失败补做、中断后未登记图片保留与恢复、外部工作目录只读计划、滚动字幕索引及合法 `no_speech`。没有弱化、跳过或删除旧断言。
+- 新横屏截图测试暴露 FFmpeg 9 对限范围 MJPEG 抽帧的兼容问题，以及低帧率视频最后采样点可能晚于最后一帧的问题；修正为 PNG 中间帧并按帧率约束末尾采样，保持原验收要求。检查图用等比留边替代固定拉伸。失败输出留在本轮会话与 pytest 临时目录。
+- 执行 `uv sync --extra download --extra asr` 后，最终完整 **`uv run --no-sync pytest -q`：111 passed，32.21 秒**；588 条既有 MoviePy/NumPy 弃用提示保留。主模块、全部测试和新增图库脚本通过 Ruff，`git diff --check` 通过。Skill 使用 `quick_validate.py` 验证通过；其 PyYAML 依赖使用一次性 `uv run --with pyyaml`，未加入主项目依赖。
+- 实际杭州 120 秒成片生成 **15 个相邻候选帧、字幕区域预览、24 条 SRT 索引**；杭州连续四句生成原生图卡，机械蝴蝶实际帧生成 3:4 后期说明图卡。两张均通过 `images verify`，实际 CLI 原生续跑复用 1/1 卡。机器报告保留 `visual_review=pending / semantic_verified=false / subtitle_sync.passed=null`，未把文件检查标成语义或声学字幕验收。证据在 `outputs/image-tools-20261101/`、`outputs/readme-gallery-20261101-v2/`。
+- 读取历史会话“制定代码复刻视频方案”“制作机械蝴蝶”“制作太极缠丝劲动画”，以其最终交付路径核对本地 MP4；从编码文件重新提取三份六帧图集。宿主实际查看三张图集和两张成品图卡；当前五张 JPEG 合计约 0.83 MiB，随 README 保存，未复制用户参考音频或大型视频。来源摘要、秒数、许可、原生/后期文字及看图记录见 [展示媒体](media/README.md) 与 [gallery-source.json](media/gallery-source.json)。这轮没有重渲染原三条完整影片、重新调用语音模型、联网平台下载或进行人工听审。
+- wheel 和 sdist 构建通过，新图像模块包含于 wheel；隔离目标安装后，从仓库外通过 `python -m videocut images verify` 检查实际脚本图卡成功。打包检查发现原默认 sdist 混入影片依赖/缓存/模型，改用受控包含与排除规则后，源码包从约 **157 MiB 降至 5,477,515 字节**，检查无 `node_modules`、虚拟环境、影片 `data`、GLB、用户声音或 `outputs`；保留通用工具、两类技能、影片源码与来源说明。
+- 能力地图、通用图像合同、小红书工作流、README、使用/AI 指南、架构和开源来源已同步；338 处本地文档文件链接无缺失，新增五张图片的摘要均与清单一致。既有未提交的其他影片与文档改动保留。
+
 ## 2026-10-30：代码视频工具与制作工作流沉淀
 
 - 新增 `videocut codefilm plan / stills / render / verify`，从杭州脚本抽出本地浏览器捕获、A→B→A 截图检查、无损 PNG 分段编码、输入摘要与缓存校验。`examples/codefilm/` 为两秒 Canvas 示例，杭州改用 `codefilm.json` 与共享入口，影片内容及 GIS 转换仍在 `films/hangzhou/`。未修改 ASR 缓存、Qwen 或 `sync.py`。
@@ -259,6 +271,26 @@ macOS arm64、16GB 内存、独立 Python 3.11.14 / PyTorch 2.8.0 MPS 环境，�
 - 最终 `uv sync --extra download --extra asr` 后，升级后的系统环境执行[完整 pytest](../outputs/ffmpeg-integration-20261025/pytest-final.txt)：**51 项通过**，保留原有 MoviePy / NumPy 弃用警告。新增两项覆盖跨工作目录、带空格路径的真实裁切、音画时长、完整解码、预演不写文件、拒绝覆盖、源文件不变和工具帮助无需媒体程序。
 - Ruff、`git diff --check`、sdist → wheel 构建通过；wheel 安装到仓库外目录后，通过其内置工具实际探测 3 秒媒体，确认不依赖源码目录。新工具的 `verified` 与平台检查不替代本项目 Qwen 与 `sync.py` 门禁；未声称全部 42 个工具均做过媒体实测。
 
+
+## 2026-10-30 · 杭州白模与实景混剪：分段与样片（整片待合成）
+
+- 已人工选片并下载12份 Commons 素材：11份照片/古画/资料图，1份塘栖运河实拍视频；逐项保存作者、原页面、许可、尺寸与SHA-256，核对原文件SHA-1。苏堤与良渚初选不够贴题，替换为明确的现场景观；未使用生图或生视频模型。具体条目见[混剪素材署名](../films/hangzhou/MONTAGE-CREDITS.md)。
+- `montage-edit.json` 将95秒插入画面、4.833秒片尾映射到原4100帧时间轴。`montage.js` 使用Three.js照片/视频图层，保留原城市相机与双语字幕时间；地图标题先退出，实景标题后进入，避免叠化时两组标题重影。
+- 实际完成2396帧、1920×1080/24fps、100个H.264/yuv420p/tv片段；共享`codefilm verify`检查实际文件、摘要、连续帧和格式通过。报告：[native-verification.json](../outputs/hangzhou-montage-20261030/native-verification.json)。这是插入段完整性，不是171秒整片验收。
+- 实拍视频另做A→B→A定位检查，同一时刻两次PNG字节一致。三份有声样片实际出片：运河8秒/192帧、苏堤9秒/216帧、钱江新城5秒/120帧，均为960×540/24fps、H.264/AAC立体声；平台/内容检查0失败、2提示（预览分辨率低于720、无可切换字幕轨），未伪称全项PASS。已查看编码后总览及0.333/0.667/7.667秒转场帧。
+- 确定性`tests/test_codefilm.py`实际运行5项通过，Python编译与Node语法检查通过。Ruff在当前根环境不可用，未记录为通过；根环境没有SciPy，混剪验收应使用杭州独立环境，未向主项目加GIS/音乐依赖。
+- 开始时磁盘只余约280MB，确实出现小文件写入失败。清理本工具上次失败全范围试跑的两份编码中间件269,881,324字节，保留原成功成片、源数据、失败成片与日志，并保存清理记录。随后完成高清插入段，但正式合成前空闲仍约370MB，执行命令被2GB空间检查拒绝；22份片段FFmpeg预演及连续4100帧剪辑计划已保存。当前没有新的171秒完整视频，也未运行新成片35句OCR/9处波形验收。续跑命令见[继续制作](../outputs/hangzhou-montage-20261030/继续制作.md)。
+
+
+## 2026-10-30 · 杭州快节奏混剪完整交付
+
+- 用户要求加快节奏并最终合为一条片子。空间释放至约24GiB后，新增下载15张照片，人工查看27份素材总览；排除不相关地铁口画面，实际使用22份素材。安排51个实景/片尾窗口，89秒实景，图片主要1.5～2秒，与原Three.js城市运镜交替，增加光扫、推近和白模/实景分屏。
+- 改为直接渲染完整时间轴：4100帧、1920×1080/24fps，35个检查过的编码片段。Three.js重复帧检查通过；图像与视频模型调用仍为0。时间轴、来源与脚本保存在杭州工程。
+- 最终交付：[杭州-快节奏实景混剪.mp4](../outputs/hangzhou-fast-20261030/delivery/杭州-快节奏实景混剪.mp4)，170.967秒容器、170.833秒视频、H.264/yuv420p/tv、AAC立体声48kHz、12章节。SHA-256 `d208707a32a9cb55f320ae9f735ccdfa3118cb8a6f32b19ea4f7edbfd651ebd3`。
+- 新成片35/35句字幕中点OCR匹配，9个波形窗口偏移均为0秒，最小相关系数0.9884。平台/内容检查0失败、1提示（无独立可切换字幕轨；已烧录双语字幕并另交SRT）。响度-14.1 LUFS、真峰值-1.6 dBTP、黑帧0%、最长冻结0.5秒、静音0%。已查看最终编码4×3总览、分屏及片尾静帧。完整报告：[verification.json](../outputs/hangzhou-fast-20261030/delivery/verification.json)。这是抽样OCR/波形验收，Qwen/sync.py仍passed=null，未记录人工听审。
+- 初次后期在章节工具试图替换刚生成的同名文件时被防覆盖规则拒绝；失败日志保留。保留该次编码为before-chapters.mp4，再写入不同路径的正式成片并完成检查。`finish_fast_montage.py`已采用不同候选/正式文件名，未放松防覆盖规则。5项codefilm测试通过（0.86秒），Node语法、Python编译和git diff检查通过；未把此前样片检查当作整片验收。
+
+
 ## 2026-10-30 · 默认语音引擎改为 IndexTTS-2.5
 
 - `demo / render / mix / raw-sample` 的语音合成默认值统一为 `indextts`，继续使用现有 IndexTTS-2.5 模型与独立环境；Edge 和 macOS 系统声音可显式选择。生成新旁白需提供参考录音；缺少录音时提前报错。已有录音与 `mix` 保持使用原声。
@@ -266,3 +298,43 @@ macOS arm64、16GB 内存、独立 Python 3.11.14 / PyTorch 2.8.0 MPS 环境，�
 - 新增 CLI 默认选择、旧参数拒绝、缺少参考录音提前失败、默认语音字幕流程、IndexTTS-2.5 请求与已生成 PCM 使用、F5 清单拒绝等回归检查。执行 `uv sync --extra download --extra asr` 后，完整 `uv run pytest -q`：**91 项通过，55.68 秒**；保留 588 条既有 MoviePy/NumPy 弃用警告。
 - 实际检查 CLI 帮助仅列出 `indextts / edge / macos`，并显示默认版本 2.5。本次模型调用使用替身及合成 PCM 验证接口，没有新增实际模型推理、听感或视频验收结论。
 - 文档整理：当前声音克隆指南集中说明 IndexTTS-2.5 的输入、缓存和验收；F5 命令及结果移至 `voice-cloning-f5-history.md`，使用指南补充引擎选择表。提交前语音相关测试 **18 项通过，0.14 秒**；`git diff --check` 通过。
+
+
+## 2026-10-30 · 钱陈音色 / Three.js主导 / 两分钟版
+
+- 用户将目标调整为约两分钟、Three.js为主、实景辅助且减少重复，并指定钱陈音色与IndexTTS2。使用已配置的官方IndexTTS-2.5本地运行；原始`钱陈声音.m4a`复制到本地`assets/voices/qianchen/`，SHA-256 `8832c74dc96277795934bb56b34b88e74992b6c1b4030932ea55a183faa0f112`，并保存24kHz单声道参考及索引，目录排除Git。
+- 新稿24句、375字（含标点）；逐句生成缓存均验证SHA-256。原始语音合计108.5301875秒；去掉外缘静音、保留120ms保护后按实际PCM组成120秒，本次未做变速。独立base ASR覆盖全部句子，但地名存在多处同音字替换，未将其冒充Qwen记录或据此改写字幕，未记录人工听审。
+- 主镜头为98.833秒完整Three.js（82.36%），12份实景各一次、各1.5秒，其中8次以辅助分屏呈现；片尾署名3.167秒。渲染2880帧与24段完整性通过。
+- 首次新成片OCR为23/24，年份“一千零九十年”的“一”受亮色白模背景干扰被读为“二”。未改变原稿、匹配规则或断言；在城市和实景字幕上统一添加深色底衬，重新渲染并输出新的delivery-v2。先复查该年份帧正确，再对全片24句重新OCR，24/24通过。
+- [正式成片](../outputs/hangzhou-two-minute-qianchen-20261030/delivery-v2/杭州-城市年轮-钱陈音色-两分钟.mp4)：容器和视频均120.0秒，2880帧，1920×1080/24fps，H.264/yuv420p/tv，AAC立体声48kHz，12章节，95,752,723字节。SHA-256 `1bd27b7fbb863730837bb49c75eefb239fdf580669cecd705a97afd779020aaf`。
+- 9个波形窗口偏移均0秒，最小相关系数0.99956；-14.0 LUFS、-4.2 dBTP、黑帧0%、最长冻结0.6秒、静音0%。格式/内容0失败1提示（无可切换内嵌字幕轨，画面已烧录并附24条SRT）。已查看实际编码总览、主镜、辅助分屏与年份修正帧。[报告](../outputs/hangzhou-two-minute-qianchen-20261030/delivery-v2/verification.json)与失败证据保留，Qwen/sync.py仍passed=null。
+- 5项codefilm测试通过（0.80秒），Node语法、Python编译与git diff检查通过。旧4100帧/35句验收默认保留，新片显式设2880帧/24句，符合用户调整时长的指令。
+
+
+## 2026-10-31 · 太极缠丝劲图解动画
+
+- 新增 [太极影片工程](../films/taiji-silk/README.md)：36 秒、1920×1080/24fps、864 帧，完整动作、足部剖析、五趾抓地、生根、足底外旋劲意、大腿左缠和整体回看。Three.js 原创程序造型，不调用生图、生视频、语音或付费 API；参考用户动作画的青蓝色调，未直接使用参考图像素。
+- [正式成片](../outputs/taiji-silk-20261031/final.mp4)：视频与容器均 36.0 秒，H.264 High / yuv420p / tv / BT.709，AAC 48kHz 立体声。SHA-256 `fdf0b2304e14fddd03f702f31721ec5ed736ae26eb603331e1f8aa0f6e221dc0`。原创标准库合成五声音阶配乐，-20.0 LUFS、-8.5 dBTP。无旁白；交互版不带配乐。
+- 最终 codefilm 清单 `e816bda8695a228b2910`：9 段各 96 帧，真实文件帧数与完整性检查通过；全片与分段使用同一源码摘要。最终实际 MP4 的 864 帧检查 passed=true。格式/内容检查 10 项 PASS、1 项 WARN、0 项 FAIL，`ok=true`、`verified=false`；WARN 为没有独立字幕轨，片内说明文字已绘入画面，不将其写成全项 PASS。黑帧 0%、最长冻结 0.8 秒、静音 0%。[帧报告](../outputs/taiji-silk-20261031/delivery-verification.json)、[媒体检查](../outputs/taiji-silk-20261031/delivery-check.json)保留。
+- [姿态报告](../outputs/taiji-silk-20261031/qa/pose-verification.json)：144 个时刻承重脚固定，抓地后五个趾腹同处 0.012 模型高度，大腿转向按“从髋向足俯视逆时针”统一；4 组 A→B→A 截图相同，无页面异常。实际测试离线 HTML 的暂停、时间轴定位、本地字体与零外部 HTTP 请求。另有共享渲染器的确定性检查，均通过。
+- 人工查看七段构图及实际编码后的 [联系表](../outputs/taiji-silk-20261031/contact-sheet.png)、[19 秒脚部截图](../outputs/taiji-silk-20261031/root-detail.png)。初版地面/台座透明层写深度导致根须被遮挡，修改为不写深度；修正膝部衣服衔接、标注底衬、近景构图以及旋转符号后完整重渲染，未放宽断言。首次初始化发现负数曲线参数错误并修正；中间预览与旧渲染保留。
+- Node 语法和 Python 编译检查通过。本次只增加影片源码、工具、字体及文档导航，没有更改主项目模块；未重跑完整 pytest。解剖、树根和旋转传导属于艺术/劲意示意，几何接触检查不能证明生物力学正确；没有语音字幕，Qwen 与 `videocut/sync.py` 不适用，不声明声学字幕同步通过。
+
+
+## 2026-10-31 · 外部 GLB 人物加载与骨骼姿态试装
+
+- 针对人物造型反馈，实际下载 Grab3D Man Base Mesh 的 CC0 骨骼 GLB：11,354,468 字节、262,348 三角形、24 骨骼，SHA-256 `3038f56e1225d0ef9692189ed19ff688f1424e669281148a4cc6995fed568496`。记录提供方 AI/Meshy 底模、Blender 整理的来源声明，未称真人扫描。下载首次中断后用 HTTP Range 续传，GLB 头部声明长度与实际长度一致，Three.js GLTFLoader 实际加载成功。许可、上游清单与下载事实保存于 `films/taiji-silk/models/man-base/`。
+- 新增独立 model-study 入口，测试两段骨骼 IK、网格蒙皮、贴图、环境光和地面接触；没有将低规格模型直接替换原 36 秒图解。资产缺少独立手指与逐趾骨骼、太极服和肌肉层，不能据此宣称完成原片抓地/剖析升级。
+- [6 秒技术样片](../outputs/taiji-real-model-study-20261031/real-model-study.mp4)：1920×1080/24fps、144 帧、H.264/yuv420p/tv/BT.709，AAC 48kHz 立体声，复用原创配乐前六秒并淡出，-20.0 LUFS、-7.5 dBTP。最终视频 SHA-256 `59f43b0a353e498ddfbf527e5c696bbf7c2336ebab8a1a830820c60815258dd5`。两段各 72 帧，编码文件完整性 passed=true；共享 A→B→A 像素检查通过。
+- 媒体检查 10 PASS、1 WARN、0 FAIL，ok=true、verified=false；WARN 为没有独立字幕轨。黑帧/静音 0%，最长冻结 1.8 秒。实际查看 [样片截图](../outputs/taiji-real-model-study-20261031/real-model.png) 和联系表；该样片用于比较人物材质与比例，动作不是经动捕或教练校验的太极示范。Node 语法与 git diff --check 通过；未修改主项目模块、未运行完整 pytest。
+
+
+## 2026-10-31 · 太极缠丝劲 V2：逐趾控制与真实解剖网格
+
+- 用户认可外部人物材质后要求完整重做。V2 保留 Grab3D 贴图人物外观，组合 Innerscene / MakeHuman CC0 的 163 骨骼人物脚部，实际确认左右各 14 个趾关节；Z-Anatomy / BodyParts3D 提供 95 个右下肢骨骼/肌肉网格，其中 44 个足部网格。来源、SHA-256、许可与动画适配说明在 [CREDITS-V2](../films/taiji-silk/CREDITS-V2.md) 和 `models/v2-sources.json`，不是把程序纺锤体改名为真实肌肉。
+- 全片仍为 36 秒 / 864 帧，先展示真实足部表皮与逐趾屈曲，再显露骨骼、肌腱与肌群，随后生根、拧劲、腿部左缠并回到全身。脚踝用两个原始表面的切口边界拟合过渡网格。解剖模型进行比例匹配和蒙皮转移，属于动画适配，未声明经过生物力学或临床校准。
+- 最终 [视频](../outputs/taiji-v2-20261031/delivery/final.mp4)：36.0 秒，1920×1080/24fps，H.264 High/yuv420p/tv/BT.709，AAC 48kHz 立体声，8,701,322 字节，SHA-256 `2ec2fd0d413d39f7b5a4e5bf2899dc64626e04c29a3f594a69779f564b9175fb`。渲染键 `bbda85c70faf5eff622a`，9×96 帧分段与实际最终 MP4 的 864 帧完整性通过。
+- [最终姿态验收](../outputs/taiji-v2-20261031/delivery/pose-verification.json)：144 个时刻，五个趾腹以变形网格求解接触，最大高度误差约 0.000001542 模型单位；足跟最低高度 0.004463，全部使用的脚部表面最低高度 0.001493，均在地面之上。踝部最大漂移约 5.09e-16。单独改变第三趾关节后，第三趾尖样本最大位移 0.007945，其他四趾尖样本位移均 0；原趾蹼混合仍保留。解剖顶点权重错误 0，最大归一化误差 4.75e-8。四组 A→B→A 截图一致，无页面异常与外部 HTTP 请求。
+- 初次验收发现大腿轴转会把子级小腿和踝部带离锚点；在轴转后重新求解小腿并固定踝部后修正。随后隔离控制测试发现原自动蒙皮的跨趾权重串扰；清理占优势脚趾顶点的跨趾影响、保留趾蹼混合并重归一化后通过同一断言。`qa-final/failure.json`、`qa-fixed/failure.json` 与旧渲染保留，未改宽验收阈值。修正后对最终源码完整重渲染，没有拼接旧版本段。
+- 复用本工程原创 36 秒配乐，-20.0 LUFS、-8.5 dBTP。媒体/内容检查 10 PASS、1 WARN、0 FAIL，ok=true、verified=false；唯一 WARN 是没有独立字幕轨，说明文字已入画。黑帧和静音 0%，最长冻结 1.8 秒。实际查看 [联系表](../outputs/taiji-v2-20261031/delivery/contact-sheet.png)、[抓地](../outputs/taiji-v2-20261031/delivery/toe-grip.png)、[解剖](../outputs/taiji-v2-20261031/delivery/anatomy.png)、[生根](../outputs/taiji-v2-20261031/delivery/roots.png) 编码帧。
+- Node 语法、git diff --check 和 `tests/test_codefilm.py` 5 项测试通过（0.99 秒）。本次未修改主项目模块、未运行完整 pytest。没有旁白、ASR 或声学字幕验收。输出附完整素材署名及 CC BY-SA 4.0 视频许可。

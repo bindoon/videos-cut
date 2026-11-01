@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import math
 import os
+from fractions import Fraction
 from pathlib import Path
 
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 from .assets import select_material
 from .media import duration, probe, run, write_json
@@ -420,8 +421,11 @@ def inspect_output(video: Path, output: Path, expected_duration: float) -> dict:
     thumb_dir = output / "qa"
     thumb_dir.mkdir(exist_ok=True)
     frames = []
+    frame_rate = float(Fraction(video_stream.get("avg_frame_rate") or "24/1")) or 24
+    last_sample = max(0, min(actual, video_seconds) - max(0.2, 1 / frame_rate) - 1e-6)
     for i in range(6):
-        target = thumb_dir / f"frame-{i}.jpg"
+        # PNG avoids FFmpeg 9's stricter limited-range MJPEG encoder checks.
+        target = thumb_dir / f"frame-{i}.png"
         run(
             [
                 "ffmpeg",
@@ -429,7 +433,7 @@ def inspect_output(video: Path, output: Path, expected_duration: float) -> dict:
                 "-v",
                 "error",
                 "-ss",
-                str(min(actual - 0.2, actual * (i + 0.5) / 6)),
+                str(min(last_sample, actual * (i + 0.5) / 6)),
                 "-i",
                 str(video),
                 "-frames:v",
@@ -438,7 +442,8 @@ def inspect_output(video: Path, output: Path, expected_duration: float) -> dict:
             ]
         )
         with Image.open(target) as frame:
-            frames.append(frame.resize((240, 427)))
+            frames.append(ImageOps.pad(frame.convert("RGB"), (240, 427),
+                                       Image.Resampling.LANCZOS, color="#111"))
     sheet = Image.new("RGB", (240 * 3, 427 * 2), "#111")
     for i, frame in enumerate(frames):
         sheet.paste(frame, ((i % 3) * 240, (i // 3) * 427))

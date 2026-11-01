@@ -1,0 +1,16 @@
+{
+  "fps":30,"frames":960,"duration":32,
+  "scenes":[
+    {"id":"01-sensor-macro","start":0,"end":3},
+    {"id":"02-frontal-symmetry","start":3,"end":5.5},
+    {"id":"03-side-profile","start":5.5,"end":8},
+    {"id":"04-true-top","start":8,"end":10.5},
+    {"id":"05-carapace-release","start":10.5,"end":13},
+    {"id":"06-motor-cutaway","start":13,"end":16},
+    {"id":"07-gear-macro","start":16,"end":19},
+    {"id":"08-hinge-linkage","start":19,"end":22},
+    {"id":"09-layered-explosion","start":22,"end":26},
+    {"id":"10-reassembly","start":26,"end":29},
+    {"id":"11-flight-hero","start":29,"end":32}
+  ]
+}

@@ -1,0 +1,407 @@
+{
+  "title": "杭州 · 城市年轮 · 钱陈音色两分钟版",
+  "fps": 24,
+  "frames": 2880,
+  "duration": 120.0,
+  "source_duration": 120.0,
+  "mode": "threejs_primary_two_minutes",
+  "shots": [
+    {
+      "id": "aux-00",
+      "at": 6.666666666666667,
+      "until": 8.166666666666666,
+      "start": 6.666666666666667,
+      "end": 8.166666666666666,
+      "asset": "extra-12",
+      "label": "西湖",
+      "note": "今日实景",
+      "from": 0,
+      "direction": 1,
+      "transition": "light",
+      "effect": "full"
+    },
+    {
+      "id": "aux-01",
+      "at": 16.458333333333332,
+      "until": 17.958333333333332,
+      "start": 16.458333333333332,
+      "end": 17.958333333333332,
+      "asset": "extra-13",
+      "label": "西湖东岸",
+      "note": "今日实景",
+      "from": 0,
+      "direction": -1,
+      "transition": "dissolve",
+      "effect": "split"
+    },
+    {
+      "id": "aux-02",
+      "at": 20.458333333333332,
+      "until": 21.958333333333332,
+      "start": 20.458333333333332,
+      "end": 21.958333333333332,
+      "asset": "tangxi",
+      "label": "京杭大运河 · 塘栖",
+      "note": "今日实景",
+      "from": 4,
+      "direction": 1,
+      "transition": "dissolve",
+      "effect": "split"
+    },
+    {
+      "id": "aux-03",
+      "at": 33.583333333333336,
+      "until": 35.083333333333336,
+      "start": 33.583333333333336,
+      "end": 35.083333333333336,
+      "asset": "extra-19",
+      "label": "雷峰塔",
+      "note": "今日实景",
+      "from": 0,
+      "direction": -1,
+      "transition": "light",
+      "effect": "split"
+    },
+    {
+      "id": "aux-04",
+      "at": 43.5,
+      "until": 45.0,
+      "start": 43.5,
+      "end": 45.0,
+      "asset": "sudi",
+      "label": "苏堤",
+      "note": "今日实景",
+      "from": 0,
+      "direction": 1,
+      "transition": "dissolve",
+      "effect": "full"
+    },
+    {
+      "id": "aux-05",
+      "at": 53.791666666666664,
+      "until": 55.291666666666664,
+      "start": 53.791666666666664,
+      "end": 55.291666666666664,
+      "asset": "scroll",
+      "label": "南宋 · 西湖图卷",
+      "note": "南宋绘画",
+      "from": 0,
+      "direction": -1,
+      "transition": "dissolve",
+      "effect": "full"
+    },
+    {
+      "id": "aux-06",
+      "at": 62.875,
+      "until": 64.375,
+      "start": 62.875,
+      "end": 64.375,
+      "asset": "historic",
+      "label": "近代杭州",
+      "note": "20世纪前期 · 资料影像",
+      "from": 0,
+      "direction": 1,
+      "transition": "light",
+      "effect": "split"
+    },
+    {
+      "id": "aux-07",
+      "at": 73.5,
+      "until": 75.0,
+      "start": 73.5,
+      "end": 75.0,
+      "asset": "qianjiang",
+      "label": "钱江新城",
+      "note": "今日实景",
+      "from": 0,
+      "direction": -1,
+      "transition": "dissolve",
+      "effect": "full"
+    },
+    {
+      "id": "aux-08",
+      "at": 83.83333333333333,
+      "until": 85.33333333333333,
+      "start": 83.83333333333333,
+      "end": 85.33333333333333,
+      "asset": "bridge",
+      "label": "钱塘江大桥",
+      "note": "今日实景",
+      "from": 0,
+      "direction": 1,
+      "transition": "dissolve",
+      "effect": "split"
+    },
+    {
+      "id": "aux-09",
+      "at": 89.33333333333333,
+      "until": 90.83333333333333,
+      "start": 89.33333333333333,
+      "end": 90.83333333333333,
+      "asset": "extra-26",
+      "label": "良渚古城遗址",
+      "note": "今日实景",
+      "from": 0,
+      "direction": -1,
+      "transition": "light",
+      "effect": "split"
+    },
+    {
+      "id": "aux-10",
+      "at": 100.0,
+      "until": 101.5,
+      "start": 100.0,
+      "end": 101.5,
+      "asset": "night",
+      "label": "钱江新城夜景",
+      "note": "今日实景",
+      "from": 0,
+      "direction": 1,
+      "transition": "dissolve",
+      "effect": "split"
+    },
+    {
+      "id": "aux-11",
+      "at": 112.45833333333333,
+      "until": 113.95833333333333,
+      "start": 112.45833333333333,
+      "end": 113.95833333333333,
+      "asset": "extra-16",
+      "label": "杭州山水",
+      "note": "今日实景",
+      "from": 0,
+      "direction": -1,
+      "transition": "dissolve",
+      "effect": "split"
+    },
+    {
+      "id": "credits",
+      "at": 116.83333333333333,
+      "until": 120.0,
+      "start": 116.83333333333333,
+      "end": 120.0,
+      "asset": "credits",
+      "label": "素材署名"
+    }
+  ],
+  "scenes": [
+    {
+      "id": "prologue",
+      "year": "杭州",
+      "title": "一城山水",
+      "en": "A CITY SHAPED BY WATER",
+      "lines": [
+        [
+          "杭州，一面是西湖，一面是钱塘江。",
+          "Hangzhou: West Lake on one side, Qiantang River on the other."
+        ],
+        [
+          "这座城的年轮，就藏在湖与江之间。",
+          "The rings of the city lie between lake and river."
+        ]
+      ],
+      "start": 0,
+      "end": 11.682375
+    },
+    {
+      "id": "name",
+      "year": "589",
+      "title": "杭州之名",
+      "en": "THE NAME HANGZHOU",
+      "lines": [
+        [
+          "公元五百八十九年，隋朝设置杭州。",
+          "The Sui established Hangzhou in 589."
+        ],
+        [
+          "城市，依着西湖东岸展开。",
+          "The city grew east of West Lake."
+        ]
+      ],
+      "start": 11.682375,
+      "end": 20.089916666666667
+    },
+    {
+      "id": "canal",
+      "year": "隋唐",
+      "title": "运河通南北",
+      "en": "A WATERWAY TO THE NORTH",
+      "lines": [
+        [
+          "隋唐，运河把杭州接入南北水路。",
+          "The canal connected Hangzhou to north and south."
+        ],
+        [
+          "粮食与丝绸往来，也带来更大的天地。",
+          "Grain and silk opened a wider world."
+        ]
+      ],
+      "start": 20.089916666666667,
+      "end": 29.769166666666667
+    },
+    {
+      "id": "wuyue",
+      "year": "907",
+      "title": "吴越钱塘",
+      "en": "THE WUYUE CAPITAL",
+      "lines": [
+        [
+          "五代，杭州成为吴越国都。",
+          "Hangzhou became the capital of Wuyue."
+        ],
+        [
+          "城郭、海塘与寺塔，留下新的印记。",
+          "Walls, sea dikes and temples left their marks."
+        ]
+      ],
+      "start": 29.769166666666667,
+      "end": 38.572291666666665
+    },
+    {
+      "id": "sudi",
+      "year": "1090",
+      "title": "一堤留千年",
+      "en": "A CAUSEWAY THROUGH TIME",
+      "lines": [
+        [
+          "一千零九十年，苏轼主持疏浚西湖。",
+          "In 1090, Su Shi directed the dredging of West Lake."
+        ],
+        [
+          "湖泥筑成长堤，后来，人们叫它苏堤。",
+          "Lake mud formed what became the Su Causeway."
+        ]
+      ],
+      "start": 38.572291666666665,
+      "end": 48.5198125
+    },
+    {
+      "id": "linan",
+      "year": "1138",
+      "title": "南宋临安",
+      "en": "LIN'AN, SOUTHERN SONG",
+      "lines": [
+        [
+          "南宋定都临安，皇城在南，街市向北。",
+          "Southern Song Lin’an: palace south, markets north."
+        ],
+        [
+          "湖山之间，铺开繁华的城市长卷。",
+          "Urban life unfolded between lake and hills."
+        ]
+      ],
+      "start": 48.5198125,
+      "end": 58.91075
+    },
+    {
+      "id": "open",
+      "year": "1913",
+      "title": "把西湖迎进城",
+      "en": "THE CITY OPENS TO THE LAKE",
+      "lines": [
+        [
+          "一九一三年，拆城开路。",
+          "In 1913, walls came down and roads opened."
+        ],
+        [
+          "西湖与街巷重新相遇，城市向外舒展。",
+          "The lake and streets met as the city expanded."
+        ]
+      ],
+      "start": 58.91075,
+      "end": 68.3464375
+    },
+    {
+      "id": "river",
+      "year": "2001",
+      "title": "向钱塘江生长",
+      "en": "GROWING TOWARD THE RIVER",
+      "lines": [
+        [
+          "新世纪，杭州把目光投向钱塘江。",
+          "In the new century, Hangzhou turned to the Qiantang."
+        ],
+        [
+          "钱江新城，让城市重心从湖畔走向江岸。",
+          "Qianjiang New City moved the focus to the riverbank."
+        ]
+      ],
+      "start": 68.3464375,
+      "end": 79.1295625
+    },
+    {
+      "id": "bridges",
+      "year": "跨江",
+      "title": "一江连接两岸",
+      "en": "ONE RIVER, TWO CONNECTED BANKS",
+      "lines": [
+        [
+          "桥梁跨过江面，两岸彼此连接。",
+          "Bridges linked the two banks."
+        ],
+        [
+          "钱江新城、滨江、钱江世纪城，交相呼应。",
+          "New urban centres grew together across the river."
+        ]
+      ],
+      "start": 79.1295625,
+      "end": 88.97989583333333
+    },
+    {
+      "id": "heritage",
+      "year": "2011—2019",
+      "title": "三处世界遗产",
+      "en": "THREE WORLD HERITAGE INSCRIPTIONS",
+      "lines": [
+        [
+          "西湖、大运河、良渚古城遗址，先后成为世界遗产。",
+          "West Lake, the Grand Canal and Liangzhu became World Heritage."
+        ],
+        [
+          "三个时间坐标，照见杭州的深度。",
+          "Three landmarks reveal the depth of Hangzhou."
+        ]
+      ],
+      "start": 88.97989583333333,
+      "end": 99.66741666666667
+    },
+    {
+      "id": "today",
+      "year": "今日",
+      "title": "古今在此交汇",
+      "en": "WHERE PAST MEETS POSSIBILITY",
+      "lines": [
+        [
+          "今天，新的楼宇沿江而立。",
+          "Today, new towers rise along the river."
+        ],
+        [
+          "湖、河与江，仍是读懂杭州的线索。",
+          "Lake, canal and river still tell the city’s story."
+        ]
+      ],
+      "start": 99.66741666666667,
+      "end": 108.22479166666666
+    },
+    {
+      "id": "epilogue",
+      "year": "杭州",
+      "title": "一城山水，千年生长",
+      "en": "THE RINGS OF HANGZHOU",
+      "lines": [
+        [
+          "从西湖时代，到钱塘江时代。",
+          "From the West Lake era to the Qiantang River era."
+        ],
+        [
+          "年轮向外，山水在心。这，就是杭州。",
+          "The rings grow outward. The landscape stays at heart."
+        ]
+      ],
+      "start": 108.22479166666666,
+      "end": 120.0
+    }
+  ],
+  "primary_visual": "Three.js city and historical light layers",
+  "reference_voice": "qianchen"
+}

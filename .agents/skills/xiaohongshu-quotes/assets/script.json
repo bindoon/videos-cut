@@ -1,0 +1,25 @@
+{
+  "schema": "image-cards-v1",
+  "source": "source/video.mp4",
+  "mode": "script",
+  "style": {
+    "layout": "fixed", "width": 1080, "aspect": [3, 4],
+    "hero_fraction": 0.6, "font_size": 36, "band": [0.6, 0.9], "fit": "contain"
+  },
+  "cards": [{
+    "id": "topic-01",
+    "title": "校对台词和来源后再渲染",
+    "lines": [
+      {"time": 10.5, "text": "填写经校对的第一句话", "reviewed": false,
+       "text_source": {"kind": "user", "reference": "填写实际稿件或视频时间范围"}},
+      {"time": 15.5, "text": "填写经校对的第二句话", "reviewed": false,
+       "text_source": {"kind": "user", "reference": "填写实际稿件或视频时间范围"}},
+      {"time": 20.5, "text": "填写经校对的第三句话", "reviewed": false,
+       "text_source": {"kind": "user", "reference": "填写实际稿件或视频时间范围"}},
+      {"time": 25.5, "text": "填写经校对的第四句话", "reviewed": false,
+       "text_source": {"kind": "user", "reference": "填写实际稿件或视频时间范围"}},
+      {"time": 30.5, "text": "填写经校对的第五句话", "reviewed": false,
+       "text_source": {"kind": "user", "reference": "填写实际稿件或视频时间范围"}}
+    ]
+  }]
+}

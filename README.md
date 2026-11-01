@@ -1,12 +1,50 @@
 # videos-cut · 可复现的视频混剪工具链
 
-**把剧本、素材和声音变成短片，也把剪辑过程变成可检查、可复用的文件。**
+**把剧本、素材和声音变成短片、字幕图卡与代码动画，让制作过程可检查、可复用。**
 
-面向开发者和 AI Agent 的本地 Python CLI：从网页导入素材，生成或保留旁白，精剪口播，合成字幕、图片运镜、转场、动态贴纸和配乐，输出 H.264 / AAC 视频及完整处理记录。用 JSON 描述作品，用命令组合工作流。
+面向开发者和 AI Agent 的本地 Python CLI：从网页导入素材，生成或保留旁白，精剪口播，合成字幕、图片运镜、转场、动态贴纸和配乐，也能从真实视频帧制作字幕图卡，或把 Canvas / Three.js 工程逐帧编码。用 JSON 描述作品，用命令组合工作流。
 
-[快速开始](#快速开始) · [使用指南](docs/usage.md) · [让 AI 来操作](docs/ai-guide.md) · [开源来源](docs/open-source.md) · [全部文档](docs/README.md)
+[快速开始](#快速开始) · [能力地图](docs/capabilities.md) · [使用指南](docs/usage.md) · [让 AI 来操作](docs/ai-guide.md) · [全部文档](docs/README.md)
+
+| 层次 | 在项目里负责什么 |
+| --- | --- |
+| **通用工具** | 下载、转录、配音、剪辑、抽帧、图卡排版、代码出片与文件校验 |
+| **场景技能** | 根据平台和内容组织工具，例如[小红书访谈字幕图文](.agents/skills/xiaohongshu-quotes/SKILL.md)的选题、选句、版式与文案 |
+| **作品工程** | `films/` 保存杭州、机械蝴蝶、太极等具体作品的模型、数据、镜头和专用检查 |
+
+宿主 Agent 负责理解、创作和看图，工具负责确定性执行；平台规则放在技能与模板中。[完整能力、边界与证据](docs/capabilities.md)集中维护。
 
 ## 先看成片
+
+以下截图从前几次项目会话交付的**实际编码视频**重新提取，保留真实画面比例；不是概念图。来源、时间点、SHA-256 与许可见[展示媒体说明](docs/media/README.md)。
+
+### 杭州城市片：数据白模、历史光层与实景辅助
+
+![杭州两分钟成片：西湖、运河、苏堤、城市生长与实景辅助](docs/media/hangzhou-gallery.jpg)
+
+**120 秒、1920×1080、24fps**。Three.js 主镜头约 82%，12 份实景各用一次，IndexTTS-2.5 参考音色解说；24 句字幕中点 OCR 与 9 处音轨波形抽查通过。该抽样检查不等于 Qwen 全帧门禁。[工程与复现](films/hangzhou/README.md)。
+
+### 机械蝴蝶：多机位、机芯剖视与分层拆装
+
+![机械蝴蝶 V2 成片：正面、俯视、电机、齿轮、展开和重组](docs/media/butterfly-gallery.jpg)
+
+**32 秒、1920×1080、30fps，11 个镜头**。代码构建机械体并计算运动，经 codefilm 捕获 960 帧，配乐使用署名的《Neon》。这是机械概念动画。[电影版工程](films/mechanical-butterfly/CINEMATIC.md)。
+
+### 太极图解：人物资产、逐趾控制与解剖网格
+
+![太极 V2 成片：整体动作、抓地、骨骼肌群、生根与腿部缠转](docs/media/taiji-gallery.jpg)
+
+**36 秒、1920×1080、24fps，864 帧**。展示外部人物资产、独立脚趾控制和骨骼肌群；属于艺术与劲意图解。解剖衍生画面为 CC BY-SA 4.0，保留 Z-Anatomy / BodyParts3D / DBCLS 署名。[工程与许可](films/taiji-silk/README.md)。
+
+### 视频变图文：保留原字幕，或绘制有来源的后期说明
+
+| 原生字幕图卡：杭州原片连续四句 | 脚本图卡：机械动画后期说明 |
+| --- | --- |
+| ![杭州真实字幕像素拼图](docs/media/cards-native.jpg) | ![机械蝴蝶真实帧加后期中文说明](docs/media/cards-script.jpg) |
+
+左图从原片裁切字幕，统一等比缩放；右图在真实帧上绘制本项目编写的说明，明确属于后期文字。它们用于展示通用图像工具，不冒充第三方访谈案例。[工具合同](docs/image-tools.md) · [小红书场景工作流](docs/workflows/xiaohongshu-quotes.md)。
+
+### 咖啡竖屏短片：素材、字幕、转场与贴纸
 
 下面是项目实际生成的咖啡短片，展示图片运镜、素材切换、中文字幕与透明贴纸。
 
@@ -21,7 +59,7 @@
 
 这版样片为 **41.108 秒、720×1280、24fps**，含 6 个镜头、12 句字幕、5 次转场和 6 个贴纸，使用 Edge TTS 配音。GIF 是其中 5 秒的无声预览；[来源、归属和生成说明](docs/media/README.md)随仓库保存。它展示基础合成效果；Qwen 字幕验收另有[实跑记录](docs/verification.md)。完整视频可按下方命令在本地生成。
 
-## 能做什么
+## 基础通用能力
 
 | 能力 | 实际产出 |
 | --- | --- |
@@ -35,6 +73,17 @@
 | **字幕显示与成片验收** | IndexTTS 默认用 Qwen 定位句末，上一句结束即显示下一句；固定分条、SRT 回读、全部编码帧及音轨偏移检查 |
 | **42 个 FFmpeg 工具** | 改画幅、字幕烧录、音乐自动压低、HDR 转 SDR、多机位同步、平台导出、批处理与剪辑软件时间线导出 |
 | **代码动画逐帧出片** | 本地 Canvas / Three.js 页面按 `render(t)` 绘制，支持分镜静帧、局部预览、分段续跑与实际编码文件完整性检查 |
+| **抽帧、文字索引与字幕图卡** | `images` 提供候选帧、字幕区域预览、SRT/VTT/ASR 索引、原生/脚本排版、按内容续跑和实际图片校验；不包含平台选题规则 |
+
+## 工具之上的场景技能
+
+| 场景 | 提供的工作流 |
+| --- | --- |
+| [小红书字幕图文 Skill](.agents/skills/xiaohongshu-quotes/SKILL.md) | Agent 阅读访谈/讲解、提名主题、核对原句和说话人，组合通用工具生成主图与字幕条，逐图检查，按需整理发布文案 |
+| [剧本短片 / 原声混剪](docs/usage.md) | 现有文档工作流：素材交接、旁白或 ASR、精剪、合成与成片检查 |
+| [城市、机械和动作图解](docs/code-films.md) | 现有工程工作流：故事与数据、Three.js 分镜、确定性捕获、后期与作品专用验证 |
+
+其中小红书已独立封装为项目内技能；后两项是现有文档和影片工程。完整清单与未实现边界见[能力地图](docs/capabilities.md)。
 
 ### 值得开发者关注的设计
 
@@ -99,6 +148,17 @@ uv run videocut ffmpeg fit input.mp4 --aspect 9:16 --fit blur \
 
 具体参数、预演和平台导出见 [FFmpeg 工具说明](docs/ffmpeg-tools.md)。
 
+通用图像处理使用独立入口，不需要配音或 ASR 模型：
+
+```bash
+uv run videocut images sample input.mp4 --at 12.5 --around 0.4 --output outputs/candidates-01
+uv run videocut images plan --manifest task/cards.json
+uv run videocut images render --manifest task/cards.json --output outputs/cards-01
+uv run videocut images verify outputs/cards-01/image-report.json
+```
+
+输入合同、两种字幕来源、模板与增量续跑见[通用图像工具](docs/image-tools.md)；平台使用方法见[小红书字幕图文](docs/workflows/xiaohongshu-quotes.md)。
+
 城市白模、数据动画等代码画面使用独立的 `codefilm` 入口；需要 Node.js、影片内的 Playwright 和 Chromium。先用自带两秒示例检查环境：
 
 ```bash
@@ -132,6 +192,7 @@ uv run videocut codefilm verify outputs/codefilm-demo/render-manifest.json
 | IndexTTS / Edge TTS | 默认参考音色、本地语音控制及在线配音 |
 | yt-dlp | 网页视频、音轨、字幕和播放列表解析；本项目负责素材接入、校验与失败恢复 |
 | ffmpeg-skill | 随项目固定分发 2.16.1 的 42 个工具、技能说明与模板，通过 CLI 直接调用 |
+| native-subtitle-quote-image | 参考原生/脚本字幕区分、连续字幕条与候选帧复核；本地独立实现通用图像工具和场景技能 |
 
 [开源来源与集成说明](docs/open-source.md)进一步区分了设计参考、依赖调用、随仓库分发的代码和历史实验，并记录固定版本与素材归属。
 

@@ -1,0 +1,16 @@
+{
+  "schema": "image-cards-v1",
+  "source": "source/video.mp4",
+  "mode": "native",
+  "style": {
+    "layout": "fixed",
+    "width": 1080,
+    "aspect": [3, 4],
+    "band": [0.76, 0.96]
+  },
+  "cards": [{
+    "id": "topic-01",
+    "title": "根据实际内容修改主题和时间点",
+    "lines": [{"time": 10.5}, {"time": 14.5}, {"time": 19.5}, {"time": 24.5}, {"time": 29.5}]
+  }]
+}

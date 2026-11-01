@@ -1,0 +1,9 @@
+{
+  "schema": "codefilm-v1",
+  "entry": "index.html",
+  "timeline": "timeline.json",
+  "width": 1920,
+  "height": 1080,
+  "chunk_frames": 90,
+  "sources": ["index.html", "main.js", "model.js", "package-lock.json", "timeline.json"]
+}
