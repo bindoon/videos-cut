@@ -2,7 +2,7 @@
  {"id":"01-full-movement","start":0,"end":6},
  {"id":"02-track-to-foot","start":6,"end":9},
  {"id":"03-individual-toe-grip","start":9,"end":14},
- {"id":"04-real-anatomy-cutaway","start":14,"end":19},
- {"id":"05-root-and-torque","start":19,"end":24},
- {"id":"06-leg-spiral","start":24,"end":30.5},
+ {"id":"04-grip-then-root-metaphor","start":14,"end":19},
+ {"id":"05-rooted-leg-external-rotation","start":19,"end":24},
+ {"id":"06-muscle-winding-and-tension","start":24,"end":30.5},
  {"id":"07-whole-body","start":30.5,"end":36}]}

@@ -18,7 +18,7 @@ from videocut.image_ops import atomic_json, sha256
 EXCERPTS = {
     "hangzhou": [(3, 5), (20, 22), (84, 86)],
     "butterfly": [(3, 5), (14, 16), (24, 26)],
-    "taiji": [(2, 4), (11, 13), (25, 27)],
+    "taiji": [(10.5, 12.5), (15, 17), (24, 26)],
 }
 
 

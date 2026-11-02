@@ -1,6 +1,6 @@
 {
   "schema": "readme-gallery-v1",
-  "date": "2026-11-01",
+  "date": "2026-11-02",
   "source_selection": "Prior project sessions, cross-checked against local delivered files",
   "visual_review": {
     "status": "reviewed",
@@ -9,7 +9,8 @@
       "Viewed all three encoded-frame galleries and both actual image cards",
       "Native strips preserve the four consecutive source captions",
       "Script text is author commentary, distinct from native subtitles",
-      "Landscape geometry remains proportional; gallery includes the live-action auxiliary panel"
+      "Landscape geometry remains proportional; gallery includes the live-action auxiliary panel",
+      "2026-11-02: inspected the replacement Taiji V3 gallery against the delivered MP4"
     ]
   },
   "items": [
@@ -64,26 +65,28 @@
     {
       "id": "taiji",
       "session": "制作太极缠丝劲动画",
-      "source": "outputs/taiji-v2-20261031/delivery/final.mp4",
+      "source": "outputs/taiji-flow-v3-20261102/delivery/final.mp4",
       "times": [
         3,
-        11.5,
-        16.5,
-        21,
-        27.5,
-        33
+        9.5,
+        13.9,
+        16.6,
+        27.4,
+        33.4
       ],
       "credits": "films/taiji-silk/CREDITS-V2.md; CC BY-SA 4.0",
       "video": {
-        "sha256": "2ec2fd0d413d39f7b5a4e5bf2899dc64626e04c29a3f594a69779f564b9175fb",
+        "sha256": "c1239713fc8f4a10d20ee1f1b0ac858547915b1a9d4c91a4460301d588b228cd",
         "duration": 36.0,
         "width": 1920,
         "height": 1080,
         "codec": "h264"
       },
       "image": "taiji-gallery.jpg",
-      "image_sha256": "11f7f5ba3c6ad22cf8bff2e4035edd3252065e0e284e194447a92d1adf180719",
-      "transformation": "Decoded delivered frames, uniform thumbnail scaling, time labels"
+      "image_sha256": "041e1c3ba093a5d67386a912a274bab348fd5b4166308c4114dbca364ff82914",
+      "transformation": "Decoded delivered frames, uniform thumbnail scaling, time labels",
+      "updated": "2026-11-02",
+      "visual_review": "Host Agent inspected decoded V3 frames: toe flexion precedes the root metaphor; foot skin stays visible; leg muscle tension is shown. Not acoustic/subtitle acceptance."
     },
     {
       "image": "cards-native.jpg",

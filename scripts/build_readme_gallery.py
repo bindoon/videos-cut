@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from datetime import date
 from pathlib import Path
 
 from PIL import Image
@@ -24,8 +25,8 @@ FILMS = [
      "times": [3.8, 8.8, 14.5, 17.5, 24, 28],
      "credits": "films/mechanical-butterfly/CINEMATIC.md"},
     {"id": "taiji", "session": "制作太极缠丝劲动画",
-     "source": "outputs/taiji-v2-20261031/delivery/final.mp4",
-     "times": [3, 11.5, 16.5, 21, 27.5, 33],
+     "source": "outputs/taiji-flow-v3-20261102/delivery/final.mp4",
+     "times": [3, 9.5, 13.9, 16.6, 27.4, 33.4],
      "credits": "films/taiji-silk/CREDITS-V2.md; CC BY-SA 4.0"},
 ]
 
@@ -85,7 +86,7 @@ def main() -> None:
         records.append({"image": target.name, "image_sha256": sha256(target), "mode": name,
                         "manifest": f"cards-{name}.json", "verification": verification,
                         "text_origin": report["results"][0]["text_origin"]})
-    atomic_json(gallery / "gallery-source.json", {"schema": "readme-gallery-v1", "date": "2026-11-01",
+    atomic_json(gallery / "gallery-source.json", {"schema": "readme-gallery-v1", "date": date.today().isoformat(),
                 "source_selection": "Prior project sessions, cross-checked against local delivered files",
                 "visual_review": "pending", "items": records})
     print(json.dumps({"gallery": str(gallery), "items": len(records)}, ensure_ascii=False))

@@ -65,26 +65,26 @@
     },
     {
       "id": "taiji",
-      "source": "outputs/taiji-v2-20261031/delivery/final.mp4",
-      "source_sha256": "2ec2fd0d413d39f7b5a4e5bf2899dc64626e04c29a3f594a69779f564b9175fb",
+      "source": "outputs/taiji-flow-v3-20261102/delivery/final.mp4",
+      "source_sha256": "c1239713fc8f4a10d20ee1f1b0ac858547915b1a9d4c91a4460301d588b228cd",
       "credits": "films/taiji-silk/CREDITS-V2.md; CC BY-SA 4.0",
       "excerpt_seconds": [
         [
-          2,
-          4
+          10.5,
+          12.5
         ],
         [
-          11,
-          13
+          15,
+          17
         ],
         [
-          25,
-          27
+          24,
+          26
         ]
       ],
       "image": "taiji-demo.gif",
-      "image_sha256": "c005b627db6242baaefc143c6d762b1b4cec0955bcfc3d73f857049060a8ec8c",
-      "bytes": 770929,
+      "image_sha256": "e0c06e5e55c050f2372be48829fb3d7b6f2b35c8b35503b58a4a0ec6fcb4a561",
+      "bytes": 664364,
       "width": 480,
       "height": 270,
       "frames": 72,
@@ -92,7 +92,8 @@
       "audio": false,
       "transformation": "Three 2-second excerpts, hard cuts, uniform downscale, 12 fps palette GIF",
       "verified": true,
-      "visual_review": "Contact sheet inspected: proportional frames, expected scenes, no blank frames in six sampled times; not acoustic/subtitle acceptance"
+      "visual_review": "Host Agent inspected decoded V3 frames: toe flexion precedes the root metaphor; foot skin stays visible; leg muscle tension is shown. Not acoustic/subtitle acceptance.",
+      "updated": "2026-11-02"
     }
   ]
 }

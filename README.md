@@ -46,18 +46,18 @@
 
 **32 秒、1920×1080、30fps，11 个镜头**。代码构建机械体并计算运动，经 codefilm 捕获 960 帧，配乐使用署名的《Neon》。这是机械概念动画。[电影版工程](films/mechanical-butterfly/CINEMATIC.md)。
 
-### 太极图解：人物资产、逐趾控制与解剖网格
+### 太极图解：五趾抓地、生根比喻与肌群缠紧
 
-![太极缠丝劲：整体动作、五趾抓地和腿部解剖的 6 秒动态预览](docs/media/taiji-demo.gif)
+![太极缠丝劲 V3：五趾屈曲抓地、随后生根和腿部肌群缠紧的 6 秒动态预览](docs/media/taiji-demo.gif)
 
 <details>
 <summary>查看六帧静态总览</summary>
 
-![太极 V2 成片：整体动作、抓地、骨骼肌群、生根与腿部缠转](docs/media/taiji-gallery.jpg)
+![太极 V3 成片：全身、舒趾、抓稳、生根、肌群缠紧与回归全身](docs/media/taiji-gallery.jpg)
 
 </details>
 
-**36 秒、1920×1080、24fps，864 帧**。展示外部人物资产、独立脚趾控制和骨骼肌群；属于艺术与劲意图解。解剖衍生画面为 CC BY-SA 4.0，保留 Z-Anatomy / BodyParts3D / DBCLS 署名。[工程与许可](films/taiji-silk/README.md)。
+**V3：36 秒、1920×1080、24fps，864 帧**。五趾先屈曲抓地，抓稳后才出现根须比喻；足部保留皮肤，发力时展示腿部外旋与肌群细微左缠、收紧和回弹。属于艺术与劲意图解，解剖衍生画面为 CC BY-SA 4.0，保留 Z-Anatomy / BodyParts3D / DBCLS 署名。[工程与许可](films/taiji-silk/README.md)。
 
 ### 视频变图文：保留原字幕，或绘制有来源的后期说明
 

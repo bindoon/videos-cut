@@ -15,8 +15,8 @@ function restore(rest){for(const [b,r] of rest){b.position.copy(r.p);b.quaternio
 function skinSums(mesh,i,test){const a=mesh.geometry.attributes,indices=a.skinIndex,weights=a.skinWeight;let w=0;for(let j=0;j<4;j++)if(test(mesh.skeleton.bones[indices.getComponent(i,j)].name))w+=weights.getComponent(i,j);return w}
 function filteredGeometry(mesh,predicate){const g=mesh.geometry.clone(),idx=g.index,keep=[];for(let i=0;i<idx.count;i+=3){const a=idx.getX(i),b=idx.getX(i+1),c=idx.getX(i+2);if(predicate(a,b,c))keep.push(a,b,c)}g.setIndex(keep);return g}
 
-// The recognizable textured character and the authored 163-joint foot rig are
-// separate source assets; both are displayed, and their ankle landmarks coincide.
+// Preserve the textured torso and shorts, then use a continuous authored lower
+// limb from the covered thigh down to the toes. There is no graft at the ankle.
 export async function createCharacter(scene){
  const draco=new DRACOLoader().setDecoderPath('./node_modules/three/examples/jsm/libs/draco/gltf/');
  const loader=new GLTFLoader().setDRACOLoader(draco);
@@ -30,16 +30,44 @@ export async function createCharacter(scene){
  // webbing blend, but remove leakage onto a different toe where one toe owns
  // most of the vertex, so an isolated toe control cannot tug its neighbour tip.
  mh.traverse(o=>{if(!o.isSkinnedMesh)return;const a=o.geometry.attributes,w=a.skinWeight,ids=a.skinIndex;for(let i=0;i<w.count;i++){const sums=new Map();for(let j=0;j<4;j++){const n=o.skeleton.bones[ids.getComponent(i,j)].name,m=n.match(/^toe([1-5])-\d([RL])$/);if(m){const k=m[1]+m[2];sums.set(k,(sums.get(k)||0)+w.getComponent(i,j))}}const dominant=[...sums].sort((a,b)=>b[1]-a[1])[0];if(!dominant||dominant[1]<.6)continue;let total=0;const values=[];for(let j=0;j<4;j++){const n=o.skeleton.bones[ids.getComponent(i,j)].name,m=n.match(/^toe([1-5])-\d([RL])$/);const value=m&&m[1]+m[2]!==dominant[0]?0:w.getComponent(i,j);values.push(value);total+=value}for(let j=0;j<4;j++)w.setComponent(i,j,values[j]/total)}w.needsUpdate=true});
+ // Use one affine driver per thigh/shin while retaining the native ankle
+ // and all toe joints. Each driver maps its authored segment exactly onto the
+ // actor's segment; a smooth weight band spans the knee on the same surface.
+ const nativeMeshes=[];mh.traverse(o=>{if(o.isSkinnedMesh)nativeMeshes.push(o)});
+ const nativeSkeleton=nativeMeshes[0].skeleton,drivers={};
+ for(const suffix of ['R','L']){
+  const a=F['upperleg01'+suffix].getWorldPosition(V([0,0,0])),b=F['lowerleg01'+suffix].getWorldPosition(V([0,0,0])),c=F['foot'+suffix].getWorldPosition(V([0,0,0]));
+  drivers[suffix]=[];
+  for(const [name,head,tail] of [['thigh',a,b],['shin',b,c]]){
+   const bone=new THREE.Bone();bone.name=`surface_${name}_${suffix}`;bone.position.copy(head);bone.quaternion.setFromUnitVectors(V([0,1,0]),tail.clone().sub(head).normalize());mh.add(bone);bone.updateWorldMatrix(true,true);
+   drivers[suffix].push({bone,length:head.distanceTo(tail),inverse:bone.matrixWorld.clone().invert(),index:nativeSkeleton.bones.length+(suffix==='R'?0:2)+(name==='thigh'?0:1)});
+  }
+ }
+ const additions=[...drivers.R,...drivers.L],surfaceSkeleton=new THREE.Skeleton([...nativeSkeleton.bones,...additions.map(d=>d.bone)],[...nativeSkeleton.boneInverses.map(m=>m.clone()),...additions.map(d=>d.inverse)]);
+ for(const mesh of nativeMeshes){
+  const g=mesh.geometry,weights=g.attributes.skinWeight,ids=g.attributes.skinIndex,positions=g.attributes.position;
+  for(let i=0;i<positions.count;i++){
+   const x=positions.getX(i),y=positions.getY(i);if(y>.83||Math.abs(x)<.045)continue;const suffix=x<0?'R':'L',[thigh,shin]=drivers[suffix];
+   if(y>.20){const kneeY=F['lowerleg01'+suffix].getWorldPosition(V([0,0,0])).y,upper=smooth((y-kneeY+.065)/.13);ids.setXYZW(i,thigh.index,shin.index,0,0);weights.setXYZW(i,upper,1-upper,0,0)}
+   else{for(let j=0;j<4;j++){const bone=nativeSkeleton.bones[ids.getComponent(i,j)];if(bone&&/^lowerleg0[12]/.test(bone.name))ids.setComponent(i,j,shin.index)}}
+  }
+  ids.needsUpdate=true;weights.needsUpdate=true;mesh.bind(surfaceSkeleton,mesh.bindMatrix.clone());
+ }
  const footQ={},heroFootQ={};for(const side of ['Right','Left'])heroFootQ[side]=B[side+'Foot'].getWorldQuaternion(Q());
  for(const side of ['R','L'])footQ[side]=F['foot'+side].getWorldQuaternion(Q());
- const uniforms={leg:{value:0},foot:{value:0}},bodySkins=[];
+ const uniforms={leg:{value:0},foot:{value:0}};
+ const surfaceStats={clothTriangles:0,continuousLowerLeg:true,ankleGrafts:0};
  body.traverse(o=>{if(!o.isSkinnedMesh)return;const g=o.geometry,cut=new Float32Array(g.attributes.position.count),leg=new Float32Array(cut.length);
   for(let i=0;i<cut.length;i++){cut[i]=skinSums(o,i,n=>/Foot|Toe/.test(n));leg[i]=skinSums(o,i,n=>/^Right(UpLeg|Leg)/.test(n));if(g.attributes.position.getY(i)<.94&&g.attributes.position.getX(i)<-.025)leg[i]=1}
-  // Remove the old feet, including the ankle cuff, leaving the new surface to overlap it.
-  const pos=g.attributes.position;const mask=i=>pos.getY(i)<.125;
-  o.geometry=filteredGeometry(o,(a,b,c)=>!(mask(a)&&mask(b)&&mask(c)));
-  o.geometry.setAttribute('anatomyMask',new THREE.BufferAttribute(leg,1));o.material=o.material.clone();o.material.side=THREE.FrontSide;o.material.alphaHash=true;
-  o.material.onBeforeCompile=s=>{s.uniforms.cutaway=uniforms.leg;s.vertexShader='attribute float anatomyMask; varying float vAnatomy;\n'+s.vertexShader;s.vertexShader=s.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvAnatomy=anatomyMask;');s.fragmentShader='uniform float cutaway; varying float vAnatomy;\n'+s.fragmentShader;s.fragmentShader=s.fragmentShader.replace('#include <alphahash_fragment>','diffuseColor.a*=1.0-cutaway*smoothstep(0.08,0.70,vAnatomy);\n#include <alphahash_fragment>')};o.material.customProgramCacheKey=()=> 'taiji-v2-cutaway';o.castShadow=true;o.receiveShadow=true;bodySkins.push(o);
+  // The original shorts end above this covered thigh section. Keep their
+  // complete topology; discard exposed old legs below the hidden boundary.
+  const pos=g.attributes.position;
+  o.geometry=filteredGeometry(o,(a,b,c)=>Math.max(pos.getY(a),pos.getY(b),pos.getY(c))>.59);
+  // Open only the lower right shorts panel for the thigh demonstration;
+  // retain the waistband, torso and the opposite shorts panel.
+  const window=[];for(let i=0;i<pos.count;i++)window.push((1-smooth((pos.getY(i)-.81)/.055))*smooth((-pos.getX(i)-.015)/.045));
+  o.geometry.setAttribute('legWindow',new THREE.Float32BufferAttribute(window,1));o.material=o.material.clone();o.material.side=THREE.FrontSide;o.material.transparent=false;o.material.depthWrite=true;o.renderOrder=0;
+  o.material.onBeforeCompile=s=>{s.uniforms.legFade=uniforms.leg;s.vertexShader='attribute float legWindow;varying float vLegWindow;\n'+s.vertexShader;s.vertexShader=s.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvLegWindow=legWindow;');s.fragmentShader='uniform float legFade;varying float vLegWindow;\n'+s.fragmentShader;s.fragmentShader=s.fragmentShader.replace('#include <alphahash_fragment>','if(legFade*vLegWindow>0.5) discard;\n#include <alphahash_fragment>')};o.material.customProgramCacheKey=()=> 'right-thigh-window-v3';o.castShadow=true;o.receiveShadow=true;
  });
 
  // Reference skin points in the unposed MakeHuman coordinate system. These
@@ -73,55 +101,36 @@ export async function createCharacter(scene){
    }
    geom.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(ids,4));geom.setAttribute('skinWeight',new THREE.Float32BufferAttribute(weights,4));geom.computeVertexNormals();
    const tendon=o.userData.zmat==='Tendon',material=tissue(type==='bone'?'bone':tendon?'tendon':'muscle');
-   const m=new THREE.SkinnedMesh(geom,material);m.name=name;m.bind(skeleton,new THREE.Matrix4());m.frustumCulled=false;m.castShadow=false;m.receiveShadow=true;mh.add(m);const item={m,name,type,tendon,foot:box.max.y<.18,sourceBox:box};anatomy.push(item);(type==='bone'?boneParts:muscleParts).push(item);
+   const legWindow=[];for(let i=0;i<p.count;i++)legWindow.push(smooth((p.getY(i)-.16)/.08)*(1-smooth((p.getY(i)-.85)/.05)));
+   geom.setAttribute('legWindow',new THREE.Float32BufferAttribute(legWindow,1));
+   const m=new THREE.SkinnedMesh(geom,material);m.name=name;m.bind(skeleton,new THREE.Matrix4());m.frustumCulled=false;m.castShadow=false;m.receiveShadow=true;mh.add(m);const item={m,name,type,tendon,foot:box.max.y<.18,sourceBox:box,restPositions:p.array.slice(),restNormals:geom.attributes.normal.array.slice()};anatomy.push(item);(type==='bone'?boneParts:muscleParts).push(item);
   });
  }
- // Keep the native foot skin and nail geometry, including a short ankle cuff.
+ // Keep the whole native calf, ankle and foot as one uncut surface. Its only
+ // new boundary is high on the thigh, underneath the retained source shorts.
  const footSkin=[],toeSamples=Array.from({length:5},()=>[]),heelSamples=[];
  for(const o of skinMeshes){const a=o.geometry.attributes,p=a.position;const points=[];for(let i=0;i<p.count;i++)points.push(V([p.getX(i),p.getY(i),p.getZ(i)]).applyMatrix4(o.matrixWorld));
-  const keep=i=>points[i].y<.117&&(points[i].x<-.11||points[i].x>.11);
+  const keep=i=>points[i].y<.79&&(points[i].x<-.045||points[i].x>.045);
   o.geometry=filteredGeometry(o,(a,b,c)=>keep(a)&&keep(b)&&keep(c));
   if(!o.geometry.index.count){o.visible=false;continue}
   const nails=o.name==='base_4';o.material=new THREE.MeshPhysicalMaterial({color:nails?'#e2bca4':'#cfa58b',roughness:nails?.3:.68,clearcoat:nails?.35:.08,transparent:true,opacity:1});
-  o.geometry.setAttribute('rightFootMask',new THREE.Float32BufferAttribute(points.map(p=>p.x<0?1:0),1));o.material.onBeforeCompile=s=>{s.uniforms.footFade=uniforms.foot;s.vertexShader='attribute float rightFootMask; varying float vRightFoot;\n'+s.vertexShader;s.vertexShader=s.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvRightFoot=rightFootMask;');s.fragmentShader='uniform float footFade; varying float vRightFoot;\n'+s.fragmentShader;s.fragmentShader=s.fragmentShader.replace('#include <alphatest_fragment>','diffuseColor.a*=1.0-footFade*vRightFoot;\n#include <alphatest_fragment>')};o.material.customProgramCacheKey=()=> 'separate-foot-opacity';o.material.depthWrite=true;o.castShadow=true;o.receiveShadow=true;footSkin.push(o);
+  o.geometry.setAttribute('rightFootMask',new THREE.Float32BufferAttribute(points.map(p=>p.x<0?1:0),1));o.geometry.setAttribute('legWindow',new THREE.Float32BufferAttribute(points.map(p=>smooth((p.y-.20)/.08)*(1-smooth((p.y-.81)/.055))),1));o.material.transparent=false;o.material.alphaHash=false;o.renderOrder=0;
+  o.material.onBeforeCompile=s=>{s.uniforms.legFade=uniforms.leg;s.vertexShader='attribute float rightFootMask; attribute float legWindow; varying float vRightFoot; varying float vLegWindow;\n'+s.vertexShader;s.vertexShader=s.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvRightFoot=rightFootMask;vLegWindow=legWindow;');s.fragmentShader='uniform float legFade; varying float vRightFoot; varying float vLegWindow;\n'+s.fragmentShader;s.fragmentShader=s.fragmentShader.replace('#include <alphahash_fragment>','if(vRightFoot*legFade*vLegWindow>0.5) discard;\n#include <alphahash_fragment>')};o.material.customProgramCacheKey=()=> 'continuous-leg-window-v3';o.material.depthWrite=true;o.castShadow=true;o.receiveShadow=true;footSkin.push(o);
   if(!nails){for(let i=0;i<p.count;i++){const point=points[i];if(point.x>-.11||point.y>.065)continue;const sum=[];for(let digit=1;digit<=5;digit++)sum.push(skinSums(o,i,n=>n.startsWith(`toe${digit}-`)&&n.endsWith('R')));const max=Math.max(...sum),digit=sum.indexOf(max);if(max>.4){const last=digit===0?2:3;const lastWeight=skinSums(o,i,n=>n===`toe${digit+1}-${last}R`);if(lastWeight>.32)toeSamples[digit].push({m:o,i})}else if(point.z<-.015)heelSamples.push({m:o,i})}}
  }
- // Join the two authored surfaces with a narrow mesh loft between their actual
- // open boundary loops. This avoids a visible cut seam at the shared ankle.
- function rim(mesh,side,lower,upper){const idx=mesh.geometry.index,p=mesh.geometry.attributes.position,edges=new Map();for(let i=0;i<idx.count;i+=3){const f=[idx.getX(i),idx.getX(i+1),idx.getX(i+2)];for(let j=0;j<3;j++){const a=f[j],b=f[(j+1)%3],k=a<b?`${a},${b}`:`${b},${a}`;edges.set(k,(edges.get(k)||0)+1)}}const ids=new Set();for(const [e,n] of edges)if(n===1)for(const i of e.split(',').map(Number)){if(p.getY(i)>lower&&p.getY(i)<upper&&p.getX(i)*side>.05)ids.add(i)}return [...ids].map(i=>({m:mesh,i}))}
- const seams=[];for(const side of [-1,1]){const top=bodySkins.flatMap(m=>rim(m,side,.11,.145)),bottom=footSkin.filter(m=>m.name==='base').flatMap(m=>rim(m,side,.09,.125));if(top.length<8||bottom.length<8)throw Error(`Missing ankle boundary ${side}: ${top.length}/${bottom.length}`);
-  const g=new THREE.BufferGeometry(),positions=new Float32Array(5*97*3),indices=[];for(let j=0;j<4;j++)for(let i=0;i<96;i++){const a=j*97+i;indices.push(a,a+1,a+97,a+1,a+98,a+97)}g.setAttribute('position',new THREE.BufferAttribute(positions,3));g.setIndex(indices);const material=new THREE.MeshPhysicalMaterial({color:'#cfa98f',roughness:.68,side:THREE.DoubleSide,transparent:true});const m=new THREE.Mesh(g,material);m.frustumCulled=false;m.castShadow=true;m.receiveShadow=true;scene.add(m);seams.push({m,top,bottom,side});
- }
- function updateSeam(seam,alpha){
-  function fit(samples){
-   const pts=samples.map(({m,i})=>{const p=V([0,0,0]);m.getVertexPosition(i,p);return p.applyMatrix4(m.matrixWorld)});
-   const lo=V([Infinity,Infinity,Infinity]),hi=V([-Infinity,-Infinity,-Infinity]);for(const p of pts){lo.min(p);hi.max(p)}
-   const center=lo.clone().add(hi).multiplyScalar(.5);center.y=pts.reduce((n,p)=>n+p.y,0)/pts.length;
-   let xx=0,xz=0,zz=0,xy=0,zy=0;for(const p of pts){const x=p.x-center.x,z=p.z-center.z,y=p.y-center.y;xx+=x*x;xz+=x*z;zz+=z*z;xy+=x*y;zy+=z*y}
-   const det=xx*zz-xz*xz,dx=det?((xy*zz-zy*xz)/det):0,dz=det?((zy*xx-xy*xz)/det):0;
-   return {center,rx:(hi.x-lo.x)*.5+.006,rz:(hi.z-lo.z)*.5+.006,dx,dz};
-  }
-  const a=fit(seam.bottom),b=fit(seam.top);a.center.y-=.009;b.center.y+=.018;
-  const attr=seam.m.geometry.attributes.position;
-  for(let j=0;j<5;j++)for(let i=0;i<=96;i++){
-   const angle=-Math.PI+(i%96)*Math.PI*2/96,u=j/4,center=a.center.clone().lerp(b.center,u);
-   const x=Math.cos(angle)*(a.rx+(b.rx-a.rx)*u),z=Math.sin(angle)*(a.rz+(b.rz-a.rz)*u);
-   const y=center.y+x*(a.dx+(b.dx-a.dx)*u)+z*(a.dz+(b.dz-a.dz)*u);
-   attr.setXYZ(j*97+i,center.x+x,y,center.z+z);
-  }
-  attr.needsUpdate=true;seam.m.geometry.computeVertexNormals();seam.m.material.opacity=alpha;seam.m.material.depthWrite=alpha>.98;seam.m.visible=alpha>.01;
- }
-
  mh.scale.setScalar(2.35);mh.updateMatrixWorld(true);
  const pivotRest=new Map();for(const side of ['R','L'])for(let digit=1;digit<=5;digit++)for(let joint=1;joint<=(digit===1?2:3);joint++){const b=F[`toe${digit}-${joint}${side}`];if(!b)throw Error('Missing individual toe joint');pivotRest.set(b,footRest.get(b).q.clone())}
  const contactY=.006,contacts=[],toeAngles=[],contactPoints=[];
  function minY(samples){let min=Infinity;for(const {m,i} of samples){m.getVertexPosition(i,temp);temp.applyMatrix4(m.matrixWorld);min=Math.min(min,temp.y)}return min}
  function update(t){
   restore(bodyRest);restore(footRest);body.position.y=0;body.updateMatrixWorld(true);mh.updateMatrixWorld(true);
-  const move=Math.sin(Math.min(t,6)*.70-.8);B.Hips.position.set(0,79,0);B.Spine.rotation.y+=move*.07;body.updateMatrixWorld(true);worldP(F.root,B.Hips.getWorldPosition(V([0,0,0])).add(V([0,0,-.17])));
+  const load=(ramp(t,19.4,23.0)-.20*ramp(t,24.2,25.2)+.20*ramp(t,25.2,27.5))*(1-ramp(t,30.5,33));
+  const move=Math.sin(Math.min(t,6)*.70-.8);B.Hips.position.set(0,79,0);B.Hips.rotation.y+=.035*load;B.Spine.rotation.y+=move*.07+.08*load;body.updateMatrixWorld(true);worldP(F.root,B.Hips.getWorldPosition(V([0,0,0])).add(V([0,0,-.17])));
   for(const [side,s] of [['Right',-1],['Left',1]]){solve(B[side+'UpLeg'],B[side+'Leg'],B[side+'Foot'],V([s*.88,.17383,.03]),V([s*1.2,.8,1.2]));worldQ(B[side+'Foot'],Q().setFromAxisAngle(V([0,1,0]),s*.15).multiply(heroFootQ[side]))}
-  const thighTwist=.14*ramp(t,25,28)*(1-ramp(t,30.5,33));
-  const twistAxis=B.RightUpLeg.getWorldPosition(V([0,0,0])).sub(B.RightLeg.getWorldPosition(V([0,0,0]))).normalize();worldQ(B.RightUpLeg,Q().setFromAxisAngle(twistAxis,thighTwist).multiply(B.RightUpLeg.getWorldQuaternion(Q())));
+  // The foot remains pinned while the leg rolls above it. A small second
+  // loading pulse makes the tightening readable without a large joint twist.
+  const thighTwist=.14*load,shinTwist=.085*load,muscleStrain=load;
+  const twistAxis=B.RightUpLeg.getWorldPosition(V([0,0,0])).sub(B.RightLeg.getWorldPosition(V([0,0,0]))).normalize();worldQ(B.RightUpLeg,Q().setFromAxisAngle(twistAxis,-thighTwist).multiply(B.RightUpLeg.getWorldQuaternion(Q())));
   // A thigh roll also rolls its child shin. Re-solve the shin after that roll,
   // then pin the ankle, so the force-intent illustration cannot slide the foot.
   aim(B.RightLeg,B.RightFoot,V([-.88,.17383,.03]));worldP(B.RightFoot,V([-.88,.17383,.03]));worldQ(B.RightFoot,Q().setFromAxisAngle(V([0,1,0]),-.15).multiply(heroFootQ.Right));
@@ -129,22 +138,45 @@ export async function createCharacter(scene){
   solve(B.RightArm,B.RightForeArm,B.RightHand,V([-.30+.18*act,2.78+.12*act,.72]),V([-1.1,2.22,.6]));solve(B.LeftArm,B.LeftForeArm,B.LeftHand,V([1.17-.12*act,2.54+.12*act,.54]),V([.9,2.08,.3]));B.Head.rotation.y-=.18;body.updateMatrixWorld(true);
   for(const [side,suffix] of [['Right','R'],['Left','L']]){
    const up=F['upperleg01'+suffix],knee=F['lowerleg01'+suffix],ankle=F['foot'+suffix];
-   worldP(up,B[side+'UpLeg'].getWorldPosition(V([0,0,0])));aim(up,knee,B[side+'Leg'].getWorldPosition(V([0,0,0])));if(suffix==='R')worldQ(up,Q().setFromAxisAngle(twistAxis,thighTwist).multiply(up.getWorldQuaternion(Q())));worldP(knee,B[side+'Leg'].getWorldPosition(V([0,0,0])));aim(knee,ankle,B[side+'Foot'].getWorldPosition(V([0,0,0])));worldP(ankle,B[side+'Foot'].getWorldPosition(V([0,0,0])));worldQ(ankle,Q().setFromAxisAngle(V([0,1,0]),suffix==='R'?-.15:.15).multiply(footQ[suffix]));
+   worldP(up,B[side+'UpLeg'].getWorldPosition(V([0,0,0])));aim(up,knee,B[side+'Leg'].getWorldPosition(V([0,0,0])));if(suffix==='R')worldQ(up,Q().setFromAxisAngle(twistAxis,-thighTwist).multiply(up.getWorldQuaternion(Q())));worldP(knee,B[side+'Leg'].getWorldPosition(V([0,0,0])));aim(knee,ankle,B[side+'Foot'].getWorldPosition(V([0,0,0])));worldP(ankle,B[side+'Foot'].getWorldPosition(V([0,0,0])));worldQ(ankle,Q().setFromAxisAngle(V([0,1,0]),suffix==='R'?-.15:.15).multiply(footQ[suffix]));
+  }
+  for(const [side,suffix] of [['Right','R'],['Left','L']]){
+   const a=B[side+'UpLeg'].getWorldPosition(V([0,0,0])),b=B[side+'Leg'].getWorldPosition(V([0,0,0])),c=B[side+'Foot'].getWorldPosition(V([0,0,0]));
+   for(const [driver,head,tail] of [[drivers[suffix][0],a,b],[drivers[suffix][1],b,c]]){
+    worldP(driver.bone,head);const q=Q().setFromUnitVectors(V([0,1,0]),tail.clone().sub(head).normalize());
+    if(suffix==='R'){const axis=head.clone().sub(tail).normalize();q.premultiply(Q().setFromAxisAngle(axis,driver===drivers.R[0]?-thighTwist:-shinTwist))}
+    worldQ(driver.bone,q);driver.bone.scale.set(1,head.distanceTo(tail)/(driver.length*2.35),1);driver.bone.updateWorldMatrix(false,true);
+   }
   }
   contacts.length=0;toeAngles.length=0;contactPoints.length=0;
   const flexAxis=V([1,0,0]).applyAxisAngle(V([0,1,0]),-.15);
   for(let digit=1;digit<=5;digit++){
    const grip=ramp(t,9.4+(digit-1)*.12,12.5+(digit-1)*.12),last=digit===1?2:3,base=F[`toe${digit}-1R`];
-   function setBase(angle){base.quaternion.copy(pivotRest.get(base));base.updateWorldMatrix(false,true);worldQ(base,Q().setFromAxisAngle(flexAxis,angle).multiply(base.getWorldQuaternion(Q())));for(let j=2;j<=last;j++){const b=F[`toe${digit}-${j}R`];b.quaternion.copy(pivotRest.get(b));b.updateWorldMatrix(false,true);worldQ(b,Q().setFromAxisAngle(flexAxis,grip*(j===2?.36:.24)*(digit===1?.8:1)).multiply(b.getWorldQuaternion(Q())))}mh.updateMatrixWorld(true)}
-   let lo=-.6,hi=.5;for(let j=0;j<15;j++){const a=(lo+hi)/2;setBase(a);if(minY(toeSamples[digit-1])>contactY)lo=a;else hi=a}const a=(lo+hi)/2;setBase(a);contacts.push(minY(toeSamples[digit-1]));toeAngles.push({digit,mtp:a,ip:grip*.36*(digit===1?.8:1),dip:last===3?grip*.24:0});
+   function setBase(angle){base.quaternion.copy(pivotRest.get(base));base.updateWorldMatrix(false,true);worldQ(base,Q().setFromAxisAngle(flexAxis,angle).multiply(base.getWorldQuaternion(Q())));for(let j=2;j<=last;j++){const b=F[`toe${digit}-${j}R`];b.quaternion.copy(pivotRest.get(b));b.updateWorldMatrix(false,true);worldQ(b,Q().setFromAxisAngle(flexAxis,grip*(j===2?.74:.44)*(digit===1?.8:1)).multiply(b.getWorldQuaternion(Q())))}mh.updateMatrixWorld(true)}
+   let lo=-.9,hi=.5;for(let j=0;j<17;j++){const a=(lo+hi)/2;setBase(a);if(minY(toeSamples[digit-1])>contactY)lo=a;else hi=a}const a=(lo+hi)/2;setBase(a);contacts.push(minY(toeSamples[digit-1]));toeAngles.push({digit,mtp:a,ip:grip*.74*(digit===1?.8:1),dip:last===3?grip*.44:0});
    let min=Infinity,pad=V([0,0,0]);for(const {m,i} of toeSamples[digit-1]){m.getVertexPosition(i,temp);temp.applyMatrix4(m.matrixWorld);if(temp.y<min){min=temp.y;pad.copy(temp)}}contactPoints.push(pad);
   }
-  const footReveal=ramp(t,14,16)*(1-ramp(t,30.5,33)),legReveal=ramp(t,24.5,26.5)*(1-ramp(t,30.5,33));uniforms.leg.value=legReveal;uniforms.foot.value=footReveal*.98;
-  for(const m of footSkin){m.material.opacity=1;m.material.depthWrite=footReveal<.1;m.visible=true}
-  for(const item of anatomy){const a=item.foot?footReveal:legReveal;item.m.visible=a>.002;item.m.material.opacity=a;item.m.material.depthWrite=a>.95}
-  body.updateMatrixWorld(true);mh.updateMatrixWorld(true);for(const seam of seams)updateSeam(seam,seam.side===-1?1-Math.max(footReveal,legReveal):1);
-  return {t,contacts:[...contacts],toeAngles:[...toeAngles],thighTwist,footReveal,legReveal,heelMin:minY(heelSamples),toeSamples:toeSamples.map(a=>a.length),ankle:B.RightFoot.getWorldPosition(V([0,0,0])).toArray(),knee:B.RightLeg.getWorldPosition(V([0,0,0])).toArray(),hip:B.RightUpLeg.getWorldPosition(V([0,0,0])).toArray()};
+  const footReveal=0,legReveal=ramp(t,21.5,23.2)*(1-ramp(t,30.5,33));uniforms.leg.value=legReveal;uniforms.foot.value=0;
+  for(const m of footSkin){m.material.opacity=1;m.material.depthWrite=true;m.visible=true}
+  let maxMuscleDeformation=0;
+  for(const item of anatomy){
+   const a=!item.foot&&item.type==='muscle'?legReveal:0;item.m.visible=a>.002;item.m.material.opacity=a;item.m.material.depthWrite=false;
+   if(item.foot||item.type!=='muscle')continue;
+   // The limb rolls outward (negative about its upward axis), while this
+   // relative left winding and mild radial narrowing deform the authored muscle
+   // surface. End attachments stay fixed; every frame starts from rest arrays.
+   const p=item.m.geometry.attributes.position,n=item.m.geometry.attributes.normal,rest=item.restPositions,normals=item.restNormals;
+   for(let i=0;i<p.count;i++){
+    const x=rest[i*3],y=rest[i*3+1],z=rest[i*3+2],window=smooth((y-.16)/.08)*(1-smooth((y-.70)/.075)),along=clamp((y-.18)/.60),centerX=-.2025+.0915*clamp((y-.074)/.886),centerZ=.049*(1-clamp((y-.074)/.886));
+    const angle=.19*muscleStrain*window*Math.sin(along*Math.PI),c=Math.cos(angle),s=Math.sin(angle),narrow=1-.025*muscleStrain*window,dx=x-centerX,dz=z-centerZ;
+    const px=centerX+(dx*c+dz*s)*narrow,pz=centerZ+(-dx*s+dz*c)*narrow,py=y+.006*muscleStrain*window*Math.sin(along*Math.PI*2);
+    p.setXYZ(i,px,py,pz);n.setXYZ(i,normals[i*3]*c+normals[i*3+2]*s,normals[i*3+1],-normals[i*3]*s+normals[i*3+2]*c);maxMuscleDeformation=Math.max(maxMuscleDeformation,Math.hypot(px-x,py-y,pz-z));
+   }
+   p.needsUpdate=true;n.needsUpdate=true;
+  }
+  body.updateMatrixWorld(true);mh.updateMatrixWorld(true);
+  return {t,contacts:[...contacts],toeAngles:[...toeAngles],thighTwist,shinTwist,thighExternalRotation:-thighTwist,shinExternalRotation:-shinTwist,muscleLeftWind:.19*muscleStrain,muscleStrain,maxMuscleDeformation,footReveal,legReveal,footAnatomyVisible:anatomy.filter(i=>i.foot&&i.m.visible).length,heelMin:minY(heelSamples),toeSamples:toeSamples.map(a=>a.length),toePads:contactPoints.map(p=>p.toArray()),ankle:B.RightFoot.getWorldPosition(V([0,0,0])).toArray(),knee:B.RightLeg.getWorldPosition(V([0,0,0])).toArray(),hip:B.RightUpLeg.getWorldPosition(V([0,0,0])).toArray()};
  }
  draco.dispose();
- return {update,body,mh,B,F,anatomy,footSkin,inventory:{toeJoints:pivotRest.size,anatomyMeshes:anatomy.length,muscles:muscleParts.length,bones:boneParts.length},getToePoints:()=>contactPoints.map(p=>p.clone())};
+ return {update,body,mh,B,F,anatomy,footSkin,surfaceStats,inventory:{toeJoints:pivotRest.size,anatomyMeshes:anatomy.length,muscles:muscleParts.length,bones:boneParts.length},getToePoints:()=>contactPoints.map(p=>p.clone())};
 }

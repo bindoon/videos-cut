@@ -11,7 +11,7 @@
 | [demo-source.json](demo-source.json) | 原成片 SHA-256、原运行参数和素材来源/归属/许可引用 |
 | [hangzhou-gallery.jpg](hangzhou-gallery.jpg) | 两分钟杭州 delivery-v2 实际成片的六帧，含 Three.js 与实景辅助分屏 |
 | [butterfly-gallery.jpg](butterfly-gallery.jpg) | 机械蝴蝶 V2 的正面、俯视、电机、齿轮、展开与重组六帧 |
-| [taiji-gallery.jpg](taiji-gallery.jpg) | 太极 V2 的全身、抓地、解剖、生根、腿部与回归全身六帧 |
+| [taiji-gallery.jpg](taiji-gallery.jpg) | 太极 V3 的全身、舒趾、抓稳、生根、肌群缠紧与回归全身六帧 |
 | [cards-native.jpg](cards-native.jpg) | 杭州原片连续四句的原生字幕像素拼图，自然比例；[输入](cards-native.json) |
 | [cards-script.jpg](cards-script.jpg) | 机械蝴蝶真实帧加本项目编写的后期中文说明，720×960；[输入](cards-script.json) |
 | [gallery-source.json](gallery-source.json) | 新增截图的成片身份、时间点、摘要、会话标题、图片摘要及实际看图记录 |
@@ -22,7 +22,7 @@
 | --- | --- | --- |
 | [hangzhou-demo.gif](hangzhou-demo.gif) | 3–5、20–22、84–86 秒 | 480×270，6 秒/72 帧；CC BY-SA 4.0 |
 | [butterfly-demo.gif](butterfly-demo.gif) | 3–5、14–16、24–26 秒 | 480×270，6 秒/72 帧；项目原创画面，MIT |
-| [taiji-demo.gif](taiji-demo.gif) | 2–4、11–13、25–27 秒 | 480×270，6 秒/72 帧；CC BY-SA 4.0 |
+| [taiji-demo.gif](taiji-demo.gif) | 10.5–12.5、15–17、24–26 秒 | V3：抓地→生根→肌群缠紧；480×270，6 秒/72 帧，CC BY-SA 4.0 |
 
 三张 GIF 都由下表同版实际 MP4 生成，三段直接切换、等比缩小、12fps 调色板编码、无限循环，均无音轨。[gif-source.json](gif-source.json)保存输入和输出摘要、真实时间范围、尺寸与检查记录。逐张查看了六帧接触表，并解码全部 GIF 帧核对尺寸和时长；这不代表声学字幕验收。
 
@@ -40,11 +40,13 @@ uv run python scripts/build_readme_gifs.py --output outputs/readme-gifs-new
 
 2026-11-01 通过可访问的历史会话“制定代码复刻视频方案”“制作机械蝴蝶”“制作太极缠丝劲动画”定位交付结果，再从本地对应的**实际 MP4**重新抽帧。没有将会话里的早期静帧、参考图或失败版本冒充交付截图。
 
+2026-11-02 将太极动图和六帧总览更新为 V3 正式成片：先抓稳，再出现根须比喻，足部不再剖析，随后展示腿部肌群缠紧与回弹。太极来源摘要与实际看图记录同步更新，其余作品展示保持原版。
+
 | 版本 | 实际源文件 | 画面与变换 |
 | --- | --- | --- |
 | 杭州两分钟 delivery-v2 | `outputs/hangzhou-two-minute-qianchen-20261030/delivery-v2/杭州-城市年轮-钱陈音色-两分钟.mp4` | 120 秒、1920×1080/24fps；六帧等比缩小并加秒数，其中 21.2 秒为运河实景辅助分屏 |
 | 机械蝴蝶电影版 V2 | `outputs/mechanical-butterfly-v2-20261031/final.mp4` | 32 秒、1920×1080/30fps；六个不同镜头等比缩小并加秒数 |
-| 太极写实解剖 V2 | `outputs/taiji-v2-20261031/delivery/final.mp4` | 36 秒、1920×1080/24fps；六帧等比缩小并加秒数 |
+| 太极动作优化 V3 | `outputs/taiji-flow-v3-20261102/delivery/final.mp4` | 36 秒、1920×1080/24fps；3、9.5、13.9、16.6、27.4、33.4 秒六帧等比缩小并加秒数 |
 
 三张总览均为 1440×588 JPEG。字幕图卡使用同一批实际成片：原生图按 40.782、45.492、50.906、55.837 秒顺序裁取杭州四句字幕，未识别、翻译或重绘；脚本图的中文是根据机械影片镜头编写的后期说明，不是人物原话。两种图卡通过实际文件摘要/尺寸/文字边界检查，并由宿主 Agent 查看；这不代表第三方访谈选题、自动说话人识别或声学同步验收已经完成。
 
