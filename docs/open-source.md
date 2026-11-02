@@ -4,6 +4,10 @@
 
 [文档导航](README.md) · [架构](architecture.md) · [验证记录](verification.md)
 
+## 本项目许可证
+
+原创代码、`skills/` 中自有工作流及文档采用根目录 [MIT License](../LICENSE)，包元数据声明 `MIT` 并携带 LICENSE。MIT 授权范围不改变第三方代码、模型权重、原始素材及衍生展示媒体的许可证；杭州和太极媒体继续使用其 CC BY-SA 4.0 归属说明，ffmpeg-skill 和 Lemo 保留各自 MIT 版权声明。
+
 ## 吸收的思路与实际接入
 
 | 来源 | 吸收或使用的部分 | 接入方式 | 本项目负责的部分 |
@@ -20,7 +24,7 @@
 | [IndexTTS](https://github.com/index-tts/index-tts) | 2.5 参考音色、原生语速、数值情绪向量、中文拼音标记 | **默认语音引擎，固定官方代码与独立模型环境**，`--tts indextts` | 逐句参数覆盖、缓存与归属记录、音频格式统一、字幕和镜头重算 |
 | [yt-dlp](https://github.com/yt-dlp/yt-dlp) | 网页媒体、音轨、字幕和播放列表解析 | **可选 Python API 依赖**，`download` extra | 素材协议、规格隔离缓存、大小预算、媒体校验、失败项和续传恢复 |
 | [wx_channels_download](https://github.com/ltaoo/wx_channels_download) | 微信视频号捕获、本地 API 与视频解密流 | **可选的独立本地服务调用**，核对 v260907 API；不分发上游代码或二进制 | 明确目标匹配、格式选择、流大小预算、实测尺寸/完整解码、缓存与素材来源记录；证书和系统代理由外部服务单独管理 |
-| [ffmpeg-skill](https://github.com/kajisho5/ffmpeg-skill) | 42 个本地处理工具、技能说明、交付模板与工具合同 | **随项目固定分发上游文件**，`videocut ffmpeg` 转发调用 | 工具发现、入口和 wheel 打包；与主项目 ASR/字幕验收保持明确边界 |
+| [ffmpeg-skill](https://github.com/kajisho5/ffmpeg-skill) | 42 个本地处理工具、技能说明、交付模板与工具合同 | **Git submodule 固定引用上游源码，构建时收录运行文件**，`videocut ffmpeg` 转发调用 | 工具发现、入口和 wheel 打包；与主项目 ASR/字幕验收保持明确边界 |
 | [native-subtitle-quote-image](https://github.com/chengyi-ai/native-subtitle-quote-image) | 原生/脚本字幕来源区分、候选帧复核、主图与连续字幕条工作流 | **设计参考**；本地独立编写图像工具与小红书场景技能，未分发上游脚本或安装其 Skill | `image-cards-v1`、复用本项目下载/ASR、内容摘要缓存、逐卡失败恢复、输入变化失效与报告 |
 | [Twemoji](https://github.com/jdecked/twemoji) | 透明表情图形，作为动态贴纸素材 | **下载图形资产**，图形许可 CC-BY-4.0 | 贴纸位置、缩放/浮动动画与素材归属记录 |
 | [Three.js](https://github.com/mrdoob/three.js) / [Playwright](https://github.com/microsoft/playwright) | 城市白模 WebGL 绘制与私有 Chromium 的逐帧捕获 | **影片内 npm 依赖**；各工程 `package-lock.json` 固定版本 | `codefilm` 配置、确定性检查、分段续跑、实际媒体与摘要校验 |
@@ -40,17 +44,17 @@
 
 本项目借鉴其规划与工具边界，具体执行采用本地 `creation.py`，宿主生成素材后通过文件交接。未接入 AiToEarn API、Relay、数据库、队列或平台授权；未移植其云端视频处理和字幕实现。宿主无生图能力时不会静默改调付费服务。生成式 AI 视频仅标记外部需求，调用适配器尚未实现。
 
-## 直接分发：ffmpeg-skill
+## 直接引用：ffmpeg-skill
 
-固定版本 **2.16.1**，提交 **`f2d90ea603a663711c3d6aa9775d2a2380d83182`**，MIT。运行脚本、技能、模板及相关说明保存在 [.agents/skills/ffmpeg-skill](../.agents/skills/ffmpeg-skill/SKILL.md)，省略了上游演示 GIF，保留 [LICENSE](../.agents/skills/ffmpeg-skill/LICENSE) 和 [UPSTREAM.json](../.agents/skills/ffmpeg-skill/UPSTREAM.json) 的来源与文件 SHA-256。
+固定版本 **2.16.1**，提交 **`f2d90ea603a663711c3d6aa9775d2a2380d83182`**，MIT。通过 [`.gitmodules`](../.gitmodules) 和父仓库的 gitlink 直接引用上游仓库，工作区路径为 [.agents/skills/ffmpeg-skill](../.agents/skills/ffmpeg-skill/SKILL.md)，保留上游 [LICENSE](../.agents/skills/ffmpeg-skill/LICENSE)。迁移前工具文件与同一提交逐个摘要一致，记录保留在 [ffmpeg-upstream.json](ffmpeg-upstream.json)。
 
-源码文件保持上游内容。`videocut/ffmpeg_tools.py` 使用当前 Python 启动这些工具，不经 shell，不在每次运行时下载或更新代码。wheel 同样携带工具副本。主流程与上游的 `render` 使用不同项目 JSON 格式；主流程 `cut` 与 `ffmpeg cut` 也分别对应口头词精剪和指定区间裁切。
+`videocut/ffmpeg_tools.py` 从子模块调用工具，不经 shell，也不在运行时下载或更新。wheel/sdist 构建时仅收录所需固定文件与许可证；没有维护第二份上游源码。主流程与上游的 `render` 使用不同 JSON 格式；主流程 `cut` 与 `ffmpeg cut` 分别对应口头词精剪和指定区间裁切。
 
-安装、升级和验证方法见 [FFmpeg 工具说明](ffmpeg-tools.md)。上游 `verified` 和平台 `check` 只覆盖其自身合同；可选 `--transcribe` 不使用本项目转录缓存与来源协议。
+初始化、更新和打包说明见 [FFmpeg 工具说明](ffmpeg-tools.md#来源与更新)。上游 `verified` 和平台 `check` 只覆盖其自身合同；可选 `--transcribe` 不使用本项目转录缓存与来源协议。
 
 ## 版本与复现入口
 
-城市建筑、水系、字体、参考片与解说来源见杭州 [CREDITS](../films/hangzhou/CREDITS.md)。代码视频的浏览器和 GIS 依赖隔离在影片工程，不混入 Python 主环境；[共享工作流](code-films.md)说明复现及验收边界。
+城市建筑、水系、字体、参考片与解说来源见杭州 [CREDITS](../films/hangzhou/CREDITS.md)。代码视频的浏览器和 GIS 依赖隔离在影片工程，不混入 Python 主环境；[代码影片技能](../skills/codefilm-workflow/SKILL.md)说明复现及验收边界。
 
 | 组件 | 固定或记录的位置 | 安装与使用 |
 | --- | --- | --- |
@@ -59,9 +63,9 @@
 | F5-TTS MLX / Vocos | `requirements-voice.lock.txt`，模型下载目录的 `source.json` | [F5 历史实验](voice-cloning-f5-history.md) |
 | IndexTTS-2.5 | `requirements-index.lock.txt`；实测代码 `d9e41aac89fd00b3d71497fddb287b7f24613712`，主模型修订 `c39ce5ba981572cb187443877ff559dfb246ce63` | [IndexTTS 安装与控制](voice-controls.md) |
 | Qwen3-ForcedAligner-0.6B | `requirements-align.lock.txt`，`qwen-asr==0.0.6`；模型修订 `c7cbfc2048c462b0d63a45797104fc9db3ad62b7` | [字幕同步](subtitle-sync.md) |
-| ffmpeg-skill | 仓库内 `UPSTREAM.json`、LICENSE 和固定文件 | [工具来源与更新](ffmpeg-tools.md#来源与更新) |
+| ffmpeg-skill | `.gitmodules`、gitlink 固定提交、子模块 LICENSE；迁移摘要在 `docs/ffmpeg-upstream.json` | [工具来源与更新](ffmpeg-tools.md#来源与更新) |
 
-模型与上游工作区不进入 Git。下载脚本会保存修订和摘要；新机器首次下载时需核对专项文档中的已验证修订，不能把未来仓库的最新权重当作同一份模型。
+模型与实验用上游工作区保持忽略；第三方技能仅在父仓库记录 submodule 来源和提交指针。下载脚本会保存修订和摘要；新机器首次下载时需核对专项文档中的已验证修订，不能把未来仓库的最新权重当作同一份模型。
 
 ## 素材与展示归属
 

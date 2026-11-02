@@ -1,0 +1,3 @@
+[submodule ".agents/skills/ffmpeg-skill"]
+	path = .agents/skills/ffmpeg-skill
+	url = https://github.com/kajisho5/ffmpeg-skill.git

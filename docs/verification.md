@@ -1,5 +1,14 @@
 # 验证记录
 
+## 2026-11-02：动态展示、工作流归档、上游引用与 MIT
+
+- README 新增杭州、机械蝴蝶和太极三张实际成片 GIF，均为三段各 2 秒、480×270、12fps、72 帧无声循环；咖啡原有 5 秒 GIF 改为直接展示。逐张查看六帧接触表，并用 Pillow 解码全部帧核对尺寸、循环与总时长；未据此宣称声学字幕验收。命令与机器报告在 `outputs/readme-gifs-20261102/`，输入/输出摘要和原片范围在 `docs/media/gif-source.json`。
+- 自有 `video-workflow`、`codefilm-workflow`、`xiaohongshu-quotes` 统一放在根目录 `skills/`，三个入口均通过 skill-creator 的 `quick_validate.py`。工作流正文从 docs 移出，删除 `docs/workflows/xiaohongshu-quotes.md`，工具合同和导航继续保留；21 份入口、文档和技能 Markdown 的本地文件链接检查无断链。
+- `.agents/skills/ffmpeg-skill` 从复制分发改为 Git submodule，仍固定 `f2d90ea603a663711c3d6aa9775d2a2380d83182` / 2.16.1。旧运行文件的 81 项 SHA-256 全部与该提交一致，记录迁到 `docs/ffmpeg-upstream.json`；未修改或升级上游源码。
+- 根目录加入 MIT LICENSE，包元数据为 `License-Expression: MIT`，保留上游代码、杭州与太极媒体各自许可。`uv build --out-dir outputs/package-check-20261102-final` 成功生成 sdist，再从该 sdist 构建 wheel；归档检查确认包含自有技能、主项目及上游 LICENSE，排除 Git 数据、node_modules、字节码和上游演示 GIF。wheel 约 818 KiB。
+- 将 wheel 解压到独立目录，从该目录加载包，确认使用包内 `_vendor/ffmpeg_skill`、发现 42 个公开工具；真实裁切机械蝴蝶第 3–4 秒到带空格的新文件名，工具验收通过。wheel 内 81 项上游文件摘要仍匹配，报告在 `outputs/package-check-20261102-final/verification.json`。
+- 先运行 `uv sync --extra download --extra asr`，再运行 `uv run pytest -q`：**111 passed，34.00s**。588 条警告来自 MoviePy 使用 NumPy 已弃用的 shape 赋值；无失败或跳过验收。
+
 ## 2026-11-01：通用图像工具、场景技能与 README 作品展示
 
 - 新增 `videocut images sample / band / index / plan / render / verify`，实现双阶段 seek 候选帧、原像素区域预览、SRT/VTT/同源 ASR 索引、原生/脚本图卡、输出锁、逐卡结果、内容摘要续跑和实际文件检查。原生不重绘字，脚本要求校对声明和文字来源；没有修改独立 ASR、Qwen 或 `sync.py` 的算法/缓存。

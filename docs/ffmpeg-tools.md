@@ -7,6 +7,7 @@
 ## 安装与发现
 
 ```bash
+git submodule update --init --recursive
 uv sync
 # macOS；Linux / Windows 安装含 libass、drawtext、zscale、vidstab 的 FFmpeg。
 brew install ffmpeg-full
@@ -16,7 +17,7 @@ uv run videocut ffmpeg audio --help
 uv run videocut ffmpeg contract --json --static
 ```
 
-技能和运行脚本已随项目保存，不需要运行 `npx` 或额外下载工具。项目技能位于 `.agents/skills/ffmpeg-skill/SKILL.md`，AI 应先阅读其工作流，再通过 CLI 调用。`doctor` 检查当前构建的滤镜、编码器、字体和逐工具可用性，不执行完整视频验收。必需能力缺失时返回非零；可选的 Parakeet/Whisper 引擎无需为普通视频处理安装。
+源码工作区通过 Git submodule 直接引用上游，不维护复制文件；首次运行需初始化子模块。安装已构建的 wheel 时工具已在包内，不需要 Git 或 `npx`。项目技能位于 `.agents/skills/ffmpeg-skill/SKILL.md`，AI 应先阅读其工作流，再通过 CLI 调用。`doctor` 检查当前构建的滤镜、编码器、字体和逐工具可用性，不执行完整视频验收。必需能力缺失时返回非零；可选的 Parakeet/Whisper 引擎无需为普通视频处理安装。
 
 Homebrew 的 `ffmpeg-full` 为 keg-only。上游工具检测到 PATH 上的 Homebrew 精简版 FFmpeg 后，自动使用同一前缀的完整版本及 ffprobe，无需 `brew link --force` 或修改 shell 配置。其他来源的 FFmpeg 沿用其 PATH 设置；需要切换时，可以只为本次命令设置 PATH。原有混剪命令仍沿用系统入口。
 
@@ -97,6 +98,18 @@ uv run python scripts/verify_ffmpeg_tools.py --output outputs/ffmpeg-smoke
 
 该脚本要求新的输出目录，生成纯色视频、中文 SRT、440Hz 脉冲、1000Hz 背景音和带 PQ 标记的 10-bit 测试图。它检查实际编码帧中字幕按时出现/消失、背景音在脉冲期间确实变小、PQ 转 SDR 的运行及输出标记、平台导出检查和完整解码，并保存命令、日志和 `verification.json`。这是合成输入的功能验收，不代表真人语音、任意字体、HDR 主观观感或全部 42 个工具均经素材实测。默认字体使用 macOS Heiti SC；其他系统可通过 `--font`、`--fonts-dir` 指定已安装的中文字体。
 
-运行脚本固定于上游提交 `f2d90ea603a663711c3d6aa9775d2a2380d83182`，MIT 许可证一并保留。`UPSTREAM.json` 记录版本、来源和分发文件的 SHA-256；上游源码未修改，省略了演示 GIF。项目入口只转发已存在的公开工具，不接受脚本路径或 shell 命令，也不在运行时安装或更新依赖。
+运行脚本固定于上游提交 `f2d90ea603a663711c3d6aa9775d2a2380d83182`（2.16.1），MIT 许可证保留在子模块。仓库 [`.gitmodules`](../.gitmodules) 记录来源 URL，父仓库的 gitlink 固定提交；[ffmpeg-upstream.json](ffmpeg-upstream.json)保留迁移前同版本工具的文件摘要，便于核对。项目入口不在运行时安装或更新代码。
 
-升级时选择明确的上游提交，在临时目录检出后运行其 `bin/install.js --dir /本项目/.agents/skills`，保留该提交的 LICENSE 并重新生成来源和摘要。检查新参数与原有入口的边界，执行 `uv sync --extra download --extra asr`、完整 pytest、Ruff、wheel 构建和真实字幕/音频/导出验证后，再记录新的验证结果。不要只修改版本号，或把未验证的新代码自动拉入每次渲染。
+升级时在子模块检出明确提交，检查新参数与集成边界，通过项目测试和实际工具烟测后提交新的 gitlink。不要用 `git submodule update --remote` 隐式追踪最新版，也不要在本项目修改上游源码；需要修复时向上游提交，或明确引用修复后的 fork。
+
+```bash
+git -C .agents/skills/ffmpeg-skill fetch origin
+git -C .agents/skills/ffmpeg-skill checkout <已审核的提交>
+uv sync --extra download --extra asr
+uv run pytest -q
+uv build
+# 审核通过后，提交父仓库中的子模块指针变更。
+git add .agents/skills/ffmpeg-skill
+```
+
+构建 wheel/sdist 前必须初始化子模块。构建配置只收录运行脚本、技能、模板、参考资料、工具文档、MCP 和 LICENSE，不收录上游 Git 数据、测试或演示媒体。sdist 带上这些固定文件，因此从源码包重建 wheel 不依赖 GitHub；这属于构建产物，不产生需要维护的第二份源码。GitHub 自动下载的源码 ZIP 通常不包含子模块内容，开发和构建请使用递归克隆或项目构建的 sdist。

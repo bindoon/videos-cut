@@ -2,7 +2,7 @@
 
 [返回项目首页](../../README.md) · [文档导航](../README.md)
 
-这里的文件来自项目**真实渲染结果**，随 Git 保存，便于开发者直接查看。
+这里的文件来自项目**真实渲染结果**，随 Git 保存，便于开发者直接查看。媒体的许可按下方归属说明适用。
 
 | 文件 | 内容 |
 | --- | --- |
@@ -15,6 +15,26 @@
 | [cards-native.jpg](cards-native.jpg) | 杭州原片连续四句的原生字幕像素拼图，自然比例；[输入](cards-native.json) |
 | [cards-script.jpg](cards-script.jpg) | 机械蝴蝶真实帧加本项目编写的后期中文说明，720×960；[输入](cards-script.json) |
 | [gallery-source.json](gallery-source.json) | 新增截图的成片身份、时间点、摘要、会话标题、图片摘要及实际看图记录 |
+
+## README 动态预览
+
+| 文件 | 原片时间范围 | 规格与许可 |
+| --- | --- | --- |
+| [hangzhou-demo.gif](hangzhou-demo.gif) | 3–5、20–22、84–86 秒 | 480×270，6 秒/72 帧；CC BY-SA 4.0 |
+| [butterfly-demo.gif](butterfly-demo.gif) | 3–5、14–16、24–26 秒 | 480×270，6 秒/72 帧；项目原创画面，MIT |
+| [taiji-demo.gif](taiji-demo.gif) | 2–4、11–13、25–27 秒 | 480×270，6 秒/72 帧；CC BY-SA 4.0 |
+
+三张 GIF 都由下表同版实际 MP4 生成，三段直接切换、等比缩小、12fps 调色板编码、无限循环，均无音轨。[gif-source.json](gif-source.json)保存输入和输出摘要、真实时间范围、尺寸与检查记录。逐张查看了六帧接触表，并解码全部 GIF 帧核对尺寸和时长；这不代表声学字幕验收。
+
+杭州 GIF 包含城市白模和两处实景辅助：Charlie fong 的 [TangxiinHangzhou.webm](https://commons.wikimedia.org/wiki/File:TangxiinHangzhou.webm)（CC BY-SA 4.0）、David290 的[钱塘江大桥航拍](https://commons.wikimedia.org/wiki/File:Qiantang_River_Bridge_DJI_0579.jpg)（CC BY-SA 4.0）；完整来源和修改说明沿用[杭州混剪署名](../../films/hangzhou/MONTAGE-CREDITS.md)。太极 GIF 沿用下方 Z-Anatomy / BodyParts3D / DBCLS 和人物资产署名。机械蝴蝶 GIF 不含原片配乐。
+
+重建到新目录（需要保留下方三个源视频）：
+
+```bash
+uv run python scripts/build_readme_gifs.py --output outputs/readme-gifs-new
+```
+
+脚本通过 `videocut ffmpeg render` 生成预演和正式 GIF，再用 `look` 生成接触表。查看三张接触表后再复制 GIF 和来源清单进入本目录；脚本默认视觉状态为 pending。
 
 ## 从历史会话补充的作品
 

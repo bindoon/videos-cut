@@ -1,6 +1,6 @@
 # 通用图像工具
 
-[文档导航](README.md) · [能力分层](capabilities.md) · [小红书工作流](workflows/xiaohongshu-quotes.md)
+[文档导航](README.md) · [能力分层](capabilities.md) · [小红书工作流](../skills/xiaohongshu-quotes/SKILL.md)
 
 `videocut images` 负责视频抽帧、文字时间索引、水平区域预览、图卡排版与真实文件检查。工具没有平台字段，不调用模型或网络；访谈选题、翻译、审稿和发布文案由宿主 Agent 与上层技能负责。核心依赖沿用 Python、Pillow、系统 FFmpeg/ffprobe；输出锁使用 macOS/Linux 的 `flock`。
 

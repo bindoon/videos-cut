@@ -46,7 +46,10 @@ def skill_directory() -> Path:
     ):
         if (directory / "SKILL.md").is_file():
             return directory
-    raise RuntimeError("The bundled ffmpeg-skill is missing; restore the project files")
+    raise RuntimeError(
+        "ffmpeg-skill is missing; in a source checkout run "
+        "`git submodule update --init --recursive`, or reinstall the videos-cut wheel"
+    )
 
 
 def main(argv: list[str] | None = None) -> int:

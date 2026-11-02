@@ -37,6 +37,8 @@
 已实跑环境为 macOS Apple Silicon。macOS 系统配音依赖 Apple 平台，IndexTTS 默认使用 MPS，也可显式选择 CPU/CUDA；Edge 配音依赖网络。下载及 ASR 的文件锁使用 `flock`，当前不承诺原生 Windows 全流程可用。
 
 ```bash
+# 源码工作区先初始化固定的第三方技能；递归克隆后可跳过。
+git submodule update --init --recursive
 # 主环境；全部可选功能与完整测试使用这一条。
 uv sync --extra download --extra asr
 ```
@@ -79,7 +81,7 @@ uv run videocut demo --tts macos --materials examples/materials-preview.json --w
 
 ## 宿主 Agent 创作与本地素材交接
 
-基础工具、场景技能和作品工程的区别见[能力地图](capabilities.md)。小红书访谈字幕图文使用独立[场景技能](../.agents/skills/xiaohongshu-quotes/SKILL.md)与[工作流](workflows/xiaohongshu-quotes.md)，以通用 `images` 工具执行，不将平台规则混入渲染器。
+基础工具、场景技能和作品工程的区别见[能力地图](capabilities.md)。小红书访谈字幕图文使用独立[场景技能](../skills/xiaohongshu-quotes/SKILL.md)，以通用 `images` 工具执行，不将平台规则混入渲染器。
 
 Codex、WorkBuddy 等宿主负责理解需求、写旁白、设计分镜和提示词；宿主有生图工具时直接调用，再把实际图片文件交给本项目。CLI 的 `prepare` 不调用模型、不联网，也不要求 API Key。宿主生图是否联网、是否占用额度取决于当前宿主和账户，不代表整条链路离线或免费。
 

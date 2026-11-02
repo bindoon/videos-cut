@@ -2,11 +2,23 @@
 
 本地 CLI 项目，不依赖数据库或云端任务服务。CLI 参数与 JSON 文件定义一次任务，`outputs/` 保存结果，`assets/cache/` 保存可复用素材与转录。
 
-架构分为通用工具、场景技能与作品工程。[能力地图](capabilities.md)维护完整清单。`.agents/skills/xiaohongshu-quotes/` 负责小红书图文的内容/版式决策，调用通用 `images`；`films/` 持有具体影片的数据和美术，复用 `codefilm`。工具不读取平台技能或隐式应用其默认值。
+架构分为通用工具、场景技能与作品工程。[能力地图](capabilities.md)维护完整清单。`skills/xiaohongshu-quotes/` 负责小红书图文的内容/版式决策，调用通用 `images`；`films/` 持有具体影片的数据和美术，复用 `codefilm`。工具不读取平台技能或隐式应用其默认值。
 
-`codefilm` 是独立的代码画面入口：本地 HTML / Canvas / Three.js 按确定性的 `render(t)` 绘制，经无损 PNG 与现有 `videocut ffmpeg sequence` 编码成可续跑的片段。`films/hangzhou/` 拥有城市 GIS 转换、历史内容、相机和配音/配乐，通过配置复用该渲染器。完整制作流程见[代码视频指南](code-films.md)，具体数据与片子复现见[杭州短片说明](../films/hangzhou/README.md)。
+`codefilm` 是独立的代码画面入口：本地 HTML / Canvas / Three.js 按确定性的 `render(t)` 绘制，经无损 PNG 与现有 `videocut ffmpeg sequence` 编码成可续跑的片段。`films/hangzhou/` 拥有城市 GIS 转换、历史内容、相机和配音/配乐，通过配置复用该渲染器。完整制作流程见[代码影片技能](../skills/codefilm-workflow/SKILL.md)，具体数据与片子复现见[杭州短片说明](../films/hangzhou/README.md)。
 
 [文档导航](README.md) · [使用指南](usage.md) · [AI 操作指南](ai-guide.md) · [开源来源](open-source.md)
+
+## 目录职责
+
+```text
+skills/                     本项目的制作、图文和代码影片工作流
+.agents/skills/ffmpeg-skill/ 第三方技能 Git submodule，直接引用固定上游提交
+docs/                       工具合同、使用配置、架构与验证证据
+films/                      具体影片的数据、镜头、美术和专用检查
+videocut/                   通用 CLI 与处理实现
+```
+
+工作流步骤只维护在相应 `SKILL.md` 或技能参考资料中；docs 的 AI 指南只导航到技能。模型、缓存、参考录音和生成视频仍在忽略的本地目录。
 
 ## 入口与数据流
 
@@ -68,7 +80,7 @@
 
 ASR 和 Auto-Editor 是 `asr` 可选依赖，普通脚本混剪不需要安装它们或下载识别模型。主剪辑环境的包版本固定在 `uv.lock`；语音模型使用各自独立的环境和版本清单。
 
-`videocut ffmpeg TOOL ...` 是独立的文件处理入口：当前 Python 启动 `.agents/skills/ffmpeg-skill/scripts/` 中的固定工具，保留调用者工作目录，不经过 shell，也不自动下载或更新代码。`doctor` / `contract` 交给上游 `_contract.py`；42 个公开工具的参数由各自解析器定义。上游在 macOS 检测到 Homebrew 精简版 FFmpeg 时，优先使用相同 Homebrew 前缀的 `opt/ffmpeg-full/bin`；项目原有命令仍使用其原来的 FFmpeg 入口。wheel 内也包含同一份工具，安装后从 `videocut/_vendor/ffmpeg_skill` 读取。版本与文件摘要见技能目录的 `UPSTREAM.json`。
+`videocut ffmpeg TOOL ...` 是独立的文件处理入口：当前 Python 启动 `.agents/skills/ffmpeg-skill/scripts/` 中的固定工具，保留调用者工作目录，不经过 shell，也不自动下载或更新代码。`doctor` / `contract` 交给上游 `_contract.py`；42 个公开工具的参数由各自解析器定义。上游在 macOS 检测到 Homebrew 精简版 FFmpeg 时，优先使用相同 Homebrew 前缀的 `opt/ffmpeg-full/bin`；项目原有命令仍使用其原来的 FFmpeg 入口。wheel 内也包含同一份工具，安装后从 `videocut/_vendor/ffmpeg_skill` 读取。第三方源码通过 `.gitmodules` 与 gitlink 固定引用，不在本项目复制维护；迁移摘要见 `docs/ffmpeg-upstream.json`，初始化与打包见 [FFmpeg 集成说明](ffmpeg-tools.md)。
 
 扩展工具可以显式接收当前流程输出的 MP4、WAV、SRT，再写出新文件。上游的 `verified` 与平台 `check` 只代表其自己的文件检查，不代表通过本项目 `sync.py` 的字幕逐帧和音轨同步验收；上游自带 `--transcribe` 也不共享项目 ASR 缓存与审计格式。用法与边界见 [ffmpeg-tools.md](ffmpeg-tools.md)。
 

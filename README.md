@@ -1,5 +1,7 @@
 # videos-cut · 可复现的视频混剪工具链
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
 **把剧本、素材和声音变成短片、字幕图卡与代码动画，让制作过程可检查、可复用。**
 
 面向开发者和 AI Agent 的本地 Python CLI：从网页导入素材，生成或保留旁白，精剪口播，合成字幕、图片运镜、转场、动态贴纸和配乐，也能从真实视频帧制作字幕图卡，或把 Canvas / Three.js 工程逐帧编码。用 JSON 描述作品，用命令组合工作流。
@@ -9,30 +11,51 @@
 | 层次 | 在项目里负责什么 |
 | --- | --- |
 | **通用工具** | 下载、转录、配音、剪辑、抽帧、图卡排版、代码出片与文件校验 |
-| **场景技能** | 根据平台和内容组织工具，例如[小红书访谈字幕图文](.agents/skills/xiaohongshu-quotes/SKILL.md)的选题、选句、版式与文案 |
+| **场景技能** | 根据平台和内容组织工具，例如[小红书访谈字幕图文](skills/xiaohongshu-quotes/SKILL.md)的选题、选句、版式与文案 |
 | **作品工程** | `films/` 保存杭州、机械蝴蝶、太极等具体作品的模型、数据、镜头和专用检查 |
 
 宿主 Agent 负责理解、创作和看图，工具负责确定性执行；平台规则放在技能与模板中。[完整能力、边界与证据](docs/capabilities.md)集中维护。
 
 ## 先看成片
 
-以下截图从前几次项目会话交付的**实际编码视频**重新提取，保留真实画面比例；不是概念图。来源、时间点、SHA-256 与许可见[展示媒体说明](docs/media/README.md)。
+前三张 GIF 从项目交付的**实际编码视频**截取：每张将三段 2 秒画面接成 6 秒无声循环，咖啡样片为 5 秒预览，均保留真实画面比例。静态六帧总览可展开查看；来源、时间点、SHA-256 与许可见[展示媒体说明](docs/media/README.md)。
 
 ### 杭州城市片：数据白模、历史光层与实景辅助
 
+![杭州城市片：白模运镜、运河实景和跨江光层的 6 秒动态预览](docs/media/hangzhou-demo.gif)
+
+<details>
+<summary>查看六帧静态总览</summary>
+
 ![杭州两分钟成片：西湖、运河、苏堤、城市生长与实景辅助](docs/media/hangzhou-gallery.jpg)
+
+</details>
 
 **120 秒、1920×1080、24fps**。Three.js 主镜头约 82%，12 份实景各用一次，IndexTTS-2.5 参考音色解说；24 句字幕中点 OCR 与 9 处音轨波形抽查通过。该抽样检查不等于 Qwen 全帧门禁。[工程与复现](films/hangzhou/README.md)。
 
 ### 机械蝴蝶：多机位、机芯剖视与分层拆装
 
+![机械蝴蝶：振翅、电机剖视与分层拆装的 6 秒动态预览](docs/media/butterfly-demo.gif)
+
+<details>
+<summary>查看六帧静态总览</summary>
+
 ![机械蝴蝶 V2 成片：正面、俯视、电机、齿轮、展开和重组](docs/media/butterfly-gallery.jpg)
+
+</details>
 
 **32 秒、1920×1080、30fps，11 个镜头**。代码构建机械体并计算运动，经 codefilm 捕获 960 帧，配乐使用署名的《Neon》。这是机械概念动画。[电影版工程](films/mechanical-butterfly/CINEMATIC.md)。
 
 ### 太极图解：人物资产、逐趾控制与解剖网格
 
+![太极缠丝劲：整体动作、五趾抓地和腿部解剖的 6 秒动态预览](docs/media/taiji-demo.gif)
+
+<details>
+<summary>查看六帧静态总览</summary>
+
 ![太极 V2 成片：整体动作、抓地、骨骼肌群、生根与腿部缠转](docs/media/taiji-gallery.jpg)
+
+</details>
 
 **36 秒、1920×1080、24fps，864 帧**。展示外部人物资产、独立脚趾控制和骨骼肌群；属于艺术与劲意图解。解剖衍生画面为 CC BY-SA 4.0，保留 Z-Anatomy / BodyParts3D / DBCLS 署名。[工程与许可](films/taiji-silk/README.md)。
 
@@ -42,18 +65,18 @@
 | --- | --- |
 | ![杭州真实字幕像素拼图](docs/media/cards-native.jpg) | ![机械蝴蝶真实帧加后期中文说明](docs/media/cards-script.jpg) |
 
-左图从原片裁切字幕，统一等比缩放；右图在真实帧上绘制本项目编写的说明，明确属于后期文字。它们用于展示通用图像工具，不冒充第三方访谈案例。[工具合同](docs/image-tools.md) · [小红书场景工作流](docs/workflows/xiaohongshu-quotes.md)。
+左图从原片裁切字幕，统一等比缩放；右图在真实帧上绘制本项目编写的说明，明确属于后期文字。它们用于展示通用图像工具，不冒充第三方访谈案例。[工具合同](docs/image-tools.md) · [小红书场景工作流](skills/xiaohongshu-quotes/SKILL.md)。
 
 ### 咖啡竖屏短片：素材、字幕、转场与贴纸
 
 下面是项目实际生成的咖啡短片，展示图片运镜、素材切换、中文字幕与透明贴纸。
 
-![咖啡短片的六个镜头：图片、视频、字幕、贴纸和进度条](docs/media/coffee-contact-sheet.jpg)
+<img src="docs/media/coffee-demo.gif" alt="咖啡短片的 5 秒动态预览：素材切换、字幕与透明贴纸" width="240">
 
 <details>
-<summary>查看 5 秒动态预览：素材切换、字幕与贴纸</summary>
+<summary>查看六帧静态总览</summary>
 
-<img src="docs/media/coffee-demo.gif" alt="真实成片第 5 至 10 秒：咖啡照片转入咖啡豆镜头，字幕和贴纸独立叠加" width="240">
+![咖啡短片的六个镜头：图片、视频、字幕、贴纸和进度条](docs/media/coffee-contact-sheet.jpg)
 
 </details>
 
@@ -79,11 +102,11 @@
 
 | 场景 | 提供的工作流 |
 | --- | --- |
-| [小红书字幕图文 Skill](.agents/skills/xiaohongshu-quotes/SKILL.md) | Agent 阅读访谈/讲解、提名主题、核对原句和说话人，组合通用工具生成主图与字幕条，逐图检查，按需整理发布文案 |
-| [剧本短片 / 原声混剪](docs/usage.md) | 现有文档工作流：素材交接、旁白或 ASR、精剪、合成与成片检查 |
-| [城市、机械和动作图解](docs/code-films.md) | 现有工程工作流：故事与数据、Three.js 分镜、确定性捕获、后期与作品专用验证 |
+| [小红书字幕图文 Skill](skills/xiaohongshu-quotes/SKILL.md) | Agent 阅读访谈/讲解、提名主题、核对原句和说话人，组合通用工具生成主图与字幕条，逐图检查，按需整理发布文案 |
+| [剧本短片 / 原声混剪](skills/video-workflow/SKILL.md) | 素材交接、旁白或 ASR、精剪、合成与成片检查 |
+| [城市、机械和动作图解](skills/codefilm-workflow/SKILL.md) | 故事与数据、Three.js 分镜、确定性捕获、后期与作品专用验证 |
 
-其中小红书已独立封装为项目内技能；后两项是现有文档和影片工程。完整清单与未实现边界见[能力地图](docs/capabilities.md)。
+本项目工作流统一维护在 `skills/`，`docs/` 维护工具参数、配置和架构，`films/` 保存具体作品。第三方 [ffmpeg-skill](.agents/skills/ffmpeg-skill/SKILL.md) 通过 Git submodule 固定上游提交，直接引用其源码。完整清单与未实现边界见[能力地图](docs/capabilities.md)。
 
 ### 值得开发者关注的设计
 
@@ -94,9 +117,13 @@
 
 ## 快速开始
 
-需要 [uv](https://docs.astral.sh/uv/)、Python 3.12（主项目支持 `>=3.12,<3.14`）、系统 FFmpeg 和中文字体。以下是已验证的 macOS 路线，从仓库根目录执行：
+需要 [uv](https://docs.astral.sh/uv/)、Python 3.12（主项目支持 `>=3.12,<3.14`）、系统 FFmpeg 和中文字体。以下是已验证的 macOS 路线，先递归克隆，再从仓库根目录执行命令：
 
 ```bash
+# 克隆时带上固定的第三方技能。
+git clone --recurse-submodules https://github.com/bindoon/videos-cut.git
+cd videos-cut
+# 已有工作区执行：git submodule update --init --recursive
 brew install ffmpeg
 uv sync
 uv run videocut demo --tts macos --output outputs/coffee-local
@@ -157,7 +184,7 @@ uv run videocut images render --manifest task/cards.json --output outputs/cards-
 uv run videocut images verify outputs/cards-01/image-report.json
 ```
 
-输入合同、两种字幕来源、模板与增量续跑见[通用图像工具](docs/image-tools.md)；平台使用方法见[小红书字幕图文](docs/workflows/xiaohongshu-quotes.md)。
+输入合同、两种字幕来源、模板与增量续跑见[通用图像工具](docs/image-tools.md)；平台使用方法见[小红书字幕图文](skills/xiaohongshu-quotes/SKILL.md)。
 
 城市白模、数据动画等代码画面使用独立的 `codefilm` 入口；需要 Node.js、影片内的 Playwright 和 Chromium。先用自带两秒示例检查环境：
 
@@ -169,15 +196,15 @@ uv run videocut codefilm render --config examples/codefilm/codefilm.json --outpu
 uv run videocut codefilm verify outputs/codefilm-demo/render-manifest.json
 ```
 
-浏览器安装、配置、缓存与[城市短片工作流](docs/code-films.md)见专项指南；[杭州工程](films/hangzhou/README.md)保留实际的数据、叙事、配音和后期范例。该入口先输出无声画面分段，声音与交付通过文件衔接。
+浏览器安装、配置与缓存见 [codefilm 工具指南](docs/code-films.md)，完整制作步骤见[代码影片技能](skills/codefilm-workflow/SKILL.md)；[杭州工程](films/hangzhou/README.md)保留实际的数据、叙事、配音和后期范例。该入口先输出无声画面分段，声音与交付通过文件衔接。
 
 ## 如何让 AI 使用
 
-把项目路径、输入文件和目标告诉 AI，并让它先读 [AI 操作指南](docs/ai-guide.md)。例如：
+把项目路径、输入文件和目标告诉 AI，并让它先读 [AI 操作指南](docs/ai-guide.md) 和对应 `skills/*/SKILL.md`。例如：
 
 > 请先阅读 AGENTS.md、docs/ai-guide.md 和 docs/usage.md。把 `/absolute/path/talking.mp4` 精剪后做成竖屏混剪，保留原声，去除长停顿和“嗯、呃”，搭配咖啡素材。先检查输入与素材配置，输出到新的目录；完成后检查实际画面和报告，给我成片、截图和删除记录。
 
-指南包含任务路由、可复制提示词、缓存复用和交付检查，也说明下载字幕、ASR 时间与 Qwen 对齐记录的区别。
+指南提供可复制提示词与技能导航；[视频工作流技能](skills/video-workflow/SKILL.md)维护任务路由、缓存复用和交付检查，并区分下载字幕、ASR 时间与 Qwen 对齐记录。
 
 从创意开始时，宿主 Agent 编写[创作计划](examples/creation-plan.json)，使用当前可用的生图工具补充素材，再通过 `videocut prepare --plan ... --output ...` 交给本地渲染。生成图片与发布文案不混入旁白；AI 视频需求单独列明，当前不自动提交外部生成服务。宿主生图可能联网或占用账户额度，具体流程见[使用指南](docs/usage.md#宿主-agent-创作与本地素材交接)。
 
@@ -191,7 +218,7 @@ uv run videocut codefilm verify outputs/codefilm-demo/render-manifest.json
 | Qwen3-ForcedAligner | 给定原稿与音频，定位字词及句末；本项目补充固定展示计划与成片验收 |
 | IndexTTS / Edge TTS | 默认参考音色、本地语音控制及在线配音 |
 | yt-dlp | 网页视频、音轨、字幕和播放列表解析；本项目负责素材接入、校验与失败恢复 |
-| ffmpeg-skill | 随项目固定分发 2.16.1 的 42 个工具、技能说明与模板，通过 CLI 直接调用 |
+| ffmpeg-skill | Git submodule 固定引用 2.16.1 的 42 个工具、技能说明与模板，通过 CLI 直接调用 |
 | native-subtitle-quote-image | 参考原生/脚本字幕区分、连续字幕条与候选帧复核；本地独立实现通用图像工具和场景技能 |
 
 [开源来源与集成说明](docs/open-source.md)进一步区分了设计参考、依赖调用、随仓库分发的代码和历史实验，并记录固定版本与素材归属。
@@ -210,3 +237,7 @@ uv run pytest -q
 当前素材选择使用标签匹配；任意视频的视觉理解、交互式时间线、专门呼吸识别、完整 SSML 与自动发布尚未实现。扩展工具的高光候选按声能等指标排序，不等于理解内容；其平台检查也不替代本项目字幕同步验收。
 
 仓库保存代码、示例、文档、锁文件和小型展示媒体；模型、缓存、上游工作区、虚拟环境和生成视频由 `.gitignore` 排除。未调用付费 API 的运行会记录 `paid_api_calls=0`，本机算力、流量和存储另有成本。
+
+## 许可证
+
+本项目原创代码、工作流技能和文档采用 [MIT License](LICENSE)。第三方代码保留上游许可证；模型、素材和展示媒体适用各自许可，详见[开源来源](docs/open-source.md)与[展示媒体归属](docs/media/README.md)。

@@ -2,6 +2,9 @@
 name = "videos-cut"
 version = "0.1.0"
 description = "Reproducible narration-led video editing with open-source components"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.12,<3.14"
 dependencies = [
   "moviepy==2.2.1",
@@ -28,13 +31,27 @@ build-backend = "hatchling.build"
 packages = ["videocut"]
 
 [tool.hatch.build.targets.wheel.force-include]
-".agents/skills/ffmpeg-skill" = "videocut/_vendor/ffmpeg_skill"
+".agents/skills/ffmpeg-skill/SKILL.md" = "videocut/_vendor/ffmpeg_skill/SKILL.md"
+".agents/skills/ffmpeg-skill/LICENSE" = "videocut/_vendor/ffmpeg_skill/LICENSE"
+".agents/skills/ffmpeg-skill/package.json" = "videocut/_vendor/ffmpeg_skill/package.json"
+".agents/skills/ffmpeg-skill/scripts" = "videocut/_vendor/ffmpeg_skill/scripts"
+".agents/skills/ffmpeg-skill/templates" = "videocut/_vendor/ffmpeg_skill/templates"
+".agents/skills/ffmpeg-skill/references" = "videocut/_vendor/ffmpeg_skill/references"
+".agents/skills/ffmpeg-skill/docs/contract.md" = "videocut/_vendor/ffmpeg_skill/docs/contract.md"
+".agents/skills/ffmpeg-skill/docs/demos.md" = "videocut/_vendor/ffmpeg_skill/docs/demos.md"
+".agents/skills/ffmpeg-skill/docs/design-decisions.md" = "videocut/_vendor/ffmpeg_skill/docs/design-decisions.md"
+".agents/skills/ffmpeg-skill/docs/roadmap.md" = "videocut/_vendor/ffmpeg_skill/docs/roadmap.md"
+".agents/skills/ffmpeg-skill/mcp" = "videocut/_vendor/ffmpeg_skill/mcp"
 
 [tool.hatch.build.targets.sdist]
 include = [
   "/videocut", "/tests", "/scripts", "/examples", "/docs", "/films",
-  "/README.md", "/AGENTS.md", "/pyproject.toml", "/uv.lock", "/requirements*.txt",
-  "/.agents/skills/ffmpeg-skill", "/.agents/skills/xiaohongshu-quotes",
+  "/README.md", "/AGENTS.md", "/LICENSE", "/.gitmodules", "/pyproject.toml", "/uv.lock", "/requirements*.txt",
+  "/skills",
+  "/.agents/skills/ffmpeg-skill/SKILL.md", "/.agents/skills/ffmpeg-skill/LICENSE",
+  "/.agents/skills/ffmpeg-skill/package.json", "/.agents/skills/ffmpeg-skill/scripts",
+  "/.agents/skills/ffmpeg-skill/templates", "/.agents/skills/ffmpeg-skill/references",
+  "/.agents/skills/ffmpeg-skill/docs/*.md", "/.agents/skills/ffmpeg-skill/mcp",
 ]
 exclude = [
   "**/node_modules", "**/.venv", "**/.venv-*", "**/__pycache__",

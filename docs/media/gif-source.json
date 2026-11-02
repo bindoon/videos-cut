@@ -1,0 +1,98 @@
+{
+  "schema": "readme-gifs-v1",
+  "items": [
+    {
+      "id": "hangzhou",
+      "source": "outputs/hangzhou-two-minute-qianchen-20261030/delivery-v2/杭州-城市年轮-钱陈音色-两分钟.mp4",
+      "source_sha256": "1bd27b7fbb863730837bb49c75eefb239fdf580669cecd705a97afd779020aaf",
+      "credits": "films/hangzhou/CREDITS.md; films/hangzhou/MONTAGE-CREDITS.md",
+      "excerpt_seconds": [
+        [
+          3,
+          5
+        ],
+        [
+          20,
+          22
+        ],
+        [
+          84,
+          86
+        ]
+      ],
+      "image": "hangzhou-demo.gif",
+      "image_sha256": "7995e9d48ebab51dae8ad930ac176cdd34238f6040b4032ad5510b4b70714584",
+      "bytes": 4574230,
+      "width": 480,
+      "height": 270,
+      "frames": 72,
+      "duration_ms": 6000,
+      "audio": false,
+      "transformation": "Three 2-second excerpts, hard cuts, uniform downscale, 12 fps palette GIF",
+      "verified": true,
+      "visual_review": "Contact sheet inspected: proportional frames, expected scenes, no blank frames in six sampled times; not acoustic/subtitle acceptance"
+    },
+    {
+      "id": "butterfly",
+      "source": "outputs/mechanical-butterfly-v2-20261031/final.mp4",
+      "source_sha256": "77024ba5017a30c0a338ff18806a66b217a3192d800c26d3fc1454d0766bc32b",
+      "credits": "films/mechanical-butterfly/CINEMATIC.md",
+      "excerpt_seconds": [
+        [
+          3,
+          5
+        ],
+        [
+          14,
+          16
+        ],
+        [
+          24,
+          26
+        ]
+      ],
+      "image": "butterfly-demo.gif",
+      "image_sha256": "a41a450ef4829e935cde27bc5ea48ab846e1a3fc42c1ba1764ed24736e3c16d4",
+      "bytes": 2157400,
+      "width": 480,
+      "height": 270,
+      "frames": 72,
+      "duration_ms": 6000,
+      "audio": false,
+      "transformation": "Three 2-second excerpts, hard cuts, uniform downscale, 12 fps palette GIF",
+      "verified": true,
+      "visual_review": "Contact sheet inspected: proportional frames, expected scenes, no blank frames in six sampled times; not acoustic/subtitle acceptance"
+    },
+    {
+      "id": "taiji",
+      "source": "outputs/taiji-v2-20261031/delivery/final.mp4",
+      "source_sha256": "2ec2fd0d413d39f7b5a4e5bf2899dc64626e04c29a3f594a69779f564b9175fb",
+      "credits": "films/taiji-silk/CREDITS-V2.md; CC BY-SA 4.0",
+      "excerpt_seconds": [
+        [
+          2,
+          4
+        ],
+        [
+          11,
+          13
+        ],
+        [
+          25,
+          27
+        ]
+      ],
+      "image": "taiji-demo.gif",
+      "image_sha256": "c005b627db6242baaefc143c6d762b1b4cec0955bcfc3d73f857049060a8ec8c",
+      "bytes": 770929,
+      "width": 480,
+      "height": 270,
+      "frames": 72,
+      "duration_ms": 6000,
+      "audio": false,
+      "transformation": "Three 2-second excerpts, hard cuts, uniform downscale, 12 fps palette GIF",
+      "verified": true,
+      "visual_review": "Contact sheet inspected: proportional frames, expected scenes, no blank frames in six sampled times; not acoustic/subtitle acceptance"
+    }
+  ]
+}

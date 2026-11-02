@@ -33,9 +33,9 @@
 
 | 场景 | 用哪些基础能力 | 在哪里维护 |
 | --- | --- | --- |
-| 小红书访谈/讲解字幕图文 | 导入/转录 → Agent 选题 → 候选帧 → 原生/脚本图卡 → 逐图检查与文案 | [项目技能](../.agents/skills/xiaohongshu-quotes/SKILL.md)、[工作流](workflows/xiaohongshu-quotes.md)；本次新增 |
-| 剧本短片与原声混剪 | prepare、配音/ASR、render/mix、字幕与成片检查 | [使用指南](usage.md)、[AI 操作指南](ai-guide.md)；现有文档工作流，尚未独立封装成场景 Skill |
-| 城市数据动画、机械拆解、动作图解 | 工程数据/Three.js → codefilm → FFmpeg → 作品专用检查 | [代码视频指南](code-films.md)和各 `films/`；可复用制作方法，具体美术和模型属于影片工程 |
+| 小红书访谈/讲解字幕图文 | 导入/转录 → Agent 选题 → 候选帧 → 原生/脚本图卡 → 逐图检查与文案 | [项目技能](../skills/xiaohongshu-quotes/SKILL.md) |
+| 剧本短片与原声混剪 | prepare、配音/ASR、render/mix、字幕与成片检查 | [视频工作流技能](../skills/video-workflow/SKILL.md)；参数与配置在使用指南 |
+| 城市数据动画、机械拆解、动作图解 | 工程数据/Three.js → codefilm → FFmpeg → 作品专用检查 | [代码影片技能](../skills/codefilm-workflow/SKILL.md)；工具合同在代码视频指南，具体美术和模型属于 `films/` |
 
 小红书的图卡比例、选句习惯和文案不写入通用渲染器。后续增加知识卡、课程摘要或其他平台图文，可复用同一份 `image-cards-v1` 合同，另加技能与模板。
 
@@ -49,4 +49,4 @@
 | 太极缠丝劲 V2 | 36 秒、1080p/24fps，外部人物、逐趾控制、骨骼肌群与示意动画 | [太极工程](../films/taiji-silk/README.md)；艺术/劲意图解，素材署名与 CC BY-SA 4.0 随附 |
 | 字幕图卡 | 以杭州成片的真实帧演示原字幕连续条与后期脚本图卡 | [图像工具](image-tools.md)、[展示媒体](media/README.md)；不把自有讲解片当作第三方访谈案例 |
 
-README 只分发小型实际截图；大型媒体、模型与详细报告在忽略的本地目录。历史会话用于定位作品，源码、实际成片、摘要和验收记录才是能力证据。最近一次完整验证及本轮记录见 [verification.md](verification.md)。
+README 只分发小型实际截图和 GIF；大型媒体、模型与详细报告在忽略的本地目录。历史会话用于定位作品，源码、实际成片、摘要和验收记录才是能力证据。最近一次完整验证及本轮记录见 [verification.md](verification.md)。

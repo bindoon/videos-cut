@@ -15,6 +15,10 @@
 | 查清参考了谁、实际集成了什么 | [开源来源与集成说明](open-source.md) |
 | 查看已经实际跑过的证据 | [验证记录](verification.md) |
 
+## 工作流技能
+
+工作流正文统一在 `skills/`，按任务加载：[视频制作](../skills/video-workflow/SKILL.md) · [代码影片](../skills/codefilm-workflow/SKILL.md) · [小红书图文](../skills/xiaohongshu-quotes/SKILL.md)。第三方 [ffmpeg-skill](../.agents/skills/ffmpeg-skill/SKILL.md) 使用固定提交的 Git submodule；初始化见 [FFmpeg 工具](ffmpeg-tools.md)。
+
 ## 专项指南
 
 | 文档 | 内容 |
@@ -24,8 +28,8 @@
 | [IndexTTS 控制](voice-controls.md) | IndexTTS-2.5 安装、语速/情绪/拼音、完整视频与 SSML 实验边界 |
 | [FFmpeg 工具](ffmpeg-tools.md) | 42 个工具的常用命令、后期处理、平台导出和原管线边界 |
 | [通用图像工具](image-tools.md) | 精确候选帧、字幕区域、文字时间索引、原生/脚本图卡、内容缓存与真实文件校验 |
-| [小红书字幕图文](workflows/xiaohongshu-quotes.md) | 上层场景技能：选题、选句、版式、逐图检查及独立发布文案 |
-| [代码视频与城市短片工作流](code-films.md) | `codefilm` 配置、逐帧渲染、缓存验收，以及从真实数据、解说到交付的制作步骤 |
+| [小红书字幕图文](../skills/xiaohongshu-quotes/SKILL.md) | 上层场景技能：选题、选句、版式、逐图检查及独立发布文案 |
+| [代码视频工具](code-films.md) | `codefilm` 配置、逐帧渲染、缓存与验收合同 |
 | [展示媒体](media/README.md) | README 实际截图和 GIF 的来源、归属与复现方法 |
 | [杭州白模短片](../films/hangzhou/README.md) | 真实杭州建筑、水系与代码光层，Three.js 逐帧渲染及复现方法 |
 | [太极缠丝劲动画](../films/taiji-silk/README.md) | 太极动作、足部剖析、五趾抓地、生根与腿部螺旋的 36 秒图解 |
@@ -33,7 +37,7 @@
 
 ## 文档与文件分别代表什么
 
-- `README.md` 是项目介绍，`usage.md` 与 `ai-guide.md` 说明当前怎么用，`architecture.md` 说明当前怎么工作。
+- `README.md` 是项目介绍，`usage.md` 维护工具用法，`ai-guide.md` 提供提示词与技能导航，`architecture.md` 说明当前怎么工作。
 - `open-source.md` 记录本项目的集成方式与来源，确切包版本以依赖锁文件为准。
 - [F5 声音克隆历史实验](voice-cloning-f5-history.md) 保存已停用链路的命令和结果，不作为当前操作入口。
 - `verification.md` 是按阶段保存的历史证据。早期字幕策略可能已被替换，应以当前专项指南和代码为准。
