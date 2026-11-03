@@ -8,6 +8,8 @@
 
 [文档导航](README.md) · [使用指南](usage.md) · [AI 操作指南](ai-guide.md) · [开源来源](open-source.md)
 
+`review` 是两种渲染路线之上的文件交接层：渲染前登记配置/声明输入，渲染后校验并封存实际视频，通过本机网页写入绑定版本的批注。它不执行渲染器、不改写 ASR/Qwen 时间、不恢复扁平视频图层。导演与改片决策在 `skills/video-direction/`、`skills/review-workflow/`；具体工具合同见[本地审片](review.md)。
+
 ## 目录职责
 
 ```text
@@ -34,6 +36,7 @@ videocut/                   通用 CLI 与处理实现
 参考录音 + 控制样例 → IndexTTS-2.5 / SSML 实验适配层 → 独立音频对照与验收
 已有媒体 → videocut ffmpeg TOOL → 新媒体 / 工具报告 / 可选剪辑软件时间线
 本地代码 + 数据 + 时间轴 → codefilm → 静帧 / 已校验分段 + manifest → FFmpeg 后期与独立交付检查
+声明输入 → review prepare → 现有渲染器 → publish 封存实际视频 → 本机 UI 批注 → Agent CLI 领取 → 原工程修改 → 新版本
 ```
 
 ## 数据与边界
@@ -48,7 +51,7 @@ videocut/                   通用 CLI 与处理实现
 
 | 文件 | 职责 |
 | --- | --- |
-| `videocut/cli.py` | 提供 `prepare / download / transcribe / demo / render / mix / cut / rough-cut / raw-sample`，以及 `ffmpeg / codefilm` 转发入口 |
+| `videocut/cli.py` | 提供 `prepare / download / transcribe / demo / render / mix / cut / rough-cut / raw-sample`，以及 `ffmpeg / codefilm / images / review` 转发入口 |
 | `videocut/creation.py` | `prepare` 检查宿主创作计划，输出待补素材任务或现有渲染器配置；不调用模型或网络 |
 | `videocut/assets.py` | 下载、来源记录和标签选片；不做未接入的视觉模型理解 |
 | `videocut/downloads.py` | HTTP Range 与 yt-dlp 导入、规格隔离缓存、大小预算、逐项失败结果和媒体校验；网页下载依赖可选 `download` extra |
@@ -68,6 +71,8 @@ videocut/                   通用 CLI 与处理实现
 | `videocut/text_index.py` | SRT/VTT/同源 ASR 检索索引、有限滚动字幕去重与来源记录；不改变 ASR 算法和缓存 |
 | `videocut/image_cards.py` | 原生像素拼接/脚本文字排版、输入合同、输出锁、按内容续跑和实际图片摘要/尺寸/边界检查 |
 | `videocut/ffmpeg_tools.py` | `ffmpeg` 子命令，将工具参数、标准输出和退出码原样交给项目内固定的 ffmpeg-skill；不接管配音、ASR 或字幕同步门禁 |
+| `videocut/review.py`、`review_cli.py` | 双渲染路线的输入快照、完整解码/帧数检查、不可变版本、追加式批注、加锁领取与新版回复 |
+| `videocut/review_server.py`、`review_ui.html` | loopback HTTP、已封存媒体 Range、同源批注、实际加载后换版；不执行源码/渲染/Agent |
 | `videocut/codefilm.py`、`codefilm_runner.mjs` | 配置与输入摘要、私有浏览器逐帧捕获、输出锁、分段缓存、实际媒体校验；不负责 GIS、叙事、配音或 Qwen 验收 |
 
 `mix` 使用同一份剪后音频时间轴：原视频镜头从对应时间截取，插入素材时只替换画面。不会把原片声音和旁白重复播放。字幕图层在背景转场之后叠加，避免两条字幕跟着转场重影。
@@ -148,6 +153,7 @@ IndexTTS-2.5 使用 `.venv-index`（Python 3.11 / PyTorch MPS）。语音合成�
 
 | 变更 | 优先查看 |
 | --- | --- |
+| 预览版本、批注与本机审片页 | `review.py`、`review_cli.py`、`review_server.py`、`review_ui.html`、`tests/test_review.py`；真实工程烟测在 `scripts/verify_review_workflows.py` |
 | 素材下载、缓存与来源 | `downloads.py`、`assets.py`、`tests/test_downloads.py` |
 | 独立转录与时间归属 | `transcription.py`、`tests/test_transcription.py`；缓存语义改变时同步 `SCHEMA` |
 | 静音和口头词精剪 | `cleaning.py`、`tests/test_editing.py` |

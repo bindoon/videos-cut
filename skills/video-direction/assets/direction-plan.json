@@ -1,0 +1,25 @@
+{
+  "schema": "videocut-direction-v1",
+  "title": "影片标题",
+  "message": "观众看完需要理解的一件事",
+  "audience": "观看者与场景",
+  "rhythm_driver": "voice | music | reading | movement",
+  "timing_status": "draft",
+  "sound": {"mode": "original | narration | music | silent", "source": null},
+  "scenes": [
+    {
+      "id": "scene-intro",
+      "label": "可修改的镜头名称",
+      "message": "这一镜头承担的信息",
+      "material_ids": [],
+      "source": "本地素材或已核实依据",
+      "motion": "画面变化及其用途",
+      "hold_reason": "阅读、动作辨认或有意留白",
+      "sound_events": [],
+      "acceptance": "怎样判断这个镜头符合要求"
+    }
+  ],
+  "keyframes": [],
+  "continuity": [],
+  "review": {"integrity": null, "content": null, "viewing_notes": []}
+}

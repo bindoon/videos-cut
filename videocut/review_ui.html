@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>videos-cut · 审片</title>
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;color:#24332e;background:#f5f6f2;font-size:14px}*{box-sizing:border-box}body{margin:0}button,select,textarea{font:inherit}button,a.download{border:1px solid #c7d0c8;background:white;border-radius:7px;padding:8px 13px;color:inherit;cursor:pointer}button:hover,a.download:hover{background:#e9eee7}button:disabled{opacity:.45;cursor:default}header{height:62px;display:flex;align-items:center;gap:18px;padding:12px 24px;background:white;border-bottom:1px solid #dce2d9}header strong{font-size:18px}header select{max-width:330px;padding:7px;border:1px solid #c7d0c8;border-radius:6px}#display-version{color:#46664f;flex:1}a.download{text-decoration:none}a[aria-disabled=true]{pointer-events:none;opacity:.4}#status{padding:11px 24px;background:#eaf0e7;border-bottom:1px solid #d4dfd0;min-height:43px}#status.stale{background:#fff1ce;color:#79551c}main{display:grid;grid-template-columns:minmax(0,1fr) 350px;min-height:calc(100vh - 105px)}.work{padding:22px;min-width:0}#player{height:calc(100vh - 255px);min-height:260px;position:relative;background:#202a25;border-radius:9px;overflow:hidden;display:flex;align-items:center;justify-content:center}video{width:100%;height:100%;object-fit:contain;display:block}video.staged{position:absolute;inset:0;visibility:hidden;pointer-events:none}#empty{position:absolute;color:#dbe6d8;text-align:center;line-height:1.9}#annotation-layer{position:absolute;inset:0 0 90px;z-index:2;cursor:crosshair}#region{z-index:3;position:absolute;border:2px solid #e6b352;background:#e6b35220;pointer-events:none;display:none}.transport{display:flex;align-items:center;gap:12px;margin:14px 0}.transport span{color:#637166;font-variant-numeric:tabular-nums;flex:1}#scenes{display:flex;gap:5px;overflow:auto;padding-bottom:8px}#scenes button{text-align:left;min-width:130px;flex:1;white-space:nowrap;font-size:12px}#scenes button[aria-current=true]{border-color:#497457;background:#e1ebdf}#scenes small{display:block;color:#65756b;margin-top:4px}aside{background:white;border-left:1px solid #dce2d9;padding:22px;overflow:auto;max-height:calc(100vh - 105px)}h2{font-size:16px;margin:0 0 12px}#context{padding:10px;background:#f0f3ec;border-radius:6px;color:#4a6651;font-size:12px;line-height:1.7}textarea{width:100%;resize:vertical;min-height:90px;padding:10px;border:1px solid #c7d0c8;border-radius:7px;margin:10px 0}.actions{display:flex;gap:8px}#send{background:#305d40;color:white;border-color:#305d40}.hint{font-size:12px;color:#738076;line-height:1.7}#message{color:#79551c;font-size:13px;min-height:22px;margin:10px 0}.comment{border-top:1px solid #e2e7de;padding:15px 0}.comment button{padding:4px 7px;font-size:12px}.comment p{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7}.comment small{color:#6b776e}.comment .done{background:#eaf4e9;border-radius:6px;padding:8px}.tag{font-size:11px;padding:3px 6px;border-radius:5px;background:#f4eddb;margin-right:6px}.tag.done{background:#e5f2e2}@media(max-width:850px){header{gap:8px;padding:10px;font-size:12px}header strong{font-size:14px}main{grid-template-columns:1fr}aside{max-height:none;border-top:1px solid #ddd}#player{height:50vh}#display-version{min-width:110px}header select{max-width:120px}}
+</style>
+<header><strong>videos-cut · 审片</strong><select id="versions" aria-label="预览版本"></select><span id="display-version">尚未加载视频</span><button id="latest" hidden>查看新版</button><a class="download" id="download" aria-disabled="true">下载当前预览</a></header>
+<div id="status" role="status">读取工程…</div>
+<main><section class="work"><div id="player"><div id="empty">尚无已发布预览<br>生成候选并发布后，画面会出现在这里。</div><div id="annotation-layer" aria-label="点击画面定位批注"></div><div id="region"></div></div><div class="transport"><button id="annotate" disabled>暂停并留言</button><span id="time">00:00.00</span><button id="retry" hidden>重新加载画面</button></div><nav id="scenes" aria-label="镜头时间轴"></nav></section><aside><h2>画面批注</h2><div id="context">先播放或定位到需要修改的画面。</div><textarea id="text" aria-label="修改要求" placeholder="例如：这张图停留三秒；脚部镜头再靠近一点。"></textarea><div class="actions"><button id="send" disabled>提交批注</button><button id="clear">清除定位</button></div><div id="message" role="status"></div><p class="hint">批注绑定当时看到的视频版本。可点画面标记位置；Agent 通过本地审片命令领取任务，生成新预览后再回复。</p><h2>批注记录</h2><div id="comments"></div></aside></main>
+<script>
+const TOKEN='__REVIEW_TOKEN__';
+const $=s=>document.querySelector(s);
+let data=null,displayed=null,video=null,loading=null,failedRevision=null,generation=0,context=null,selection=null,followLatest=true,lastCommentData='';
+const fmt=t=>`${String(Math.floor(t/60)).padStart(2,'0')}:${(t%60).toFixed(2).padStart(5,'0')}`;
+const node=(tag,text)=>{const n=document.createElement(tag);n.textContent=text;return n};
+function banner(){
+  if(!data)return;
+  const el=$('#status');
+  const old=displayed&&displayed.id!==data.latest;
+  el.className=data.pending||data.changed_sources.length||old?'stale':'';
+  let text=displayed?`正在审看 v${displayed.number} · ${displayed.video.width}×${displayed.video.height} · ${displayed.video.fps}fps · ${displayed.video.duration.toFixed(2)}秒`:'尚无已加载预览';
+  if(displayed?.offset)text+=` · 局部预览（原工程 ${fmt(displayed.offset)}–${fmt(displayed.offset+displayed.video.duration)}）`;
+  if(data.pending)text+=' ｜ 有待生成/提交的版本；画面仍属于已显示版本。';
+  else if(data.changed_sources.length)text+=' ｜ 源文件已变更，现有预览尚未重新生成。';
+  else if(old)text+=' ｜ 当前为历史版本，可切换到新版。';
+  else if(displayed)text+=' ｜ 与当前登记的源输入一致。';
+  el.textContent=text;
+  $('#latest').hidden=!old;
+}
+function sceneAt(t){return displayed?.scenes.filter(s=>s.start<=t&&t<s.end).at(-1)}
+function tick(){
+  if(!video||!displayed)return;
+  $('#time').textContent=`${fmt(video.currentTime)} / ${fmt(displayed.video.duration)}${displayed.offset?` · 原工程 ${fmt(video.currentTime+displayed.offset)}`:''}`;
+  const active=sceneAt(video.currentTime);
+  for(const b of $('#scenes').children)b.setAttribute('aria-current',String(b.dataset.id===active?.id));
+}
+function scenes(){
+  $('#scenes').replaceChildren();
+  for(const s of displayed.scenes){const b=node('button',s.label);b.dataset.id=s.id;b.append(node('small',`${fmt(s.start)}–${fmt(s.end)}`));b.onclick=()=>{video.pause();video.currentTime=s.start;clearContext()};$('#scenes').append(b)}
+}
+function clearContext(){context=null;$('#context').textContent='先播放或定位到需要修改的画面。';$('#send').disabled=true;$('#region').style.display='none'}
+function compose(region=null){
+  if(!displayed||!video||loading||video.seeking)return;
+  video.pause();const t=Math.min(video.currentTime,displayed.video.duration-1/displayed.video.fps),s=sceneAt(t);
+  if(!s)return;
+  context={revision:displayed.id,time:t,scene:s.id,region};
+  $('#context').textContent=`v${displayed.number} · ${fmt(t)} · ${s.label}${displayed.offset?` · 原工程 ${fmt(t+displayed.offset)}`:''}${region?' · 已标记画面区域':''}`;
+  $('#send').disabled=false;
+  $('#text').focus();
+}
+async function loadRevision(doc){
+  const ticket=++generation;loading=doc.id;failedRevision=null;
+  $('#display-version').textContent=`正在加载 v${doc.number}${displayed?`（当前画面仍是 v${displayed.number}）`:''}`;
+  $('#annotate').disabled=true;$('#send').disabled=true;$('#retry').hidden=true;$('#message').textContent='';
+  selection=doc.id;
+  $('#versions').value=selection;
+  const next=document.createElement('video');next.className='staged';next.controls=true;next.preload='auto';next.dataset.revision=doc.id;
+  const globalTime=video&&displayed?video.currentTime+displayed.offset:doc.offset;
+  $('#player').append(next);
+  const fail=()=>{if(ticket!==generation){next.remove();return}loading=null;failedRevision=doc.id;next.remove();$('#display-version').textContent=`v${doc.number} 加载失败${displayed?`；仍显示 v${displayed.number}`:''}`;$('#retry').hidden=false;$('#annotate').disabled=!displayed;$('#message').textContent='新版没有加载成功。请重试；批注和下载仍绑定已显示的版本。'};
+  next.onerror=fail;
+  next.onloadeddata=async()=>{
+    try{
+      if(Math.abs(next.duration-doc.video.duration)>1/doc.video.fps+.05)throw Error('duration mismatch');
+      const t=Math.max(0,Math.min(globalTime-doc.offset,doc.video.duration-1/doc.video.fps));
+      if(t>.001)await new Promise((ok,failSeek)=>{const timer=setTimeout(()=>failSeek(Error('seek timeout')),8000);next.addEventListener('seeked',()=>{clearTimeout(timer);ok()},{once:true});next.currentTime=t});
+      await new Promise(ok=>requestAnimationFrame(()=>requestAnimationFrame(ok)));
+      if(ticket!==generation){next.remove();return}
+      video?.pause();video?.remove();video=next;next.className='';displayed=doc;loading=null;clearContext();
+      $('#empty').hidden=true;$('#display-version').textContent=`已显示 v${doc.number} · ${doc.label}`;
+      $('#annotate').disabled=false;$('#download').href=`/media/${doc.id}.mp4`;$('#download').download=`preview-v${doc.number}.mp4`;$('#download').setAttribute('aria-disabled','false');$('#download').textContent=`下载当前预览 v${doc.number}`;
+      next.ontimeupdate=tick;
+      next.onseeking=()=>{clearContext();$('#annotate').disabled=true};
+      next.onseeked=()=>requestAnimationFrame(()=>{if(video===next&&!loading){$('#annotate').disabled=false;tick()}});
+      scenes();tick();banner();
+    }catch{fail()}
+  };
+  next.src=`/media/${doc.id}.mp4`;
+}
+function renderComments(){
+  const key=JSON.stringify(data.comments);if(key===lastCommentData)return;lastCommentData=key;
+  $('#comments').replaceChildren();
+  for(const c of [...data.comments].reverse()){
+    const r=data.revisions.find(r=>r.id===c.revision),result=data.revisions.find(r=>r.id===c.result_revision);
+    const box=node('div','');box.className='comment';const status=node('span',({pending:'待处理',working:'处理中',done:'已完成'})[c.status]||c.status);status.className='tag '+c.status;box.append(status,node('small',`v${r?.number??'?'} · ${fmt(c.time)} · ${c.scene_id}`),node('p',c.text));
+    const go=node('button','查看批注画面');go.onclick=async()=>{followLatest=false;clearContext();await loadRevision(r);const wait=setInterval(()=>{if(displayed?.id===r.id&&!loading){clearInterval(wait);video.currentTime=c.time}},100);setTimeout(()=>clearInterval(wait),12000)};box.append(go);
+    if(c.status==='done'){const note=node('p',`回复${result?` · v${result.number}`:''}：${c.note}`);note.className='done';box.append(note)}
+    $('#comments').append(box);
+  }
+}
+async function refresh(){
+  const response=await fetch('/api/state',{cache:'no-store'});if(!response.ok)throw Error('读取审片状态失败');data=await response.json();
+  $('#versions').replaceChildren(...data.revisions.map(r=>{const o=node('option',`v${r.number} · ${r.label}`);o.value=r.id;return o}));
+  if(selection)$('#versions').value=selection;
+  const target=data.revisions.find(r=>r.id===data.latest);
+  if(target&&followLatest&&!context&&loading!==target.id&&failedRevision!==target.id&&displayed?.id!==target.id)loadRevision(target);
+  renderComments();banner();
+}
+$('#versions').onchange=e=>{followLatest=e.target.value===data.latest;clearContext();loadRevision(data.revisions.find(r=>r.id===e.target.value))};
+$('#latest').onclick=()=>{followLatest=true;clearContext();loadRevision(data.revisions.find(r=>r.id===data.latest))};
+$('#retry').onclick=()=>loadRevision(data.revisions.find(r=>r.id===selection));
+$('#annotate').onclick=()=>compose();$('#clear').onclick=clearContext;
+$('#annotation-layer').addEventListener('click',e=>{
+  if(!video||!displayed||loading||video.seeking)return;
+  const b=video.getBoundingClientRect(),scale=Math.min(b.width/video.videoWidth,b.height/video.videoHeight),w=video.videoWidth*scale,h=video.videoHeight*scale,left=b.left+(b.width-w)/2,top=b.top+(b.height-h)/2;
+  const x=(e.clientX-left)/w,y=(e.clientY-top)/h;if(x<0||x>1||y<0||y>1)return;
+  // Leave native playback controls usable.
+  if(e.clientY>b.bottom-45)return;
+  const region=[Math.max(0,Math.min(.92,x-.04)),Math.max(0,Math.min(.92,y-.04)),.08,.08];compose(region);
+  const marker=$('#region'),parent=$('#player').getBoundingClientRect();Object.assign(marker.style,{display:'block',left:`${left-parent.left+region[0]*w}px`,top:`${top-parent.top+region[1]*h}px`,width:`${.08*w}px`,height:`${.08*h}px`});
+});
+$('#send').onclick=async()=>{
+  if(!context||loading)return;
+  $('#send').disabled=true;const payload={...context,text:$('#text').value};
+  try{const r=await fetch('/api/comments',{method:'POST',headers:{'Content-Type':'application/json','X-Review-Token':TOKEN},body:JSON.stringify(payload)}),j=await r.json();if(!r.ok)throw Error(j.error);$('#text').value='';clearContext();$('#message').textContent='批注已保存，等待 Agent 领取。';await refresh()}catch(e){$('#message').textContent=e.message;$('#send').disabled=false}
+};
+refresh().catch(e=>$('#status').textContent=e.message);
+setInterval(()=>refresh().catch(()=>{$('#status').className='stale';$('#status').textContent='连接中断；当前画面仍属于已显示版本。'}),1500);
+</script>
+</html>

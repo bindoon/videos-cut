@@ -16,6 +16,13 @@
 | [cards-script.jpg](cards-script.jpg) | 机械蝴蝶真实帧加本项目编写的后期中文说明，720×960；[输入](cards-script.json) |
 | [gallery-source.json](gallery-source.json) | 新增截图的成片身份、时间点、摘要、会话标题、图片摘要及实际看图记录 |
 
+## 本地审片截图
+
+- [review-photos.jpg](review-photos.jpg)：实际图片混剪 v2 的 Chrome 审片页，显示 7 秒视频、三个镜头和旧版意见对应的新版回复。图片来源为本页咖啡素材表中的 Unsplash 照片，沿用 Unsplash License；原创 UI 代码为 MIT。
+- [review-taiji.jpg](review-taiji.jpg)：原工程 24–26 秒局部无声预览的 Chrome 审片页，显示改相机后的 v2 与完成回复。太极衍生画面按 CC BY-SA 4.0，保留 Z-Anatomy / BodyParts3D / DBCLS、Grab3D、Innerscene/MakeHuman 的[完整署名](../../films/taiji-silk/CREDITS-V2.md)。
+
+两张 JPEG 均从实际浏览器捕获原样复制，页面播放本次封存的编码视频，未用设计稿替代。它们不代表重新验收完整太极影片、声音或 Qwen 字幕。[review-source.json](review-source.json)保存截图/视频摘要、版本、范围、规格及本机证据路径；本机大文件不随 Git 分发。
+
 ## README 动态预览
 
 | 文件 | 原片时间范围 | 规格与许可 |

@@ -25,6 +25,7 @@
 | [yt-dlp](https://github.com/yt-dlp/yt-dlp) | 网页媒体、音轨、字幕和播放列表解析 | **可选 Python API 依赖**，`download` extra | 素材协议、规格隔离缓存、大小预算、媒体校验、失败项和续传恢复 |
 | [wx_channels_download](https://github.com/ltaoo/wx_channels_download) | 微信视频号捕获、本地 API 与视频解密流 | **可选的独立本地服务调用**，核对 v260907 API；不分发上游代码或二进制 | 明确目标匹配、格式选择、流大小预算、实测尺寸/完整解码、缓存与素材来源记录；证书和系统代理由外部服务单独管理 |
 | [ffmpeg-skill](https://github.com/kajisho5/ffmpeg-skill) | 42 个本地处理工具、技能说明、交付模板与工具合同 | **Git submodule 固定引用上游源码，构建时收录运行文件**，`videocut ffmpeg` 转发调用 | 工具发现、入口和 wheel 打包；与主项目 ASR/字幕验收保持明确边界 |
+| [huashu-motion](https://github.com/alchaincyf/huashu-motion) | 导演节奏、播放器/镜头时间轴/右侧批注布局、改片交接 | **设计参考**，基线 `52467f99c602b76ba86d511d37acdfe93fa1e16e` / v0.3.1；本地独立实现，未分发其代码或素材 | 双渲染路线的不可变视频版本、声明输入校验、原版本区域意见、Agent CLI 领取与实际新版回复 |
 | [native-subtitle-quote-image](https://github.com/chengyi-ai/native-subtitle-quote-image) | 原生/脚本字幕来源区分、候选帧复核、主图与连续字幕条工作流 | **设计参考**；本地独立编写图像工具与小红书场景技能，未分发上游脚本或安装其 Skill | `image-cards-v1`、复用本项目下载/ASR、内容摘要缓存、逐卡失败恢复、输入变化失效与报告 |
 | [Twemoji](https://github.com/jdecked/twemoji) | 透明表情图形，作为动态贴纸素材 | **下载图形资产**，图形许可 CC-BY-4.0 | 贴纸位置、缩放/浮动动画与素材归属记录 |
 | [Three.js](https://github.com/mrdoob/three.js) / [Playwright](https://github.com/microsoft/playwright) | 城市白模 WebGL 绘制与私有 Chromium 的逐帧捕获 | **影片内 npm 依赖**；各工程 `package-lock.json` 固定版本 | `codefilm` 配置、确定性检查、分段续跑、实际媒体与摘要校验 |
@@ -43,6 +44,10 @@
 参考提交 **`cc13deb6ab6d17b55e733d9353ad3300e31f40f7`**（2026-10-29 核对），阅读了 [draft-generation-planner.service.ts](https://github.com/yikart/AiToEarn/blob/cc13deb6ab6d17b55e733d9353ad3300e31f40f7/project/aitoearn-backend/apps/aitoearn-ai/src/core/draft-generation/draft-generation-planner.service.ts)、[media.mcp.ts](https://github.com/yikart/AiToEarn/blob/cc13deb6ab6d17b55e733d9353ad3300e31f40f7/project/aitoearn-backend/apps/aitoearn-ai/src/core/agent/mcp/media.mcp.ts) 及视频编辑工具的结构化参数。
 
 本项目借鉴其规划与工具边界，具体执行采用本地 `creation.py`，宿主生成素材后通过文件交接。未接入 AiToEarn API、Relay、数据库、队列或平台授权；未移植其云端视频处理和字幕实现。宿主无生图能力时不会静默改调付费服务。生成式 AI 视频仅标记外部需求，调用适配器尚未实现。
+
+## 设计参考：huashu-motion
+
+在本地测试其基本示例和太极 V3 适配后，吸收导演计划、节奏复核与画面批注交接。videos-cut 保留原素材渲染器和 codefilm，新增 `review` 交接层；网页与技能独立编写，没有复制上游服务、前端源码、GSAP、字体或作者角色形象。上游代码/文档 MIT 与第三方素材许可须分别看待，其 [THIRD_PARTY.md](https://github.com/alchaincyf/huashu-motion/blob/52467f99c602b76ba86d511d37acdfe93fa1e16e/THIRD_PARTY.md) 不因设计参考而被重新授权。太极实测副本继续保留本项目原有模型与字体来源。
 
 ## 直接引用：ffmpeg-skill
 
@@ -79,4 +84,4 @@ README 的图片和动图是本项目真实渲染结果的截图与节选，来�
 - **SSML**：`scripts/test_indextts_controls.py` 有局部标签转换与静音拼接适配层。7 组短句实验覆盖语速、情绪、拼音及停顿对照；它尚未接入完整视频提供方，不能称为 IndexTTS 原生完整 SSML。
 - **Kokoro-FastAPI、CosyVoice**：早期调研过控制接口，本项目未完成运行接入，不能列作已验证提供方。
 
-当前没有任意视频的视觉自动打标、专门呼吸识别、交互式时间线、`w` 强制连读约束、词级重读/情绪及完整 SSML。ffmpeg-skill 可以导出时间线、测量场景并给出高光候选，但不等于新增了这些语义理解或交互能力。具体已跑过的输入和结果见[验证记录](verification.md)。
+当前没有任意视频的视觉自动打标、专门呼吸识别、拖动剪辑时间线、`w` 强制连读约束、词级重读/情绪及完整 SSML。ffmpeg-skill 可以导出时间线、测量场景并给出高光候选，但不等于新增了这些语义理解或交互能力。具体已跑过的输入和结果见[验证记录](verification.md)。

@@ -17,12 +17,13 @@
 
 ## 工作流技能
 
-工作流正文统一在 `skills/`，按任务加载：[视频制作](../skills/video-workflow/SKILL.md) · [代码影片](../skills/codefilm-workflow/SKILL.md) · [小红书图文](../skills/xiaohongshu-quotes/SKILL.md)。第三方 [ffmpeg-skill](../.agents/skills/ffmpeg-skill/SKILL.md) 使用固定提交的 Git submodule；初始化见 [FFmpeg 工具](ffmpeg-tools.md)。
+工作流正文统一在 `skills/`，按任务加载：[视频导演](../skills/video-direction/SKILL.md) · [审片改片](../skills/review-workflow/SKILL.md) · [视频制作](../skills/video-workflow/SKILL.md) · [代码影片](../skills/codefilm-workflow/SKILL.md) · [小红书图文](../skills/xiaohongshu-quotes/SKILL.md)。第三方 [ffmpeg-skill](../.agents/skills/ffmpeg-skill/SKILL.md) 使用固定提交的 Git submodule；初始化见 [FFmpeg 工具](ffmpeg-tools.md)。
 
 ## 专项指南
 
 | 文档 | 内容 |
 | --- | --- |
+| [本地预览与画面批注](review.md) | 双渲染路线的预览版本、稳定镜头 ID、局部时间、HTTP/CLI 批注与检查边界 |
 | [字幕同步](subtitle-sync.md) | 整句预读、显式拆条、Qwen 安装、SRT 回读与全部帧验收 |
 | [声音克隆](voice-cloning.md) | 默认 IndexTTS-2.5 参考音色、输入、缓存与验收 |
 | [IndexTTS 控制](voice-controls.md) | IndexTTS-2.5 安装、语速/情绪/拼音、完整视频与 SSML 实验边界 |

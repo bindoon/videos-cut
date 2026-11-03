@@ -4,9 +4,9 @@
 
 **把剧本、素材和声音变成短片、字幕图卡与代码动画，让制作过程可检查、可复用。**
 
-面向开发者和 AI Agent 的本地 Python CLI：从网页导入素材，生成或保留旁白，精剪口播，合成字幕、图片运镜、转场、动态贴纸和配乐，也能从真实视频帧制作字幕图卡，或把 Canvas / Three.js 工程逐帧编码。用 JSON 描述作品，用命令组合工作流。
+面向开发者和 AI Agent 的本地 Python CLI：从网页导入素材，生成或保留旁白，精剪口播，合成字幕、图片运镜、转场、动态贴纸和配乐，也能从真实视频帧制作字幕图卡，或把 Canvas / Three.js 工程逐帧编码。用 JSON 描述作品，用命令组合工作流，再通过本地审片页把画面意见交回 Agent。
 
-[快速开始](#快速开始) · [能力地图](docs/capabilities.md) · [使用指南](docs/usage.md) · [让 AI 来操作](docs/ai-guide.md) · [全部文档](docs/README.md)
+[快速开始](#快速开始) · [审片与改片](#审片与改片) · [能力地图](docs/capabilities.md) · [使用指南](docs/usage.md) · [让 AI 来操作](docs/ai-guide.md) · [全部文档](docs/README.md)
 
 | 层次 | 在项目里负责什么 |
 | --- | --- |
@@ -82,6 +82,36 @@
 
 这版样片为 **41.108 秒、720×1280、24fps**，含 6 个镜头、12 句字幕、5 次转场和 6 个贴纸，使用 Edge TTS 配音。GIF 是其中 5 秒的无声预览；[来源、归属和生成说明](docs/media/README.md)随仓库保存。它展示基础合成效果；Qwen 字幕验收另有[实跑记录](docs/verification.md)。完整视频可按下方命令在本地生成。
 
+## 审片与改片
+
+**图片混剪、口播短片和 Three.js 动画共用审片入口。** [视频导演 Skill](skills/video-direction/SKILL.md)先梳理信息主线、运动语言、节奏和关键帧；现有渲染器生成视频后，审片页提供播放、镜头跳转、版本比较与画面批注。Agent 按意见修改原配置或源码，实际生成新版，再关联回复。
+
+![图片混剪审片页：显示 v2、三个镜头时间和关联旧版意见的新版回复](docs/media/review-photos.jpg)
+
+每条意见保留当时看到的视频版本、时间、镜头 ID 和可选画面区域。源文件已改、候选待生成、新版加载失败都会明确提示；新版加载完成前仍显示旧版，下载与批注也绑定实际显示的版本。网页通过本地 CLI 与当前 Agent 交接，不自动启动 Agent。
+
+| 已实际跑通的改片 | 修改与验证范围 |
+| --- | --- |
+| 两张咖啡照片组成三个镜头 | 第二张从 2 秒延长到 3 秒，第三张顺延；全片 6→7 秒，三个镜头 ID 保留 |
+| 太极 V3 的 Three.js 镜头 | 修改相机视角并重新渲染原工程 24–26 秒，两个版本各 48 帧；这是局部无声预览 |
+
+<details>
+<summary>查看 Three.js 太极审片界面</summary>
+
+![太极审片页：局部预览的原工程范围、肌群镜头和新版回复](docs/media/review-taiji.jpg)
+
+</details>
+
+在已有审片工作区启动：
+
+```bash
+uv run videocut review serve /absolute/path/review-workspace --port 4862
+```
+
+浏览器打开命令输出的本机地址，定位画面后点击标记或“暂停并留言”。首次建立工作区与处理意见见[审片工作流](skills/review-workflow/SKILL.md)，参数和版本合同见[review 工具](docs/review.md)。截图来自实际编码视频与 Chrome 页面，[来源、摘要和许可](docs/media/review-source.json)随仓库保存；照片沿用 Unsplash License，太极画面沿用 [CC BY-SA 4.0 署名](films/taiji-silk/CREDITS-V2.md)。
+
+审片文件检查与内容、声音、审美判断分别记录；慢镜和片尾停留不因运动量低就判为失败。该层不恢复扁平 MP4 的图层，也未提供拖动剪辑、三维对象拾取或声音事件合成器。
+
 ## 基础通用能力
 
 | 能力 | 实际产出 |
@@ -95,6 +125,7 @@
 | **参考音色与语音控制** | 默认使用 IndexTTS-2.5 生成新旁白；IndexTTS 支持原生语速、情绪向量与逐句拼音纠音 |
 | **字幕显示与成片验收** | IndexTTS 默认用 Qwen 定位句末，上一句结束即显示下一句；固定分条、SRT 回读、全部编码帧及音轨偏移检查 |
 | **42 个 FFmpeg 工具** | 改画幅、字幕烧录、音乐自动压低、HDR 转 SDR、多机位同步、平台导出、批处理与剪辑软件时间线导出 |
+| **预览与画面批注** | 统一封存素材混剪/Three.js 预览，镜头时间轴、历史版本和区域意见；Agent 经 CLI 改原工程并生成新版 |
 | **代码动画逐帧出片** | 本地 Canvas / Three.js 页面按 `render(t)` 绘制，支持分镜静帧、局部预览、分段续跑与实际编码文件完整性检查 |
 | **抽帧、文字索引与字幕图卡** | `images` 提供候选帧、字幕区域预览、SRT/VTT/ASR 索引、原生/脚本排版、按内容续跑和实际图片校验；不包含平台选题规则 |
 
@@ -103,6 +134,8 @@
 | 场景 | 提供的工作流 |
 | --- | --- |
 | [小红书字幕图文 Skill](skills/xiaohongshu-quotes/SKILL.md) | Agent 阅读访谈/讲解、提名主题、核对原句和说话人，组合通用工具生成主图与字幕条，逐图检查，按需整理发布文案 |
+| [视频导演 Skill](skills/video-direction/SKILL.md) | 信息主线、图片/口播/动作分镜、运动含义、节奏计划与关键帧复核 |
+| [审片改片 Skill](skills/review-workflow/SKILL.md) | 登记输入、生成并封存预览、画面批注、Agent 领取和新版回复 |
 | [剧本短片 / 原声混剪](skills/video-workflow/SKILL.md) | 素材交接、旁白或 ASR、精剪、合成与成片检查 |
 | [城市、机械和动作图解](skills/codefilm-workflow/SKILL.md) | 故事与数据、Three.js 分镜、确定性捕获、后期与作品专用验证 |
 
@@ -219,6 +252,7 @@ uv run videocut codefilm verify outputs/codefilm-demo/render-manifest.json
 | IndexTTS / Edge TTS | 默认参考音色、本地语音控制及在线配音 |
 | yt-dlp | 网页视频、音轨、字幕和播放列表解析；本项目负责素材接入、校验与失败恢复 |
 | ffmpeg-skill | Git submodule 固定引用 2.16.1 的 42 个工具、技能说明与模板，通过 CLI 直接调用 |
+| huashu-motion | 参考导演节奏、播放器/镜头/批注布局和改片交接；本地独立实现双渲染路线的版本合同，未引入其运行时或角色资产 |
 | native-subtitle-quote-image | 参考原生/脚本字幕区分、连续字幕条与候选帧复核；本地独立实现通用图像工具和场景技能 |
 
 [开源来源与集成说明](docs/open-source.md)进一步区分了设计参考、依赖调用、随仓库分发的代码和历史实验，并记录固定版本与素材归属。
@@ -230,11 +264,13 @@ uv sync --extra download --extra asr
 uv run pytest -q
 ```
 
+2026-11-03 完整套件为 **125 项通过**，包含 14 项审片回归；图片与太极两类真实改片、浏览器版本/批注交接和安装包也已实跑。
+
 确定性测试含真实本地 HTTP 服务与 FFmpeg；平台联网下载、实际语音模型与听感检查单独记录。[验证记录](docs/verification.md)保留各阶段结果，测试通过数和耗时属于对应运行环境。
 
 继续阅读：[架构与数据流](docs/architecture.md) · [字幕同步](docs/subtitle-sync.md) · [声音克隆](docs/voice-cloning.md) · [IndexTTS 控制](docs/voice-controls.md)。
 
-当前素材选择使用标签匹配；任意视频的视觉理解、交互式时间线、专门呼吸识别、完整 SSML 与自动发布尚未实现。扩展工具的高光候选按声能等指标排序，不等于理解内容；其平台检查也不替代本项目字幕同步验收。
+当前素材选择使用标签匹配；任意视频的视觉理解、拖动剪辑时间线、专门呼吸识别、完整 SSML 与自动发布尚未实现。扩展工具的高光候选按声能等指标排序，不等于理解内容；其平台检查也不替代本项目字幕同步验收。
 
 仓库保存代码、示例、文档、锁文件和小型展示媒体；模型、缓存、上游工作区、虚拟环境和生成视频由 `.gitignore` 排除。未调用付费 API 的运行会记录 `paid_api_calls=0`，本机算力、流量和存储另有成本。
 

@@ -1,0 +1,65 @@
+{
+  "schema": "readme-review-v1",
+  "date": "2026-11-03",
+  "visual_review": {
+    "status": "reviewed",
+    "reviewer": "host Agent",
+    "scope": "Actual photo and Taiji review pages; version badges, timeline and completed comment replies checked. Silent previews; not Qwen validation."
+  },
+  "items": [
+    {
+      "image": "review-photos.jpg",
+      "image_sha256": "ce1c12baf1ead5874f05d7673f7ae6fcce56ee2eaaf888d61b80f445ba960c23",
+      "image_size": [
+        1920,
+        839
+      ],
+      "capture": "Actual Chrome review page captured via CUA; original JPEG copied without editing",
+      "source_screenshot": "outputs/review-workflows-20261103-02/ui-photos-v2.jpg",
+      "source_manifest": "outputs/review-workflows-20261103-02/reviews/photos/revisions/3bc4d9e223e544a1/manifest.json",
+      "revision": "3bc4d9e223e544a1",
+      "video": {
+        "sha256": "b4f807efc7393ff58dd5214c06897836e93c162dd7c4d351afcd4df7c45a3727",
+        "bytes": 347711,
+        "width": 640,
+        "height": 360,
+        "fps": 24.0,
+        "frames": 168,
+        "duration": 7.0,
+        "codec": "h264",
+        "audio": []
+      },
+      "preview_time": 0,
+      "source_offset": 0.0,
+      "license": "UI: MIT; embedded photographs: Unsplash License",
+      "credits": "examples/materials.json"
+    },
+    {
+      "image": "review-taiji.jpg",
+      "image_sha256": "decc645c5d585efcdf9d598f9c4fa7066763d2906c79e1875fca69966807affe",
+      "image_size": [
+        1920,
+        783
+      ],
+      "capture": "Actual Chrome review page captured via CUA; original JPEG copied without editing",
+      "source_screenshot": "outputs/review-workflows-20261103-02/ui-taiji.jpg",
+      "source_manifest": "outputs/review-workflows-20261103-02/reviews/taiji/revisions/55f74c745d51478e/manifest.json",
+      "revision": "55f74c745d51478e",
+      "video": {
+        "sha256": "e166e8ca2894648bb8f9fcb2f07d470fccb4231de27ec3f4b2e4bef16cc5d24e",
+        "bytes": 74499,
+        "width": 640,
+        "height": 360,
+        "fps": 24.0,
+        "frames": 48,
+        "duration": 2.0,
+        "codec": "h264",
+        "audio": []
+      },
+      "preview_time": 2,
+      "source_offset": 24.0,
+      "license": "CC BY-SA 4.0; UI code: MIT",
+      "credits": "films/taiji-silk/CREDITS-V2.md"
+    }
+  ]
+}

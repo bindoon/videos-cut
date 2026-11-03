@@ -390,6 +390,8 @@ uv run --extra asr videocut mix outputs/raw-sample/raw.mp4 --fillers 嗯 呃 那
 
 `ground-truth.json` 仅用于事后比较，绝不交给识别或剪辑程序冒充识别结果。
 
+需要多人次审看或让 Agent 按画面意见修改时，使用本机 `review` 页面。图片混剪与代码动画共用版本/批注层，参数见[本地预览与画面批注](review.md)，执行步骤见[审片工作流](../skills/review-workflow/SKILL.md)。
+
 ## 开源基础和验证
 
 工作流参考 MoneyPrinterTurbo；实际执行使用 MoviePy、FFmpeg、Edge TTS、faster-whisper 和 Auto-Editor。版本、职责和来源见 [docs/open-source.md](open-source.md)，素材来源见 [examples/materials.json](../examples/materials.json)。不需要把整个 MoneyPrinterTurbo WebUI 及所有供应商依赖装进来。

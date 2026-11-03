@@ -39,6 +39,8 @@
 
 | 任务 | 技能入口 | 工具合同 |
 | --- | --- | --- |
+| 信息主线、分镜、运动与节奏设计 | [视频导演](../skills/video-direction/SKILL.md) | [代码视频](code-films.md)、[字幕同步](subtitle-sync.md) |
+| 审片、历史版本、点击画面给改片意见 | [审片工作流](../skills/review-workflow/SKILL.md) | [review 工具合同](review.md) |
 | 剧本短片、原声精剪/混剪、旁白和字幕复用 | [视频制作工作流](../skills/video-workflow/SKILL.md) | [使用指南](usage.md)、[字幕同步](subtitle-sync.md) |
 | 城市、机械和动作图解等代码影片 | [代码影片工作流](../skills/codefilm-workflow/SKILL.md) | [codefilm 工具](code-films.md) |
 | 小红书访谈字幕图文 | [小红书图文](../skills/xiaohongshu-quotes/SKILL.md) | [图像工具](image-tools.md) |

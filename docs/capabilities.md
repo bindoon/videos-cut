@@ -7,7 +7,7 @@
 ```text
 宿主 Agent：理解需求、读稿选题、校对、设计分镜、查看结果
      ↓ 采用场景技能，写出可检查的 JSON
-基础工具：download / transcribe / prepare / cut / mix / render / images / ffmpeg / codefilm
+基础工具：download / transcribe / prepare / cut / mix / render / images / ffmpeg / codefilm / review
      ↓
 实际作品：短片、字幕图卡、代码动画、交互 HTML、来源与检查报告
 ```
@@ -25,14 +25,17 @@
 | 语音字幕验收 | Qwen + `sync.py` → 固定展示计划、SRT 回读、全部编码帧及音轨偏移 | 只有实际运行的对应门禁可标通过；普通 ASR/文件区间字幕保留未验证 |
 | 视频图像处理 | `images sample / band / index / plan / render / verify` → 候选帧、索引、原生/脚本图卡、内容缓存和报告 | 不自动选题、翻译、识别说话人；原生字保留像素，后期文字必须声明来源 |
 | 独立 FFmpeg 后期 | `ffmpeg` 的 42 个工具 → 画幅、音频、字幕、HDR、平台导出、批处理与时间线 | 固定上游工具；平台检查不替代 Qwen；声能高光不等于理解内容 |
+| 本机预览与画面批注 | `review prepare/publish/serve/comments/resolve/verify` → 封存视频、版本/镜头时间轴和区域意见 | 双渲染路线；Agent 经 CLI 改原工程；无内置 AI、拖动剪辑、MP4 图层恢复或三维对象拾取；完整性不等于内容/审美通过 |
 | 确定性代码动画 | `codefilm` → Canvas/Three.js 静帧、分段、成片帧数与摘要验证 | 页面实现 `render(t)`；依赖工程内 Node/Playwright；不负责叙事、GIS、模型建模和配音 |
 
-[通用图像工具](image-tools.md)、[FFmpeg 工具](ffmpeg-tools.md)、[代码视频](code-films.md)分别维护各自合同。工具可以单独用，也可以通过文件组合；主项目不引入数据库、任务队列或云端大模型服务。
+[本地审片](review.md)、[通用图像工具](image-tools.md)、[FFmpeg 工具](ffmpeg-tools.md)、[代码视频](code-films.md)分别维护各自合同。工具可以单独用，也可以通过文件组合；主项目不引入数据库、任务队列或云端大模型服务。
 
 ## 场景技能与工作流
 
 | 场景 | 用哪些基础能力 | 在哪里维护 |
 | --- | --- | --- |
+| 视频信息与运动节奏 | 按图片/口播/机制等内容选节奏 → 创作计划 → 关键帧和整片复核 | [视频导演](../skills/video-direction/SKILL.md)；不以静止/运动阈值评审美 |
+| 审片改片 | 原工程输入 → 封存预览 → 定位意见 → Agent 修改 → 新版回复 | [审片工作流](../skills/review-workflow/SKILL.md)；稳定镜头 ID 与原版本上下文 |
 | 小红书访谈/讲解字幕图文 | 导入/转录 → Agent 选题 → 候选帧 → 原生/脚本图卡 → 逐图检查与文案 | [项目技能](../skills/xiaohongshu-quotes/SKILL.md) |
 | 剧本短片与原声混剪 | prepare、配音/ASR、render/mix、字幕与成片检查 | [视频工作流技能](../skills/video-workflow/SKILL.md)；参数与配置在使用指南 |
 | 城市数据动画、机械拆解、动作图解 | 工程数据/Three.js → codefilm → FFmpeg → 作品专用检查 | [代码影片技能](../skills/codefilm-workflow/SKILL.md)；工具合同在代码视频指南，具体美术和模型属于 `films/` |

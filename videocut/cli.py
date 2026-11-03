@@ -457,6 +457,10 @@ def add_tts_arguments(command: argparse.ArgumentParser) -> None:
 
 
 def main() -> None:
+    if len(sys.argv) > 1 and sys.argv[1] == "review":
+        from .review_cli import main as review_main
+
+        raise SystemExit(review_main(sys.argv[2:]))
     if len(sys.argv) > 1 and sys.argv[1] == "images":
         from .image_cli import main as images_main
 
@@ -476,6 +480,7 @@ def main() -> None:
     sub.add_parser("images", help="Generic frame sampling, subtitle index and image cards")
     sub.add_parser("codefilm", help="Deterministic browser film: plan / stills / render / verify")
     sub.add_parser("ffmpeg", help="42 local FFmpeg tools; videocut ffmpeg --help")
+    sub.add_parser("review", help="Versioned previews and local review comments; videocut review --help")
     command = sub.add_parser(
         "prepare", help="Check a host-agent creation plan; no model or network calls"
     )
