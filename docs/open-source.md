@@ -23,7 +23,7 @@
 | [F5-TTS MLX](https://github.com/lucasnewman/f5-tts-mlx) / [Vocos](https://github.com/gemelo-ai/vocos) | 参考音频与对应文字条件下生成新旁白、还原波形 | **历史实验**，已移除 CLI 选项；保留旧脚本与锁文件 | 逐句生成清单、参考/模型摘要、48kHz 转换和视频接入 |
 | [IndexTTS](https://github.com/index-tts/index-tts) | 2.5 参考音色、原生语速、数值情绪向量、中文拼音标记 | **默认语音引擎，固定官方代码与独立模型环境**，`--tts indextts` | 逐句参数覆盖、缓存与归属记录、音频格式统一、字幕和镜头重算 |
 | [yt-dlp](https://github.com/yt-dlp/yt-dlp) | 网页媒体、音轨、字幕和播放列表解析 | **可选 Python API 依赖**，`download` extra | 素材协议、规格隔离缓存、大小预算、媒体校验、失败项和续传恢复 |
-| [wx_channels_download](https://github.com/ltaoo/wx_channels_download) | 微信视频号捕获、本地 API 与视频解密流 | **可选的独立本地服务调用**，核对 v260907 API；不分发上游代码或二进制 | 明确目标匹配、格式选择、流大小预算、实测尺寸/完整解码、缓存与素材来源记录；证书和系统代理由外部服务单独管理 |
+| [wx_channels_download](https://github.com/ltaoo/wx_channels_download) | 微信视频号捕获、本地 API 与视频解密流 | **可选的独立本地服务调用**，核对 v260907 API；不分发上游代码或二进制 | 明确目标匹配、格式选择、流大小预算、实测尺寸/完整解码、缓存与素材来源记录；新增固定提交 `124f044` 的本地评论兼容构建；上游为 MIT + Commons Clause。只分发原创转换逻辑，不分发上游源码/二进制；证书信任与系统代理仍单独处理，见[说明](wechat-channels.md) |
 | [ffmpeg-skill](https://github.com/kajisho5/ffmpeg-skill) | 42 个本地处理工具、技能说明、交付模板与工具合同 | **Git submodule 固定引用上游源码，构建时收录运行文件**，`videocut ffmpeg` 转发调用 | 工具发现、入口和 wheel 打包；与主项目 ASR/字幕验收保持明确边界 |
 | [huashu-motion](https://github.com/alchaincyf/huashu-motion) | 导演节奏、播放器/镜头时间轴/右侧批注布局、改片交接 | **设计参考**，基线 `52467f99c602b76ba86d511d37acdfe93fa1e16e` / v0.3.1；本地独立实现，未分发其代码或素材 | 双渲染路线的不可变视频版本、声明输入校验、原版本区域意见、Agent CLI 领取与实际新版回复 |
 | [native-subtitle-quote-image](https://github.com/chengyi-ai/native-subtitle-quote-image) | 原生/脚本字幕来源区分、候选帧复核、主图与连续字幕条工作流 | **设计参考**；本地独立编写图像工具与小红书场景技能，未分发上游脚本或安装其 Skill | `image-cards-v1`、复用本项目下载/ASR、内容摘要缓存、逐卡失败恢复、输入变化失效与报告 |

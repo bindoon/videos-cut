@@ -28,6 +28,7 @@
 | --- | --- |
 | 只要转录 | “把这个本地视频转成中文 TXT、SRT 和逐词 JSON，到此结束。” |
 | 从剧本出片 | “基于咖啡示例改成我的稿子，保留系统中文音色，先出 480 宽预览，确认画面后出完整版。” |
+| 视频号账号与评论 | “在微信已打开的目标账号上采集评论；先检查 videos-cut 内的兼容服务，分页获取回复，报告完整性和实际样本分母。” |
 | 下载素材 | “导入这些链接，剪辑清晰度，保留平台可用字幕，输出素材目录和失败报告。” |
 | 克隆声音 | “用这段参考录音的音色朗读新稿，选择 IndexTTS，先核对模型与 Qwen 环境，再生成视频。” |
 | 只改字幕 | “复用上次的逐句旁白和背景，保持声音不变，把字幕改为整句、上句结束即显示下句。” |
@@ -41,6 +42,7 @@
 | --- | --- | --- |
 | 信息主线、分镜、运动与节奏设计 | [视频导演](../skills/video-direction/SKILL.md) | [代码视频](code-films.md)、[字幕同步](subtitle-sync.md) |
 | 审片、历史版本、点击画面给改片意见 | [审片工作流](../skills/review-workflow/SKILL.md) | [review 工具合同](review.md) |
+| 视频号账号搜索、评论采集、页面脚本报错 | [视频工作流的账号采集分支](../skills/video-workflow/SKILL.md#视频号账号与评论采集) | [视频号工具与诊断](wechat-channels.md) |
 | 剧本短片、原声精剪/混剪、旁白和字幕复用 | [视频制作工作流](../skills/video-workflow/SKILL.md) | [使用指南](usage.md)、[字幕同步](subtitle-sync.md) |
 | 城市、机械和动作图解等代码影片 | [代码影片工作流](../skills/codefilm-workflow/SKILL.md) | [codefilm 工具](code-films.md) |
 | 小红书访谈字幕图文 | [小红书图文](../skills/xiaohongshu-quotes/SKILL.md) | [图像工具](image-tools.md) |

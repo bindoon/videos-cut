@@ -228,6 +228,8 @@ uv run videocut download --retry-failed outputs/batch/download-report.json --out
 
 ### 微信视频号
 
+查询账号与分析评论使用新增的 `videocut wechat doctor / search / collect`。遇到页面脚本错误时，先看[兼容服务与诊断](wechat-channels.md)，不要继续使用报错的旧注入器。以下是独立的视频素材下载入口。
+
 通过独立运行的 [wx_channels_download](https://github.com/ltaoo/wx_channels_download) 接入，已核对 **v260907** 的 API。它在微信中捕获视频并提供解密流；本项目通过本地 HTTP 接收已解密的视频，执行大小限制、完整解码、SHA-256 校验及素材登记。无需 yt-dlp 的视频号支持，也不复制上游二进制或解密实现。
 
 1. 从上游 Releases 安装对应系统的下载器，按其[安装说明](https://ltaoo.github.io/wx_channels_download/guide/start.html)完成证书与代理配置，再启动服务。默认 API 为 `http://127.0.0.1:2022`。

@@ -1,6 +1,6 @@
 ---
 name: video-workflow
-description: 使用本项目 CLI 完成本地剧本出片、原声口播精剪与混剪、下载和转录衔接，以及旁白和字幕复用。用于需要组织多个视频工具并检查成片的任务；只需单步后期时使用 ffmpeg-skill，代码动画和小红书图文使用对应专门技能。
+description: 使用本项目 CLI 完成本地剧本出片、原声口播精剪与混剪、下载和转录衔接、微信视频号账号/评论采集，以及旁白和字幕复用。用于需要组织多个视频工具并检查成片的任务；只需单步后期时使用 ffmpeg-skill，代码动画和小红书图文使用对应专门技能。
 ---
 
 # 本地视频制作工作流
@@ -18,7 +18,8 @@ description: 使用本项目 CLI 完成本地剧本出片、原声口播精剪�
 | 网页或直链素材 | `videocut download` | [使用指南：导入素材](../../docs/usage.md#从视频链接导入素材) |
 | 通用候选帧、字幕区域、文字索引或图卡 | `videocut images sample / band / index / plan / render / verify` | [通用图像工具](../../docs/image-tools.md) |
 | 小红书访谈截图/字幕图文 | 阅读项目内 `xiaohongshu-quotes` 技能，再组合通用工具 | [场景技能](../xiaohongshu-quotes/SKILL.md) |
-| 微信视频号 | `download --wechat-list` → 核对标题/作者 → `download URL --wechat-feed-id ID` | [视频号本地服务](../../docs/usage.md#微信视频号) |
+| 视频号账号/评论/页面脚本故障 | `wechat doctor` → `search` → `collect` | [视频号兼容服务与合同](../../docs/wechat-channels.md) |
+| 微信视频号视频下载 | `download --wechat-list` → 核对标题/作者 → `download URL --wechat-feed-id ID` | [视频号本地服务](../../docs/usage.md#微信视频号) |
 | 只有本地转录 | `videocut transcribe` | [独立转录](../../docs/usage.md#独立转录) |
 | 删除长停顿、口头词 | `videocut cut` | [已有录音和精剪](../../docs/usage.md#已有录音和口播精剪) |
 | 精剪后加素材与包装 | `videocut mix` | 同上 |
@@ -136,3 +137,18 @@ uv run videocut render --tts indextts \
 `final.mp4` 存在不代表所有字幕模式都通过强制对齐验收。看 `verification.json` 的 `subtitle_sync`；未做验收时 `passed=null`。独立 FFmpeg 的 `verified`、`check` 和录音 `sync` 均不等于本项目 `videocut/sync.py` 的字幕与音轨门禁；后期产生的新文件也不自动继承旧报告。
 
 最终简要交付：成片或文本路径、真实参数、检查过的截图、报告路径、保留的未决问题。耗时说明是否命中缓存，不把下载、首次模型加载等未计入项目说成已包含。
+
+
+## 视频号账号与评论采集
+
+1. 先读 [视频号工具合同](../../docs/wechat-channels.md)，优先检查仓库内 `upstream/wechat-channels/`。运行 `wechat doctor --runtime ...`，区分服务离线、页面未连接、证书过期与 API 不兼容。不要因 CUA 的 `noWindowsAvailable` 反复点击。
+2. 没有兼容服务时用 `service-prepare` 从固定源码构建；已有运行目录直接复用。证书过期先停服务，再 `service-renew-cert`。新证书与旧证书身份不同，不能因为文件存在就声称已信任。构建与预检本身不改系统安全设置。
+3. 需要信任证书和切代理时，先核对会话是否已有适用于这一步的用户授权；已有授权不重复询问。若没有，先完成构建并给出具体证书、代理目标与恢复方案，再请求必要授权。不要复制旧会话的证书、私钥或“允许”作为未来授权。
+4. 切换前用 `networksetup -listallnetworkservices` 确定实际网络服务，记录其 `-getwebproxy`、`-getsecurewebproxy`、`-getsocksfirewallproxy`、`-getautoproxyurl` 和 `-getproxybypassdomains` 原始输出到本次输出目录；不要假定叫 Wi-Fi。保留已有出站代理，必要时作为 `config.yaml` 的 `proxy.upstreamProxy`，不能设为自身 2023。
+5. macOS 信任操作仅针对当前 `config.yaml` 中的证书和当前登录钥匙串。通过 `openssl x509 -in CERT -noout -fingerprint -sha1 -dates` 记录准确指纹；获授权后可用 `security add-trusted-cert -r trustRoot -k KEYCHAIN CERT` 添加临时信任。不要只信任 channels 主域而遗漏 `res.wx.qq.com` 静态模块。不要批量删除其他证书或信任。
+6. 前台运行 `service-run`，仅将该网络服务的 HTTP/HTTPS 代理指向 `127.0.0.1:2023`；SOCKS/PAC/绕过规则保留原值。刷新已打开的视频号页面，确认页面正常，再跑 `doctor --keyword 目标昵称`。页面连上只证明 WebSocket 可用，必须另验证搜索。错误时先恢复代理/页面，不继续用旧版注入脚本。
+7. 用 `search` 核对昵称与完整 username；不能用同名首条或最近视频猜目标。`collect` 使用新的输出目录采集，失败时在同目录续跑。先看 `complete`、各视频根评论/回复标志及错误；部分完成不报告“全部评论”。采集不会发布/私信。
+8. 分析保留作者、关联账号与机器人排除记录，按实际账号 ID 去重。区分评论条数、去重账号数和全体粉丝；不要用昵称/头像猜年龄职业。抽样必须记录随机方法、样本分母和分类依据，后台画像与评论画像分开报告。
+9. 完成后先恢复自己实际改动的 HTTP/HTTPS 设置：仅当当前仍为本次 127.0.0.1:2023 时恢复已保存的地址、端口和启用状态；若用户中途改变过设置则停止覆盖并说明。核对其他代理字段未变化。用 `security remove-trusted-cert CERT` 及准确指纹的 `security delete-certificate -Z SHA1 KEYCHAIN` 清理本次临时信任和证书；只清理由本次新增的身份。保留可用于清理的旧证书文件，不能按名称批量删。最后停服务并刷新页面，确认无脚本错误。
+
+本工作流不要求每次重新获取授权；按当前会话的实际授权与变化范围执行。工具不会自动执行上述系统信任/代理操作。所有账号、评论与运行证书留在忽略目录，不进 Git。

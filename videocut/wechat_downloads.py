@@ -61,9 +61,10 @@ class _NoRedirect(urllib.request.HTTPRedirectHandler):
 
 
 class WeChatClient:
-    def __init__(self, origin: str):
+    def __init__(self, origin: str, *, timeout: float = 20):
         validate_api_url(origin)
         self.origin = origin.rstrip("/")
+        self.timeout = timeout
         self.opener = urllib.request.build_opener(
             urllib.request.ProxyHandler({}), _NoRedirect()
         )
@@ -78,7 +79,7 @@ class WeChatClient:
             headers={"Content-Type": "application/json"},
         )
         try:
-            with self.opener.open(req, timeout=20) as response:
+            with self.opener.open(req, timeout=self.timeout) as response:
                 raw = response.read(4 * 1024 * 1024 + 1)
             if len(raw) > 4 * 1024 * 1024:
                 raise ValueError("oversized response")

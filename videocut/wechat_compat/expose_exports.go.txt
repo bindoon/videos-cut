@@ -1,0 +1,30 @@
+package wxchannels
+
+import (
+    "regexp"
+    "strings"
+)
+
+var vcExportBlock = regexp.MustCompile(`\bexport\s*\{([^}]*)\}`)
+var vcExportMember = regexp.MustCompile(`^([a-zA-Z_$][a-zA-Z0-9_$]*)(?:\s+as\s+[a-zA-Z_$][a-zA-Z0-9_$]*)?$`)
+
+// Expose existing local exports without rewriting any method body. Unknown
+// module layouts are left intact; a missing bridge is safer than a broken page.
+func vcExposeExports(script string) string {
+    matches := vcExportBlock.FindAllStringSubmatchIndex(script, -1)
+    if len(matches) != 1 { return script }
+    m := matches[0]
+    if strings.HasPrefix(strings.TrimSpace(script[m[1]:]), "from") { return script }
+    locals := []string{}
+    seen := map[string]bool{}
+    for _, item := range strings.Split(script[m[2]:m[3]], ",") {
+        item = strings.TrimSpace(item)
+        if item == "" { continue }
+        member := vcExportMember.FindStringSubmatch(item)
+        if len(member) != 2 { return script }
+        if !seen[member[1]] { locals = append(locals, member[1]); seen[member[1]] = true }
+    }
+    if len(locals) == 0 { return script }
+    expose := `;typeof WXU !== "undefined" && WXU.emit("channels:APILoaded",{` + strings.Join(locals, ",") + `});`
+    return script[:m[0]] + expose + script[m[0]:]
+}

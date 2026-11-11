@@ -55,6 +55,8 @@ videocut/                   通用 CLI 与处理实现
 | `videocut/creation.py` | `prepare` 检查宿主创作计划，输出待补素材任务或现有渲染器配置；不调用模型或网络 |
 | `videocut/assets.py` | 下载、来源记录和标签选片；不做未接入的视觉模型理解 |
 | `videocut/downloads.py` | HTTP Range 与 yt-dlp 导入、规格隔离缓存、大小预算、逐项失败结果和媒体校验；网页下载依赖可选 `download` extra |
+| `videocut/wechat_research.py` / `wechat_cli.py` | 视频号账号搜索、串行分页、回复去重、内容摘要缓存、部分完成报告；复用 loopback 客户端 |
+| `videocut/wechat_service.py` / `wechat_compat/` | 固定源码摘要的隔离评论桥接构建、证书生成/预检和前台启动；不自动安装信任或修改系统代理 |
 | `videocut/wechat_downloads.py` | 微信视频号本地 API 适配、捕获记录匹配、格式选择与解密流接入；复用下载校验与素材协议 |
 | `videocut/speech.py` | 合并默认 IndexTTS 生成的逐句语音，或显式使用 Edge/macOS；按 WAV 采样数建立时间轴 |
 | `videocut/captions.py` | 固定展示计划；默认整句预读用 Qwen 句末定位，显式 audio_clip 用 PCM 区间，拆条用 Qwen 字词时间；校验音频摘要 |
@@ -117,7 +119,7 @@ URL / 素材清单 → 解析来源 → 按规格检查缓存 → 下载/续传 
 
 视频号分享/详情链接在进入 yt-dlp 前路由到 `wechat_downloads.py`，连接独立运行的 `wx_channels_download` v260907 本地 API。`--wechat-list` 查询捕获历史；明确 ID 或精确 URL 匹配后，经 `/api/channels/feed/profile` 读取详情，选择显式格式，再通过本地 `/play` 解密流复用有界 HTTP 下载、完整解码与摘要校验。缓存位于 `imports/wechat/`；来源 URL 与可选视频选择 ID 参与请求索引，视频 ID 与规格参与素材身份。实际尺寸必须符合选定格式，音频独立提取，画面字幕不视为可下载字幕轨。
 
-短链接不以“最新记录”隐式匹配；本地 API 限制在 loopback HTTP origin，JSON 控制请求拒绝重定向并绕开外部代理。报告不保留 CDN 签名或解密密钥，流传输的临时请求状态在退出时清理，因此视频号重试会重新获取详情；完整缓存可离线复用。外部服务拥有独立运行时、数据库、证书和代理，本项目不管理其进程或修改系统安全设置，不分发其代码/二进制。完整使用边界见[视频号导入](usage.md#微信视频号)。
+短链接不以“最新记录”隐式匹配；本地 API 限制在 loopback HTTP origin，JSON 控制请求拒绝重定向并绕开外部代理。报告不保留 CDN 签名或解密密钥，流传输的临时请求状态在退出时清理，因此视频号重试会重新获取详情；完整缓存可离线复用。外部服务拥有独立运行时、数据库、证书和代理，原下载入口不管理其进程或修改系统安全设置，不分发其代码/二进制。新增 `wechat service-*` 可从固定源码构建隔离的评论桥接服务并前台运行，生成独立短期证书，但不安装系统信任、不切换系统代理。评论兼容配置取消部分自动捕获钩子，不能替代旧下载服务的全部能力；详见[视频号账号与评论工具](wechat-channels.md)。完整使用边界见[视频号导入](usage.md#微信视频号)。
 
 ## 独立转录与剪辑消费
 
