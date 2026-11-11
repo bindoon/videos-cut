@@ -1,3 +1,6 @@
+# Local Node.js dependencies (directories or symlinks at any depth)
+node_modules
+
 # Local Python environments and generated build/test files
 .venv*/
 venv/
