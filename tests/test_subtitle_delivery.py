@@ -41,7 +41,10 @@ def test_subtitle_disappearing_before_speech_ends_is_rejected():
 
 
 @pytest.mark.parametrize("timing_mode", ["qwen", "pcm", "sentence_end"])
-def test_actual_moviepy_video_is_checked_and_delayed_video_fails(tmp_path, timing_mode):
+@pytest.mark.parametrize("layout", ["portrait", "landscape_custom"])
+def test_actual_moviepy_video_is_checked_and_delayed_video_fails(
+    tmp_path, timing_mode, layout
+):
     # Real encoded frames/audio, independent known acoustic windows. No ASR,
     # model download, mock renderer, or report copied from planned cue times.
     rate = 48000
@@ -56,6 +59,7 @@ def test_actual_moviepy_video_is_checked_and_delayed_video_fails(tmp_path, timin
         audio.setsampwidth(2)
         audio.setframerate(rate)
         audio.writeframes(pcm.tobytes())
+    custom = layout == "landscape_custom"
     background = tmp_path / "background.mp4"
     run(
         [
@@ -66,13 +70,20 @@ def test_actual_moviepy_video_is_checked_and_delayed_video_fails(tmp_path, timin
             "-f",
             "lavfi",
             "-i",
-            "color=c=0x394039:s=360x640:r=24:d=4",
+            f"color=c=0x394039:s={'640x360' if custom else '360x640'}:r=24:d=4",
             "-c:v",
             "libx264",
             str(background),
         ]
     )
-    config = {"width": 360, "height": 640, "fps": 24, "title": "同步测试"}
+    config = {
+        "width": 640 if custom else 360,
+        "height": 360 if custom else 640,
+        "fps": 24,
+        "title": "同步测试",
+    }
+    if custom:
+        config["subtitle_style"] = {"width": 560, "font_size": 24, "top": 270}
     scenes = [{"start": 0, "duration": 4}]
     cues = [
         {"text": "第一句，", "start": 0, "end": 1.3},

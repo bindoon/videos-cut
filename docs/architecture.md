@@ -166,3 +166,7 @@ IndexTTS-2.5 使用 `.venv-index`（Python 3.11 / PyTorch MPS）。语音合成�
 | 代码动画、浏览器逐帧与分段完整性 | `codefilm.py`、`codefilm_runner.mjs`、`tests/test_codefilm.py`、`scripts/verify_codefilm.py` |
 
 各模式通过显式文件衔接，没有隐藏任务队列。主项目配置与 ffmpeg-skill 项目配置不是同一协议，不能直接互换；后期输出也不自动继承旧的同步验收。完整测试需安装 `download` 与 `asr` 两个 extra，执行方式见[使用指南](usage.md)。
+
+横屏与竖屏的字幕排版可以使用`subtitle_style`像素配置；合成器与全帧检测器通过`render.caption_geometry`共享宽度、顶部位置和字号。未配置时保持原默认值；此项不更改Qwen字时、字幕分条、音轨偏移或ASR缓存语义。
+
+审片的 Markdown 交接由 `review.task_markdown` 在同一锁内读取版本与批注快照，供 CLI `review export` 和只读 HTTP `/api/task.md` 共用；UI仅复制或下载该结果。导出不追加批注事件，领取与完成仍走原状态合同。

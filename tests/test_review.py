@@ -177,6 +177,53 @@ def test_concurrent_claims_get_different_comments(project, clips):
     assert len({r[0]["id"] for r in results}) == 2
 
 
+def test_markdown_handoff_keeps_versions_regions_and_status_without_mutation(project, clips):
+    first = publish_first(project, clips)
+    root, config, _ = project
+    older = review.comment(root, revision_id=first["id"], time=.2,
+                           region=[.1, .2, .3, .4], text="说透要连读。\n保留原文。")
+    config.write_text(config.read_text().replace("真实预览", "新版预览"))
+    draft, video, timeline = stage(project, "next")
+    produce(video, timeline, clips[1])
+    second = review.publish(root, draft["id"])
+    newer = review.comment(root, revision_id=second["id"], time=.4, text="新版图片停两秒")
+    review.comments(root, claim=True)
+    before = (root / "comments.jsonl").read_bytes()
+    markdown = review.task_markdown(root)
+    assert (root / "comments.jsonl").read_bytes() == before
+    for doc in (first, second):
+        assert doc["id"] in markdown
+        assert str(root / "revisions" / doc["id"] / "preview.mp4") in markdown
+    assert "## 视频版本 v1" in markdown and "## 视频版本 v2" in markdown
+    assert older["id"] in markdown and newer["id"] in markdown
+    assert "状态：处理中" in markdown and "状态：待处理" in markdown
+    assert "> 说透要连读。\n> 保留原文。" in markdown
+    assert "[0.1, 0.2, 0.3, 0.4]" in markdown
+    assert "源文件自该版发布后发生变化" in markdown
+    assert str(config) in markdown
+    review.resolve(root, older["id"], second["id"], "连读已修复")
+    assert older["id"] not in review.task_markdown(root)
+    everything = review.task_markdown(root, include_done=True)
+    assert older["id"] in everything and "状态：已完成" in everything
+    assert "连读已修复" in everything
+
+
+def test_markdown_cli_prints_or_creates_document_and_refuses_overwrite(project, clips, capsys):
+    from videocut.review_cli import main
+    first = publish_first(project, clips)
+    root = project[0]
+    assert "暂无符合导出范围的批注" in review.task_markdown(root)
+    review.comment(root, revision_id=first["id"], time=.2, text="检查口播连读")
+    assert main(["export", str(root)]) == 0
+    printed = capsys.readouterr().out
+    assert printed.startswith("# 视频改片任务单") and "检查口播连读" in printed
+    target = root.parent / "改片任务单.md"
+    assert main(["export", str(root), "--output", str(target)]) == 0
+    assert target.read_text() == printed
+    assert main(["export", str(root), "--output", str(target)]) == 1
+    assert target.read_text() == printed
+
+
 @pytest.mark.parametrize("time,region", [(float("nan"), None), (1, None), (-1, None), (.2,[.99,0,.2,.2])])
 def test_comment_context_cannot_escape_displayed_video(project, clips, time, region):
     first = publish_first(project, clips)
@@ -230,6 +277,18 @@ def test_http_ranges_comments_and_local_write_boundary(project, clips):
             created = json.load(response)
         assert created["revision"] == first["id"]
         assert review.comments(project[0])[0]["text"] == "HTTP 实际批注"
+        with urlopen(base + "/api/task.md") as response:
+            markdown = response.read()
+            assert response.headers["Content-Type"].startswith("text/markdown")
+            assert "attachment" in response.headers["Content-Disposition"]
+            assert "HTTP 实际批注" in markdown.decode()
+            assert first["id"] in markdown.decode()
+        with urlopen(Request(base + "/api/task.md", method="HEAD")) as response:
+            assert int(response.headers["Content-Length"]) == len(markdown)
+            assert response.read() == b""
+        with pytest.raises(HTTPError) as invalid_filter:
+            urlopen(base + "/api/task.md?include_done=2")
+        assert invalid_filter.value.code == 409
         with pytest.raises(HTTPError) as outside:
             urlopen(base + "/source/project.json")
         assert outside.value.code == 404
@@ -259,5 +318,9 @@ def test_codefilm_partial_preview_keeps_global_time_and_declared_sources(project
     assert (doc["scenes"][0]["start"], doc["scenes"][0]["end"]) == (0, 1)
     item = review.comment(root, revision_id=doc["id"], time=.25, text="局部细节")
     assert item["global_time"] == 1.25 and item["scene_id"] == "detail" and item["frame"] == 3
+    markdown = review.task_markdown(root)
+    assert "原工程时间：00:01.25（1.250 秒）" in markdown
+    assert "预览时间：00:00.25（0.250 秒" in markdown
+    assert str(source_timeline) in markdown
     entry.write_text('<canvas>edited source</canvas>')
     assert review.state(root)["changed_sources"] == [str(entry)]

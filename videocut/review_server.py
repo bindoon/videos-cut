@@ -6,7 +6,7 @@ import re
 import secrets
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 from . import review
 
@@ -23,13 +23,15 @@ def create_server(workspace: Path, port: int = 4862) -> ThreadingHTTPServer:
         def _host(self) -> bool:
             return self.headers.get("Host") in {f"127.0.0.1:{self.server.server_port}", f"localhost:{self.server.server_port}"}
 
-        def _send(self, status: int, payload: object, mime: str = "application/json; charset=utf-8") -> None:
+        def _send(self, status: int, payload: object, mime: str = "application/json; charset=utf-8", *, filename: str | None = None) -> None:
             body = payload if isinstance(payload, bytes) else json.dumps(payload, ensure_ascii=False, allow_nan=False).encode()
             self.send_response(status)
             self.send_header("Content-Type", mime)
             self.send_header("Content-Length", str(len(body)))
             self.send_header("Cache-Control", "no-store")
             self.send_header("X-Content-Type-Options", "nosniff")
+            if filename:
+                self.send_header("Content-Disposition", f'attachment; filename="{filename}"')
             self.end_headers()
             if self.command != "HEAD":
                 self.wfile.write(body)
@@ -47,6 +49,12 @@ def create_server(workspace: Path, port: int = 4862) -> ThreadingHTTPServer:
                     return self._send(200, body.encode(), "text/html; charset=utf-8")
                 if path == "/api/state":
                     return self._send(200, review.state(root))
+                if path == "/api/task.md":
+                    values = parse_qs(urlparse(self.path).query).get("include_done", ["0"])
+                    if values not in (["0"], ["1"]):
+                        raise ValueError("include_done must be 0 or 1")
+                    body = review.task_markdown(root, include_done=values == ["1"])
+                    return self._send(200, body.encode(), "text/markdown; charset=utf-8", filename="video-review-tasks.md")
                 match = re.fullmatch(r"/media/([0-9a-f]{16})\.mp4", path)
                 if match:
                     doc = review.revision(root, match[1], media=True)

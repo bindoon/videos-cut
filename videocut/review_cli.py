@@ -25,7 +25,7 @@ def main(argv: list[str] | None = None) -> int:
     create.add_argument("--height", type=int)
     create.add_argument("--offset", type=float, default=0, help="Global source time at preview frame zero")
     create.add_argument("--duration", type=float, help="Expected preview duration; codefilm defaults to remaining full timeline")
-    for name in ("publish", "abandon", "state", "verify", "comments", "serve", "resolve", "comment"):
+    for name in ("publish", "abandon", "state", "verify", "comments", "serve", "resolve", "comment", "export"):
         command = sub.add_parser(name)
         command.add_argument("workspace", type=Path)
         if name == "publish":
@@ -44,6 +44,9 @@ def main(argv: list[str] | None = None) -> int:
             command.add_argument("--region", nargs=4, type=float)
         elif name == "serve":
             command.add_argument("--port", type=int, default=4862)
+        elif name == "export":
+            command.add_argument("--include-done", action="store_true")
+            command.add_argument("--output", type=Path, help="Write a new Markdown file; otherwise print Markdown")
     args = parser.parse_args(argv)
     try:
         if args.command == "prepare":
@@ -67,6 +70,18 @@ def main(argv: list[str] | None = None) -> int:
                                     text=args.text, scene_id=args.scene, region=args.region)
         elif args.command == "resolve":
             result = review.resolve(args.workspace, args.id, args.result_revision, args.note)
+        elif args.command == "export":
+            markdown = review.task_markdown(args.workspace, include_done=args.include_done)
+            if args.output:
+                if args.output.suffix.lower() != ".md":
+                    raise ValueError("Export output must use .md")
+                args.output.parent.mkdir(parents=True, exist_ok=True)
+                with args.output.open("x", encoding="utf-8") as stream:
+                    stream.write(markdown)
+                result = {"output": str(args.output.resolve()), "include_done": args.include_done}
+            else:
+                sys.stdout.write(markdown)
+                return 0
         else:
             from .review_server import create_server
             server = create_server(args.workspace, args.port)

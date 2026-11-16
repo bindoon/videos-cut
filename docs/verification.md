@@ -397,3 +397,11 @@ macOS arm64、16GB 内存、独立 Python 3.11.14 / PyTorch 2.8.0 MPS 环境，�
 - `uv build --wheel` 成功，检查 wheel 包含新 CLI、采集器、服务构建器和 Go 兼容模板，不包含运行目录或证书私钥。新 Python 文件 Ruff 检查、格式化与 `git diff --check` 通过。
 - 环境边界：按要求尝试 `uv sync --extra download --extra asr`，锁定的 `onnxruntime==1.31.0` 没有 macOS x86_64 wheel，安装失败；后续测试使用现有 `.venv` 的 `--no-sync`。未为本任务更改 ASR 依赖或锁文件，不声称当前机器能从零安装全部可选 ASR 依赖。
 - 工具合同见 [视频号账号与评论](wechat-channels.md)，会话启动、信任/代理授权与恢复流程在 [视频工作流](../skills/video-workflow/SKILL.md#视频号账号与评论采集)。新配置移除了目标模块部分自动捕获钩子，不能将评论验证扩展为直播/自动视频捕获验证。
+
+
+## 2026-11-17 · 通用字幕布局与审片任务单
+
+- `uv sync --extra download --extra asr` 成功；`uv run --no-sync pytest -q` 完整套件 **141 项通过，92.65 秒**。1176 条提示均来自 MoviePy 的 NumPy shape 弃用警告，未跳过验收断言。
+- 覆盖横竖屏真实编码、三种字幕计时及延迟音轨拒绝；合成器与像素检查共享可配置字幕几何，不改 ASR/Qwen 时间或缓存语义。
+- 审片 Markdown 导出覆盖版本分组、原工程时间、区域与状态、只读性、CLI 防覆盖及 HTTP GET/HEAD。网页提供复制、下载和复制权限降级选择。
+- 导演流程补充独立视觉叙事和实际编码后的动态审片要求；影片题材、个人参考录音与生成媒体保留在本地作品层。

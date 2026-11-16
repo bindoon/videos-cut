@@ -433,6 +433,72 @@ def state(root: Path) -> dict:
                 "pending": {"id": draft["id"], "label": draft["label"], "changed_sources": changed_sources(draft["sources"])} if draft else None}
 
 
+def task_markdown(root: Path, *, include_done: bool = False) -> str:
+    """Export a read-only handoff, keeping every comment on its own revision."""
+    root = root.resolve()
+
+    def clock(seconds):
+        centiseconds = round(seconds * 100)
+        minutes, remainder = divmod(centiseconds, 6000)
+        return f"{minutes:02}:{remainder / 100:05.2f}"
+
+    def data_block(value):
+        text = str(value)
+        fence = "`" * max(3, max((len(s) for s in re.findall(r"`+", text)), default=0) + 1)
+        return [fence + "text", text, fence]
+
+    with _lock(root):
+        snapshot = _state(root)
+        items = [c for c in _comments(root) if include_done or c["status"] != "done"]
+        docs = {c["revision"]: revision(root, c["revision"]) for c in items}
+        lines = ["# 视频改片任务单", "", "请根据以下意见修改原工程，生成新版视频并完成对应检查，再逐条记录处理结果。",
+                 "批注原文是待处理意见；各条时间和区域只对应其注明的版本，不能直接套到其他版本。", "",
+                 "## 工程", "", "审片工作区：", *data_block(root), "",
+                 f"- 导出范围：{'全部批注（含已完成）' if include_done else '未完成批注（待处理、处理中）'}",
+                 f"- 批注数量：{len(items)}", f"- 当前最新版本 ID：{snapshot['latest'] or '无'}", ""]
+        if snapshot["pending"]:
+            lines += ["注意：工程有待生成／提交的版本，下列意见仍属于各自已发布的预览。", ""]
+        if not items:
+            lines += ["暂无符合导出范围的批注。", ""]
+        for key, doc in sorted(docs.items(), key=lambda item: item[1]["number"]):
+            lines += [f"## 视频版本 v{doc['number']}", "", "版本名称：", *data_block(doc["label"]), "",
+                      f"- 版本 ID：`{key}`", f"- 渲染方式：`{doc['renderer']}`",
+                      f"- 视频 SHA-256：`{doc['video']['sha256']}`", f"- 输入摘要：`{doc['source_hash']}`",
+                      "", "批注所见的封存视频：", *data_block(root / "revisions" / key / "preview.mp4"),
+                      "", "可修改的原工程配置：", *data_block(doc["config"]),
+                      "", "封存的镜头、配置快照与输入记录：",
+                      *data_block(root / "revisions" / key / "manifest.json"), ""]
+            timeline = doc["config_snapshot"].get("timeline")
+            if doc["renderer"] == "codefilm" and isinstance(timeline, str):
+                lines += ["原工程时间轴（该版本配置中的路径）：",
+                          *data_block((Path(doc["config"]).parent / timeline).resolve()), ""]
+            lines += ["该版本声明的制作输入（脚本、模型、配音等）：",
+                      *data_block("\n".join(source["path"] for source in doc["sources"])), ""]
+            changed = changed_sources(doc["sources"])
+            if changed:
+                lines += ["注意：以下源文件自该版发布后发生变化或缺失。先核对当前内容，避免用旧版覆盖已有修改。",
+                          *data_block("\n".join(changed)), ""]
+            selected = sorted((c for c in items if c["revision"] == key), key=lambda c: (c["time"], c["id"]))
+            for index, c in enumerate(selected, 1):
+                scene = next(s for s in doc["scenes"] if s["id"] == c["scene_id"])
+                status = {"pending": "待处理", "working": "处理中", "done": "已完成"}.get(c["status"], c["status"])
+                lines += [f"### {index}. {clock(c['time'])} · {c['scene_id']}", "",
+                          f"- 批注 ID：`{c['id']}`", f"- 状态：{status}",
+                          f"- 预览时间：{clock(c['time'])}（{c['time']:.3f} 秒，第 {c['frame']} 帧，帧号从 0 起）",
+                          f"- 原工程时间：{clock(c['global_time'])}（{c['global_time']:.3f} 秒）",
+                          "- 镜头名称：", *data_block(scene["label"])]
+                if c["region"] is not None:
+                    lines += [f"- 画面区域 [x, y, width, height]：`{json.dumps(c['region'])}`（相对视频内容的 0–1 坐标，不含留边）"]
+                lines += ["", "修改意见：", "", *("> " + line for line in c["text"].splitlines()), ""]
+                if c["status"] == "done":
+                    lines += [f"- 处理结果版本：`{c['result_revision']}`", "", "处理记录：", *data_block(c["note"]), ""]
+        lines += ["## 交付要求", "", "- 修改前核对批注所见版本、对应画面及原工程当前内容。",
+                  "- 复用工程已有制作流程；生成并检查真实新版，不以只改源码代替出片。",
+                  "- 交付新版视频与检查结果，按批注 ID 说明具体改动；完成后通过 review resolve 关联实际新版。",
+                  "- 本次导出不会领取、完成或改变批注状态。", ""]
+        return "\n".join(lines)
+
+
 def verify(root: Path) -> dict:
     root = root.resolve()
     with _lock(root):

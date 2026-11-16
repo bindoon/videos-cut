@@ -11,7 +11,7 @@ import numpy as np
 from PIL import Image, ImageFilter
 
 from .media import decode_audio, probe, write_json
-from .render import make_text
+from .render import caption_geometry, make_text
 
 
 def check_boundaries(cues, references, observed, fps):
@@ -110,12 +110,14 @@ def detect_caption_pixels(video, config, cues):
     if abs(float(stream.get("start_time", 0))) > 1 / fps:
         raise ValueError("Subtitle verification requires a zero-based video timeline")
     w, h = config["width"], config["height"]
-    width, y, size = int(w * 0.88), round(h * 0.785), round(w * 0.050)
+    width, y, size = caption_geometry(config)
     texts = list(dict.fromkeys(c["text"] for c in cues))
     images = [
         np.asarray(make_text(t, width, size, color="#fff8e7", pill=True)) for t in texts
     ]
     height = max(i.shape[0] for i in images)
+    if y + height > h:
+        raise ValueError("Rendered subtitles extend beyond the video")
     masks = []
     for array in images:
         mask = np.zeros((height, width), dtype=bool)

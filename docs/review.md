@@ -2,7 +2,7 @@
 
 [文档导航](README.md) · [审片工作流](../skills/review-workflow/SKILL.md) · [导演技能](../skills/video-direction/SKILL.md)
 
-`videocut review` 给现有素材混剪和 codefilm 增加统一的预览版本与批注合同。它封存实际编码的视频；原工程继续决定如何生成画面。网页提供播放、镜头跳转、历史版本、画面定位与批注，Agent 通过 CLI 领取、修改原配置/源码、生成新版并回复。网页不内置 Agent，也不自动执行渲染命令。
+`videocut review` 给现有素材混剪和 codefilm 增加统一的预览版本与批注合同。它封存实际编码的视频；原工程继续决定如何生成画面。网页提供播放、镜头跳转、历史版本、画面定位、批注和 Markdown 任务单导出，Agent 可从任务单进入原工程，通过 CLI 领取、修改原配置/源码、生成新版并回复。网页不内置 Agent，也不自动执行渲染命令。
 
 ## 输入与版本合同
 
@@ -40,7 +40,7 @@ uv run videocut review verify outputs/my-review
 
 `publish --draft ID` 可明确指定当前 draft。已有 draft 未结束时不能新建；`abandon WORKSPACE` 仅撤销待生成状态，保留记录及已有视频。输入改过以后应撤销旧 draft，重新登记并实际渲染。不要改摘要来让旧视频通过。
 
-审片页监听 `127.0.0.1`，支持视频 Range 请求。HTTP 只提供 UI、状态、已封存媒体与新增批注，不提供任意文件浏览、源码写入、shell 或 Agent 启动接口。评论写入要求同源请求和会话 token；这是本机工作页，没有多人账号系统。
+审片页监听 `127.0.0.1`，支持视频 Range 请求。HTTP 只提供 UI、状态、已封存媒体、新增批注与只读任务单导出，不提供任意文件浏览、源码写入、shell 或 Agent 启动接口。评论写入要求同源请求和会话 token；这是本机工作页，没有多人账号系统。
 
 ## 批注与 Agent 交接
 
@@ -52,6 +52,17 @@ uv run videocut review comment outputs/my-review \
 uv run videocut review resolve outputs/my-review --id COMMENT_ID \
   --result-revision NEW_REVISION_ID --note '第二张延长一秒，第三张顺延'
 ```
+
+网页的“复制任务单”“下载 Markdown”与展开预览共用 `GET /api/task.md`；`?include_done=1` 可带已完成批注，默认 `0` 只导出 pending/working。支持 HEAD，返回 UTF-8 `text/markdown` 及附件名 `video-review-tasks.md`，不提供 CORS。复制权限不可用时选中预览文字供手动复制。
+
+```bash
+# 直接输出 Markdown，或创建新的 .md 文件（已有文件拒绝覆盖）。
+uv run videocut review export outputs/my-review
+uv run videocut review export outputs/my-review --output outputs/改片任务单.md
+uv run videocut review export outputs/my-review --include-done
+```
+
+任务单按原版本分组，包含版本/媒体/来源摘要、不可变预览与 manifest 路径、可编辑配置和 codefilm 时间轴、输入变化提示、批注 ID、原文、预览/原工程时间、帧号、镜头和归一化区域；已完成条目附结果版本与回复。导出保持批注状态，不领取、不完成批注，也不写入工作区。待生成 draft 与当前源文件变化均会在文档中提示。CLI 的 `--output` 仅创建指定 `.md` 文件。
 
 `comments --claim` 加锁领取第一条 pending，置为 working；没有可领的条目返回空列表。`comments` 包含原版本配置快照、声明输入及当前已变更文件，便于 Agent 检查旧意见是否仍适用。当前没有超时租约或失败任务自动重领，可通过普通 `comments` 查看 working 条目并继续处理。
 

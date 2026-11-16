@@ -59,6 +59,22 @@ def make_text(
     return image
 
 
+def caption_geometry(config: dict) -> tuple[int, int, int]:
+    """Share caption geometry between compositing and encoded-pixel checks."""
+    w, h = config["width"], config["height"]
+    style = config.get("subtitle_style", {})
+    if not isinstance(style, dict) or set(style) - {"width", "top", "font_size"}:
+        raise ValueError("subtitle_style accepts width, top and font_size")
+    width = style.get("width", int(w * 0.88))
+    top = style.get("top", round(h * 0.785))
+    size = style.get("font_size", round(w * 0.050))
+    if any(type(value) is not int for value in (width, top, size)):
+        raise ValueError("Subtitle geometry must use integer pixels")
+    if not (48 < width <= w and size > 0 and 0 <= top <= h - size - 54):
+        raise ValueError("Subtitle geometry must fit inside the video")
+    return width, top, size
+
+
 def render_backgrounds(
     config: dict, scenes: list[dict], materials: list[dict], output: Path
 ) -> tuple[Path, list[dict]]:
@@ -214,8 +230,12 @@ def compose(
         )
     layers.append(ImageClip(shade).with_duration(total))
 
-    def text_layer(text, size, y, start=0, seconds=total, color="#fff8e7", pill=False):
-        image = make_text(text, int(w * 0.88), size, color=color, pill=pill)
+    def text_layer(
+        text, size, y, start=0, seconds=total, color="#fff8e7", pill=False, width=None
+    ):
+        image = make_text(
+            text, int(w * 0.88) if width is None else width, size, color=color, pill=pill
+        )
         clip = (
             ImageClip(np.array(image))
             .with_start(start)
@@ -282,14 +302,16 @@ def compose(
                 lambda t: (round(w * 0.78), round(h * 0.255 + 10 * math.sin(t * 2)))
             ).with_start(start + 0.35)
             layers.append(clip)
+    caption_width, caption_top, caption_size = caption_geometry(config)
     for cue in cues:
         text_layer(
             cue["text"],
-            round(w * 0.050),
-            round(h * 0.785),
+            caption_size,
+            caption_top,
             cue["start"],
             cue["end"] - cue["start"],
             pill=True,
+            width=caption_width,
         )
     text_layer(
         config.get("footer", "VIDEO NOTES"),

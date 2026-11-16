@@ -58,3 +58,6 @@ flax_model*.msgpack
 .vscode/
 *.swp
 *.swo
+
+# Local user-provided voice references
+/assets/voices/
