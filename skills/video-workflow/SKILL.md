@@ -15,6 +15,7 @@ description: 使用本项目 CLI 完成本地剧本出片、原声口播精剪�
 
 | 请求 | 入口 | 需要补读 |
 | --- | --- | --- |
+| 中医经络科普续作或重制 | 核对最新用户稿，按系列标准写稿、分镜和验收 | [中医科普视频](../tcm-video-writing/SKILL.md) |
 | 网页或直链素材 | `videocut download` | [使用指南：导入素材](../../docs/usage.md#从视频链接导入素材) |
 | 通用候选帧、字幕区域、文字索引或图卡 | `videocut images sample / band / index / plan / render / verify` | [通用图像工具](../../docs/image-tools.md) |
 | 小红书访谈截图/字幕图文 | 阅读项目内 `xiaohongshu-quotes` 技能，再组合通用工具 | [场景技能](../xiaohongshu-quotes/SKILL.md) |

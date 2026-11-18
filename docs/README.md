@@ -17,7 +17,7 @@
 
 ## 工作流技能
 
-工作流正文统一在 `skills/`，按任务加载：[视频导演](../skills/video-direction/SKILL.md) · [审片改片](../skills/review-workflow/SKILL.md) · [视频制作](../skills/video-workflow/SKILL.md) · [代码影片](../skills/codefilm-workflow/SKILL.md) · [小红书图文](../skills/xiaohongshu-quotes/SKILL.md)。第三方 [ffmpeg-skill](../.agents/skills/ffmpeg-skill/SKILL.md) 使用固定提交的 Git submodule；初始化见 [FFmpeg 工具](ffmpeg-tools.md)。
+工作流正文统一在 `skills/`，按任务加载：[视频导演](../skills/video-direction/SKILL.md) · [审片改片](../skills/review-workflow/SKILL.md) · [视频制作](../skills/video-workflow/SKILL.md) · [代码影片](../skills/codefilm-workflow/SKILL.md) · [中医科普视频](../skills/tcm-video-writing/SKILL.md) · [小红书图文](../skills/xiaohongshu-quotes/SKILL.md)。第三方 [ffmpeg-skill](../.agents/skills/ffmpeg-skill/SKILL.md) 使用固定提交的 Git submodule；初始化见 [FFmpeg 工具](ffmpeg-tools.md)。
 
 ## 专项指南
 

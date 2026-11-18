@@ -41,6 +41,7 @@
 | 任务 | 技能入口 | 工具合同 |
 | --- | --- | --- |
 | 信息主线、分镜、运动与节奏设计 | [视频导演](../skills/video-direction/SKILL.md) | [代码视频](code-films.md)、[字幕同步](subtitle-sync.md) |
+| 中医科普续作、按新稿重制、经脉镜头或封面验收 | [中医科普视频](../skills/tcm-video-writing/SKILL.md) | [代码视频](code-films.md)、[审片](review.md) |
 | 审片、历史版本、点击画面给改片意见 | [审片工作流](../skills/review-workflow/SKILL.md) | [review 工具合同](review.md) |
 | 视频号账号搜索、评论采集、页面脚本报错 | [视频工作流的账号采集分支](../skills/video-workflow/SKILL.md#视频号账号与评论采集) | [视频号工具与诊断](wechat-channels.md) |
 | 剧本短片、原声精剪/混剪、旁白和字幕复用 | [视频制作工作流](../skills/video-workflow/SKILL.md) | [使用指南](usage.md)、[字幕同步](subtitle-sync.md) |

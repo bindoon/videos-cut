@@ -136,6 +136,7 @@ uv run videocut review serve /absolute/path/review-workspace --port 4862
 | --- | --- |
 | [小红书字幕图文 Skill](skills/xiaohongshu-quotes/SKILL.md) | Agent 阅读访谈/讲解、提名主题、核对原句和说话人，组合通用工具生成主图与字幕条，逐图检查，按需整理发布文案 |
 | [视频导演 Skill](skills/video-direction/SKILL.md) | 信息主线、图片/口播/动作分镜、运动含义、节奏计划与关键帧复核 |
+| [中医科普视频 Skill](skills/tcm-video-writing/SKILL.md) | 《人体的河流》系列续作、据稿重制、经脉与穴位镜头、成片与封面验收及发布交接 |
 | [审片改片 Skill](skills/review-workflow/SKILL.md) | 登记输入、生成并封存预览、画面批注、Agent 领取和新版回复 |
 | [剧本短片 / 原声混剪](skills/video-workflow/SKILL.md) | 素材交接、旁白或 ASR、精剪、合成与成片检查 |
 | [城市、机械和动作图解](skills/codefilm-workflow/SKILL.md) | 故事与数据、Three.js 分镜、确定性捕获、后期与作品专用验证 |

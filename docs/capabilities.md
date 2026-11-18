@@ -35,6 +35,7 @@
 | 场景 | 用哪些基础能力 | 在哪里维护 |
 | --- | --- | --- |
 | 视频信息与运动节奏 | 按图片/口播/机制等内容选节奏 → 创作计划 → 关键帧和整片复核 | [视频导演](../skills/video-direction/SKILL.md)；不以静止/运动阈值评审美 |
+| 中医科普视频 | 核对稿件与出处 → 安排实拍和经脉图解 → 复核成片与封面 → 按需交接发布 | [中医科普视频](../skills/tcm-video-writing/SKILL.md) |
 | 审片改片 | 原工程输入 → 封存预览 → 定位意见 → Agent 修改 → 新版回复 | [审片工作流](../skills/review-workflow/SKILL.md)；稳定镜头 ID 与原版本上下文 |
 | 小红书访谈/讲解字幕图文 | 导入/转录 → Agent 选题 → 候选帧 → 原生/脚本图卡 → 逐图检查与文案 | [项目技能](../skills/xiaohongshu-quotes/SKILL.md) |
 | 剧本短片与原声混剪 | prepare、配音/ASR、render/mix、字幕与成片检查 | [视频工作流技能](../skills/video-workflow/SKILL.md)；参数与配置在使用指南 |

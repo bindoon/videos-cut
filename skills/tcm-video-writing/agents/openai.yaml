@@ -1,0 +1,4 @@
+interface:
+  display_name: "中医科普写作与制作"
+  short_description: "复用经脉系列用户指令，编写易懂口播，组织独立视觉叙事、审片与封面交接"
+  default_prompt: "使用 $tcm-video-writing，读取最新规划和用户稿，沿用已沉淀的要求完成本期中医科普脚本或视频任务。"
